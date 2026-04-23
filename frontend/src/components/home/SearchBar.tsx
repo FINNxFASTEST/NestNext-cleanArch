@@ -69,12 +69,12 @@ function MonthGrid({
 
   return (
     <div className="flex-1">
-      <div className="font-thai text-center text-[14px] font-semibold mb-3" style={{ color: "var(--forest-800)" }}>
+      <div className="font-thai text-center text-[14px] font-semibold mb-3 text-forest-800">
         {MONTHS_FULL[month]} {year + 543}
       </div>
       <div className="grid grid-cols-7 mb-1">
         {DAYS.map((d) => (
-          <div key={d} className="font-thai text-center text-[11px] font-medium py-1" style={{ color: "var(--sage-500)" }}>
+          <div key={d} className="font-thai text-center text-[11px] font-medium py-1 text-sage-500">
             {d}
           </div>
         ))}
@@ -100,12 +100,11 @@ function MonthGrid({
               className={cn(
                 "relative font-thai text-[13px] h-9 w-full transition-colors rounded-full",
                 isPast && "opacity-30 cursor-not-allowed",
-                !isPast && !isSelected && "hover:bg-[var(--cream-100)] cursor-pointer",
-                isSelected && "text-[var(--paper)] font-semibold z-10 cursor-pointer",
-                inRange && "rounded-none bg-[var(--cream-50)]",
-                (isHoverEnd && !endDate) && "bg-[var(--cream-100)] rounded-full",
+                !isPast && !isSelected && "hover:bg-cream-100 cursor-pointer",
+                !isSelected && inRange && "rounded-none bg-cream-50",
+                isHoverEnd && !endDate && "bg-cream-100 rounded-full",
+                isSelected && "bg-ember text-paper font-semibold z-10 cursor-pointer rounded-full",
               )}
-              style={isSelected ? { background: "var(--ember)", borderRadius: "50%" } : undefined}
             >
               {day}
             </button>
@@ -159,8 +158,7 @@ function DatePickerPanel({
         <button
           onClick={goBack}
           disabled={!canGoBack}
-          className="w-8 h-8 rounded-full flex items-center justify-center transition-colors disabled:opacity-30"
-          style={{ border: "1px solid var(--line)" }}
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-colors disabled:opacity-30 border border-line"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8">
             <polyline points="9,2 4,7 9,12" />
@@ -168,8 +166,7 @@ function DatePickerPanel({
         </button>
         <button
           onClick={goForward}
-          className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:bg-[var(--cream-100)]"
-          style={{ border: "1px solid var(--line)" }}
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:bg-cream-100 border border-line"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8">
             <polyline points="5,2 10,7 5,12" />
@@ -185,10 +182,7 @@ function DatePickerPanel({
           today={today} onDayClick={handleDayClick} onDayHover={setHoverDate}
         />
         {/* Desktop-only: divider + second month */}
-        <div
-          className="hidden md:block"
-          style={{ width: 1, background: "var(--line)", flexShrink: 0 }}
-        />
+        <div className="hidden md:block w-px bg-line shrink-0" />
         <div className="hidden md:flex flex-1">
           <MonthGrid
             year={right.y} month={right.m}
@@ -199,8 +193,8 @@ function DatePickerPanel({
       </div>
 
       {/* Footer */}
-      <div className="mt-4 pt-3 flex items-center justify-between" style={{ borderTop: "1px solid var(--line)" }}>
-        <span className="font-thai text-[12px]" style={{ color: "var(--sage-500)" }}>
+      <div className="mt-4 pt-3 flex items-center justify-between border-t border-line">
+        <span className="font-thai text-[12px] text-sage-500">
           {!startDate && "เลือกวันเช็คอิน"}
           {startDate && !endDate && "เลือกวันเช็คเอาท์"}
           {startDate && endDate && `${formatShort(startDate)} → ${formatShort(endDate)}`}
@@ -208,8 +202,7 @@ function DatePickerPanel({
         {(startDate || endDate) && (
           <button
             onClick={() => onChange(null, null)}
-            className="font-thai text-[12px] underline"
-            style={{ color: "var(--sage-500)" }}
+            className="font-thai text-[12px] underline text-sage-500"
           >
             ล้างข้อมูล
           </button>
@@ -237,30 +230,25 @@ function GuestsPanel({
       {rows.map(({ label, sub, value, min, max, onChange }, i) => (
         <div
           key={label}
-          className="flex items-center justify-between py-4"
-          style={{ borderBottom: i < rows.length - 1 ? "1px solid var(--line)" : "none" }}
+          className={cn("flex items-center justify-between py-4", i < rows.length - 1 && "border-b border-line")}
         >
           <div>
-            <div className="font-thai text-[14px] font-medium" style={{ color: "var(--ink)" }}>{label}</div>
-            <div className="font-thai text-[12px]" style={{ color: "var(--sage-500)" }}>{sub}</div>
+            <div className="font-thai text-[14px] font-medium text-ink">{label}</div>
+            <div className="font-thai text-[12px] text-sage-500">{sub}</div>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => onChange(Math.max(min, value - 1))}
               disabled={value <= min}
-              className="w-9 h-9 rounded-full flex items-center justify-center font-medium text-lg transition-colors disabled:opacity-30"
-              style={{ border: "1px solid var(--line-strong)", color: "var(--forest-700)" }}
+              className="w-9 h-9 rounded-full flex items-center justify-center font-medium text-lg transition-colors disabled:opacity-30 border border-line-strong text-forest-700"
             >
               −
             </button>
-            <span className="font-thai text-[15px] w-5 text-center" style={{ color: "var(--ink)" }}>
-              {value}
-            </span>
+            <span className="font-thai text-[15px] w-5 text-center text-ink">{value}</span>
             <button
               onClick={() => onChange(Math.min(max, value + 1))}
               disabled={value >= max}
-              className="w-9 h-9 rounded-full flex items-center justify-center font-medium text-lg transition-colors disabled:opacity-30"
-              style={{ border: "1px solid var(--line-strong)", color: "var(--forest-700)" }}
+              className="w-9 h-9 rounded-full flex items-center justify-center font-medium text-lg transition-colors disabled:opacity-30 border border-line-strong text-forest-700"
             >
               +
             </button>
@@ -274,12 +262,7 @@ function GuestsPanel({
 /* ─── Divider — horizontal on mobile, vertical on desktop ───────────────────── */
 
 function Divider() {
-  return (
-    <div
-      className="h-px w-full md:h-auto md:w-px"
-      style={{ background: "var(--line)", flexShrink: 0 }}
-    />
-  );
+  return <div className="h-px w-full md:h-auto md:w-px bg-line shrink-0" />;
 }
 
 /* ─── Main SearchBar ─────────────────────────────────────────────────────────── */
@@ -325,10 +308,7 @@ export function SearchBar() {
       popoverWidth: "w-[480px]",
       panel: (
         <div>
-          <div
-            className="font-thai text-[11px] tracking-[0.1em] uppercase font-medium mb-3"
-            style={{ color: "var(--sage-500)" }}
-          >
+          <div className="font-thai text-[11px] tracking-[0.1em] uppercase font-medium mb-3 text-sage-500">
             จังหวัดยอดนิยม
           </div>
           <div className="flex flex-wrap gap-2">
@@ -336,12 +316,12 @@ export function SearchBar() {
               <button
                 key={loc}
                 onClick={() => { setLocation(loc); setLocOpen(false); }}
-                className="font-thai text-[13px] px-3.5 py-1.5 rounded-full transition-all"
-                style={{
-                  background: location === loc ? "var(--forest-800)" : "var(--cream-50)",
-                  color: location === loc ? "var(--paper)" : "var(--ink)",
-                  border: `1px solid ${location === loc ? "var(--forest-800)" : "var(--line-strong)"}`,
-                }}
+                className={cn(
+                  "font-thai text-[13px] px-3.5 py-1.5 rounded-full transition-all border",
+                  location === loc
+                    ? "bg-forest-800 text-paper border-forest-800"
+                    : "bg-cream-50 text-ink border-line-strong",
+                )}
               >
                 {loc}
               </button>
@@ -350,8 +330,7 @@ export function SearchBar() {
           {location && (
             <button
               onClick={() => setLocation(null)}
-              className="font-thai text-[12px] underline mt-3 block"
-              style={{ color: "var(--sage-500)" }}
+              className="font-thai text-[12px] underline mt-3 block text-sage-500"
             >
               ล้างข้อมูล
             </button>
@@ -387,14 +366,7 @@ export function SearchBar() {
   ];
 
   return (
-    <div
-      className="w-full max-w-[1100px] mx-auto rounded-[18px] md:rounded-[22px] overflow-hidden flex flex-col md:flex-row md:items-stretch"
-      style={{
-        background: "var(--paper)",
-        boxShadow: "0 30px 60px rgba(20,30,25,.25)",
-        border: "1px solid var(--line)",
-      }}
-    >
+    <div className="w-full max-w-[1100px] mx-auto rounded-[18px] md:rounded-[22px] overflow-hidden flex flex-col md:flex-row md:items-stretch bg-paper border border-line shadow-[0_30px_60px_rgba(20,30,25,.25)]">
       {fields.map(({ label, hint, Icon, open, setOpen, panel, active, popoverWidth }, i) => (
         <>
           {/* Divider — horizontal on mobile between fields, vertical on desktop */}
@@ -406,27 +378,18 @@ export function SearchBar() {
                 className={cn(
                   "flex items-center gap-3.5 cursor-pointer px-5 py-[14px] md:px-[22px] md:py-4 transition-colors",
                   i === 0 ? "md:flex-[1.4]" : "md:flex-1",
+                  open ? "bg-cream-50" : "bg-transparent",
                 )}
-                style={{ background: open ? "var(--cream-50)" : "transparent" }}
               >
                 <Icon
-                  style={{
-                    width: 18, height: 18,
-                    color: active ? "var(--ember)" : "var(--sage-500)",
-                    flexShrink: 0,
-                  }}
+                  style={{ width: 18, height: 18 }}
+                  className={cn("shrink-0", active ? "text-ember" : "text-sage-500")}
                 />
                 <div className="flex-1 min-w-0">
-                  <div
-                    className="font-thai text-[11px] tracking-[0.1em] uppercase font-medium"
-                    style={{ color: "var(--sage-500)" }}
-                  >
+                  <div className="font-thai text-[11px] tracking-[0.1em] uppercase font-medium text-sage-500">
                     {label}
                   </div>
-                  <div
-                    className="font-thai text-[15px] mt-0.5 truncate"
-                    style={{ color: active ? "var(--ink)" : "var(--sage-300)" }}
-                  >
+                  <div className={cn("font-thai text-[15px] mt-0.5 truncate", active ? "text-ink" : "text-sage-300")}>
                     {hint}
                   </div>
                 </div>
@@ -436,13 +399,9 @@ export function SearchBar() {
               align="start"
               sideOffset={12}
               className={cn(
-                "rounded-[18px] p-4 md:p-5 shadow-card max-w-[calc(100vw-32px)]",
+                "rounded-[18px] p-4 md:p-5 shadow-card max-w-[calc(100vw-32px)] bg-paper border-line",
                 popoverWidth,
               )}
-              style={{
-                background: "var(--paper)",
-                border: "1px solid var(--line)",
-              }}
             >
               {panel}
             </PopoverContent>
@@ -455,10 +414,7 @@ export function SearchBar() {
 
       {/* Search button */}
       <div className="flex items-center px-3 py-3 md:py-0">
-        <button
-          className="inline-flex items-center justify-center gap-2 font-thai font-medium text-[15px] w-full md:w-auto px-7 py-3 rounded-full border-0 cursor-pointer transition-all hover:opacity-90 active:scale-[0.97]"
-          style={{ background: "var(--ember)", color: "var(--cream-50)" }}
-        >
+        <button className="inline-flex items-center justify-center gap-2 font-thai font-medium text-[15px] w-full md:w-auto px-7 py-3 rounded-full border-0 cursor-pointer transition-all hover:opacity-90 active:scale-[0.97] bg-ember text-cream-50">
           <SearchIcon style={{ width: 18, height: 18 }} />
           ค้นหาแคมป์
         </button>
