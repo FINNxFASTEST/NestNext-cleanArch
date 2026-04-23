@@ -5,7 +5,11 @@ import { CampsitesService } from './campsites.service';
 import { Campsite, CampsiteSchema } from './schemas/campsite.schema';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Campsite.name, schema: CampsiteSchema }])],
+  imports: [
+    MongooseModule.forFeature([
+      { name: Campsite.name, schema: CampsiteSchema },
+    ]),
+  ],
   controllers: [CampsitesController],
   providers: [CampsitesService],
   exports: [CampsitesService],

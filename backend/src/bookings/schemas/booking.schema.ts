@@ -23,7 +23,10 @@ export class Booking {
   @Prop({ required: true }) checkOut!: Date;
   @Prop({ required: true }) guests!: number;
 
-  @Prop({ type: [Object], default: [] }) addOns!: { name: string; price: number }[];
+  @Prop({ type: [Object], default: [] }) addOns!: {
+    name: string;
+    price: number;
+  }[];
   @Prop({ required: true }) totalPrice!: number;
 
   @Prop({ default: 'pending', enum: ['pending', 'confirmed', 'cancelled'] })

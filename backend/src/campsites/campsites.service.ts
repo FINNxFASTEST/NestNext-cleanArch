@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateCampsiteDto } from './dto/create-campsite.dto';
@@ -7,7 +11,8 @@ import { Campsite, CampsiteDocument } from './schemas/campsite.schema';
 @Injectable()
 export class CampsitesService {
   constructor(
-    @InjectModel(Campsite.name) private readonly campsiteModel: Model<CampsiteDocument>,
+    @InjectModel(Campsite.name)
+    private readonly campsiteModel: Model<CampsiteDocument>,
   ) {}
 
   create(ownerId: string, dto: CreateCampsiteDto) {
@@ -26,7 +31,12 @@ export class CampsitesService {
     return doc;
   }
 
-  async update(id: string, callerId: string, callerRole: string, dto: Partial<CreateCampsiteDto>) {
+  async update(
+    id: string,
+    callerId: string,
+    callerRole: string,
+    dto: Partial<CreateCampsiteDto>,
+  ) {
     const doc = await this.campsiteModel.findById(id);
     if (!doc) throw new NotFoundException('Campsite not found');
     if (callerRole !== 'admin' && String(doc.ownerId) !== callerId) {

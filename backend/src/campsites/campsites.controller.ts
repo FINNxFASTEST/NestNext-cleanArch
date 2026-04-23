@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -7,7 +17,11 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { CampsitesService } from './campsites.service';
 import { CreateCampsiteDto } from './dto/create-campsite.dto';
 
-interface AuthUser { userId: string; email: string; role: string; }
+interface AuthUser {
+  userId: string;
+  email: string;
+  role: string;
+}
 
 @ApiTags('campsites')
 @Controller('campsites')
@@ -16,7 +30,9 @@ export class CampsitesController {
 
   // Public: anyone can browse listings
   @Get()
-  @ApiOperation({ summary: 'List active campsites. Pass ownerId to filter by merchant.' })
+  @ApiOperation({
+    summary: 'List active campsites. Pass ownerId to filter by merchant.',
+  })
   @ApiQuery({ name: 'ownerId', required: false })
   findAll(@Query('ownerId') ownerId?: string) {
     return this.service.findAll(ownerId);
@@ -40,7 +56,9 @@ export class CampsitesController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('merchant', 'admin')
-  @ApiOperation({ summary: 'Update campsite — only owner or admin can do this' })
+  @ApiOperation({
+    summary: 'Update campsite — only owner or admin can do this',
+  })
   update(
     @Param('id') id: string,
     @CurrentUser() user: AuthUser,
@@ -52,7 +70,9 @@ export class CampsitesController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('merchant', 'admin')
-  @ApiOperation({ summary: 'Deactivate campsite — only owner or admin can do this' })
+  @ApiOperation({
+    summary: 'Deactivate campsite — only owner or admin can do this',
+  })
   remove(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.service.remove(id, user.userId, user.role);
   }

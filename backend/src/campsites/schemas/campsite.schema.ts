@@ -13,7 +13,8 @@ export class BankAccount {
 @Schema({ _id: false })
 export class Pitch {
   @Prop({ required: true }) name!: string;
-  @Prop({ required: true, enum: ['tent', 'glamping', 'rv', 'cabin'] }) type!: string;
+  @Prop({ required: true, enum: ['tent', 'glamping', 'rv', 'cabin'] })
+  type!: string;
   @Prop({ required: true }) maxGuests!: number;
   @Prop({ required: true }) pricePerNight!: number;
 }
