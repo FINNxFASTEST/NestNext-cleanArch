@@ -11,9 +11,21 @@ import {
   Campsite,
   CampsiteDocument,
 } from '../campsites/schemas/campsite.schema';
+import type { IPitch } from '../campsites/interfaces/pitch.interface';
+import { isDuplicateKeyError } from '../common/utils/is-duplicate-key-error';
+import type { UserRole } from '../users/interfaces/user.interface';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import type { IBooking } from './interfaces/booking.interface';
 import { Booking, BookingDocument } from './schemas/booking.schema';
 import { PitchSlot, PitchSlotDocument } from './schemas/pitch-slot.schema';
+
+type EmbeddedPitch = IPitch & { _id?: Types.ObjectId };
+
+type BookingFilter = {
+  campsiteId?: Types.ObjectId | { $in: Types.ObjectId[] };
+  userId?: Types.ObjectId;
+  status?: 'pending' | 'confirmed' | 'cancelled';
+};
 
 @Injectable()
 export class BookingsService {
@@ -37,13 +49,12 @@ export class BookingsService {
       throw new BadRequestException('checkOut must be after checkIn');
     }
 
-    // Fetch campsite to resolve the real pitch price
     const campsite = await this.campsiteModel.findById(dto.campsiteId);
     if (!campsite) throw new NotFoundException('Campsite not found');
 
-    const pitch = campsite.pitches.find(
-      (p: any) =>
-        String(p._id ?? p.name) === dto.pitchId || p.name === dto.pitchId,
+    const pitches = campsite.pitches as unknown as EmbeddedPitch[];
+    const pitch = pitches.find(
+      (p) => (p._id && String(p._id) === dto.pitchId) || p.name === dto.pitchId,
     );
     if (!pitch) throw new NotFoundException('Pitch not found in campsite');
 
@@ -52,7 +63,8 @@ export class BookingsService {
     );
     const addOns = dto.addOns ?? [];
     const totalPrice =
-      nights * pitch.pricePerNight + addOns.reduce((s, a) => s + a.price, 0);
+      nights * pitch.pricePerNight +
+      addOns.reduce((sum, a) => sum + a.price, 0);
 
     const dates = Array.from({ length: nights }, (_, i) => {
       const d = new Date(checkIn);
@@ -78,7 +90,6 @@ export class BookingsService {
       },
     ]);
 
-    // Atomically claim every night — unique index on (pitchId, date) prevents double-booking
     const slots = dates.map((date) => ({
       pitchId: dto.pitchId,
       date,
@@ -87,9 +98,9 @@ export class BookingsService {
 
     try {
       await this.pitchSlotModel.insertMany(slots, { ordered: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
       await this.bookingModel.findByIdAndDelete(booking._id);
-      if (err?.code === 11000) {
+      if (isDuplicateKeyError(err)) {
         throw new ConflictException(
           'This pitch is already booked for one or more of the selected nights.',
         );
@@ -100,57 +111,63 @@ export class BookingsService {
     await this.bookingModel.findByIdAndUpdate(booking._id, {
       status: 'confirmed',
     });
-    return this.bookingModel
-      .findById(booking._id)
-      .lean() as Promise<BookingDocument>;
+
+    const confirmed = await this.bookingModel.findById(booking._id).lean();
+    if (!confirmed) {
+      throw new NotFoundException('Booking not found after creation');
+    }
+    return confirmed;
   }
 
-  // Guests see only their own. Merchants see only their campsites'. Admins see all.
-  async findAll(callerId: string, callerRole: string, campsiteId?: string) {
+  async findAll(callerId: string, callerRole: UserRole, campsiteId?: string) {
     if (callerRole === 'admin') {
-      const filter = campsiteId
+      const filter: BookingFilter = campsiteId
         ? { campsiteId: new Types.ObjectId(campsiteId) }
         : {};
       return this.bookingModel.find(filter).sort({ createdAt: -1 }).lean();
     }
 
     if (callerRole === 'merchant') {
-      // Find all campsites owned by this merchant, then filter bookings
       const ownedCampsites = await this.campsiteModel
         .find({ ownerId: callerId })
         .select('_id')
         .lean();
       const ids = ownedCampsites.map((c) => c._id);
-      const filter: Record<string, unknown> = { campsiteId: { $in: ids } };
-      if (campsiteId) filter.campsiteId = new Types.ObjectId(campsiteId);
+      const filter: BookingFilter = campsiteId
+        ? { campsiteId: new Types.ObjectId(campsiteId) }
+        : { campsiteId: { $in: ids } };
       return this.bookingModel.find(filter).sort({ createdAt: -1 }).lean();
     }
 
-    // guest — see only their own bookings
     return this.bookingModel
       .find({ userId: new Types.ObjectId(callerId) })
       .sort({ createdAt: -1 })
       .lean();
   }
 
-  async findOne(id: string, callerId: string, callerRole: string) {
+  async findOne(id: string, callerId: string, callerRole: UserRole) {
     const doc = await this.bookingModel.findById(id).lean();
     if (!doc) throw new NotFoundException('Booking not found');
-    await this.assertAccess(doc, callerId, callerRole);
+    await this.assertAccess(doc as unknown as IBooking, callerId, callerRole);
     return doc;
   }
 
-  async cancel(id: string, callerId: string, callerRole: string) {
+  async cancel(id: string, callerId: string, callerRole: UserRole) {
     const booking = await this.bookingModel.findById(id);
     if (!booking) throw new NotFoundException('Booking not found');
-    if (booking.status === 'cancelled')
+    if (booking.status === 'cancelled') {
       throw new BadRequestException('Booking is already cancelled');
-    await this.assertAccess(booking.toObject(), callerId, callerRole);
+    }
+    await this.assertAccess(
+      booking.toObject() as unknown as IBooking,
+      callerId,
+      callerRole,
+    );
 
     await this.pitchSlotModel.deleteMany({ bookingId: booking._id });
     booking.status = 'cancelled';
     await booking.save();
-    return { success: true, bookingId: id };
+    return { success: true as const, bookingId: id };
   }
 
   async getUnavailableDates(pitchId: string): Promise<Date[]> {
@@ -161,15 +178,11 @@ export class BookingsService {
     return slots.map((s) => s.date);
   }
 
-  // A caller can access a booking if they are:
-  // - the guest who made it (userId match)
-  // - the merchant who owns the campsite
-  // - an admin
   private async assertAccess(
-    booking: any,
+    booking: IBooking,
     callerId: string,
-    callerRole: string,
-  ) {
+    callerRole: UserRole,
+  ): Promise<void> {
     if (callerRole === 'admin') return;
     if (booking.userId && String(booking.userId) === callerId) return;
     if (callerRole === 'merchant') {
