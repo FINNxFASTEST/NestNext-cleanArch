@@ -1,12 +1,21 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { ExampleModule } from './example/example.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { BookingsModule } from './bookings/bookings.module';
+import { CampsitesModule } from './campsites/campsites.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    ExampleModule,
-    // Future Kangtent domain modules go here (CampsiteModule, BookingModule, etc.)
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        uri: config.get<string>('MONGODB_URI'),
+      }),
+      inject: [ConfigService],
+    }),
+    CampsitesModule,
+    BookingsModule,
   ],
 })
 export class AppModule {}

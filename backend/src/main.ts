@@ -6,26 +6,22 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors();
+  app.enableCors({ origin: 'http://localhost:3000' });
 
-  // Auto-validate all incoming DTOs using class-validator decorators
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  // Swagger UI at /api
   const config = new DocumentBuilder()
-    .setTitle('Cross-Domain Architecture Example')
-    .setDescription(
-      'Demonstrates: EventEmitter pattern for cross-domain side effects + @Global SharedModule for shared services.',
-    )
+    .setTitle('Kangtent API')
+    .setDescription('Campsite booking API — campsites, pitches, bookings')
     .setVersion('1.0')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  const port = process.env.PORT ?? 3000;
+  const port = process.env.PORT ?? 3001;
   await app.listen(port);
-  console.log(`\n🚀 Server running on http://localhost:${port}`);
+  console.log(`\n🏕️  Kangtent API running on http://localhost:${port}`);
   console.log(`📖 Swagger docs at http://localhost:${port}/api\n`);
 }
 bootstrap();
