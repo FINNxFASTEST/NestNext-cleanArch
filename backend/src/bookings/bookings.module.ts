@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { Campsite, CampsiteSchema } from '../campsites/schemas/campsite.schema';
 import { BookingsController } from './bookings.controller';
 import { BookingsService } from './bookings.service';
 import { Booking, BookingSchema } from './schemas/booking.schema';
@@ -10,6 +11,7 @@ import { PitchSlot, PitchSlotSchema } from './schemas/pitch-slot.schema';
     MongooseModule.forFeature([
       { name: Booking.name, schema: BookingSchema },
       { name: PitchSlot.name, schema: PitchSlotSchema },
+      { name: Campsite.name, schema: CampsiteSchema },
     ]),
   ],
   controllers: [BookingsController],

@@ -5,26 +5,29 @@ export type BookingDocument = Booking & Document;
 
 @Schema({ timestamps: true })
 export class Booking {
-  @Prop({ type: Types.ObjectId, ref: 'Campsite', required: true }) campsiteId: Types.ObjectId;
-  @Prop({ required: true }) pitchId: string;
+  // Who booked — null if guest checked out without an account
+  @Prop({ type: Types.ObjectId, ref: 'User', index: true, default: null })
+  userId!: Types.ObjectId | null;
 
-  // Guest info (no auth required for MVP)
-  @Prop({ required: true }) guestName: string;
-  @Prop({ required: true }) guestEmail: string;
-  @Prop() guestPhone: string;
+  @Prop({ type: Types.ObjectId, ref: 'Campsite', required: true, index: true })
+  campsiteId!: Types.ObjectId;
 
-  @Prop({ required: true }) checkIn: Date;
-  @Prop({ required: true }) checkOut: Date;
-  @Prop({ required: true }) guests: number;
+  @Prop({ required: true }) pitchId!: string;
 
-  @Prop({ type: [Object], default: [] }) addOns: { name: string; price: number }[];
-  @Prop({ required: true }) totalPrice: number;
+  // Guest contact info (always stored, even for logged-in users)
+  @Prop({ required: true }) guestName!: string;
+  @Prop({ required: true }) guestEmail!: string;
+  @Prop() guestPhone!: string;
 
-  @Prop({
-    default: 'pending',
-    enum: ['pending', 'confirmed', 'cancelled'],
-  })
-  status: string;
+  @Prop({ required: true }) checkIn!: Date;
+  @Prop({ required: true }) checkOut!: Date;
+  @Prop({ required: true }) guests!: number;
+
+  @Prop({ type: [Object], default: [] }) addOns!: { name: string; price: number }[];
+  @Prop({ required: true }) totalPrice!: number;
+
+  @Prop({ default: 'pending', enum: ['pending', 'confirmed', 'cancelled'] })
+  status!: string;
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);
