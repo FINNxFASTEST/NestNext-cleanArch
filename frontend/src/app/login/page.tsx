@@ -1,9 +1,43 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Nav } from "@/components/common/Nav";
 import { Footer } from "@/components/common/Footer";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { ApiError } from "@/lib/api";
+
+const schema = z.object({
+  email: z.string().email("อีเมลไม่ถูกต้อง"),
+  password: z.string().min(1, "กรุณากรอกรหัสผ่าน"),
+});
+type FormData = z.infer<typeof schema>;
 
 export default function LoginPage() {
+  const { login } = useAuth();
+  const router = useRouter();
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>({ resolver: zodResolver(schema) });
+
+  async function onSubmit(data: FormData) {
+    try {
+      await login(data.email, data.password);
+      router.push("/");
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : "เกิดข้อผิดพลาด กรุณาลองใหม่";
+      setError("root", { message: typeof msg === "string" ? msg : "เกิดข้อผิดพลาด" });
+    }
+  }
+
   return (
     <main className="bg-paper text-ink min-h-screen">
       <Nav active="none" variant="solid" />
@@ -20,7 +54,7 @@ export default function LoginPage() {
             เข้าสู่ระบบเพื่อดูการจอง จัดการโปรไฟล์ และรับข้อเสนอพิเศษจาก Kangtent
           </p>
 
-          <form className="flex flex-col gap-4">
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
             <label className="block">
               <div className="font-sans text-[10px] tracking-[0.18em] uppercase font-medium mb-1.5 text-sage-500">
                 Email
@@ -29,7 +63,11 @@ export default function LoginPage() {
                 type="email"
                 placeholder="you@example.com"
                 className="rounded-xl border-line-strong bg-paper text-ink h-auto py-3 px-3.5 font-thai"
+                {...register("email")}
               />
+              {errors.email && (
+                <p className="font-thai text-xs mt-1 text-ember-dark">{errors.email.message}</p>
+              )}
             </label>
 
             <label className="block">
@@ -40,14 +78,25 @@ export default function LoginPage() {
                 type="password"
                 placeholder="********"
                 className="rounded-xl border-line-strong bg-paper text-ink h-auto py-3 px-3.5 font-thai"
+                {...register("password")}
               />
+              {errors.password && (
+                <p className="font-thai text-xs mt-1 text-ember-dark">{errors.password.message}</p>
+              )}
             </label>
+
+            {errors.root && (
+              <div className="rounded-xl bg-ember/10 border border-ember/30 px-4 py-3 font-thai text-sm text-ember-dark">
+                {errors.root.message}
+              </div>
+            )}
 
             <button
               type="submit"
-              className="mt-2 w-full font-thai font-medium text-[15px] py-3.5 rounded-full border-0 cursor-pointer bg-ember text-cream-50"
+              disabled={isSubmitting}
+              className="mt-2 w-full font-thai font-medium text-[15px] py-3.5 rounded-full border-0 cursor-pointer bg-ember text-cream-50 disabled:opacity-60"
             >
-              เข้าสู่ระบบ
+              {isSubmitting ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}
             </button>
           </form>
 

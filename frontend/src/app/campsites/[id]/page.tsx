@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { Nav } from "@/components/common/Nav";
 import { Footer } from "@/components/common/Footer";
 import { Scene } from "@/components/common/Scene";
@@ -12,6 +16,8 @@ import {
   CarIcon, WifiIcon, CupIcon, DogIcon, MoonIcon,
   MapIcon, ArrowRIcon,
 } from "@/components/common/Icons";
+import { campsitesApi } from "@/lib/api";
+import type { Campsite, Pitch } from "@/types";
 
 const AMENITIES = [
   { Icon: BoltIcon, title: "ไฟฟ้า", sub: "220V ทุกพื้นที่" },
@@ -33,6 +39,50 @@ const REVIEWS = [
 ] as const;
 
 export default function CampsiteDetailPage() {
+  const params = useParams<{ id: string }>();
+  const [campsite, setCampsite] = useState<Campsite | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedPitch, setSelectedPitch] = useState<Pitch | null>(null);
+  const [qty, setQty] = useState(1);
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [guests, setGuests] = useState(2);
+
+  useEffect(() => {
+    if (!params.id) return;
+    campsitesApi.get(params.id)
+      .then(setCampsite)
+      .catch(() => setCampsite(null))
+      .finally(() => setLoading(false));
+  }, [params.id]);
+
+  function handleSelectPitch(pitch: Pitch, newQty: number) {
+    setSelectedPitch(pitch);
+    setQty(newQty);
+  }
+
+  if (loading) {
+    return (
+      <main className="bg-paper text-ink min-h-screen">
+        <Nav active="search" variant="solid" />
+        <div className="flex items-center justify-center py-40">
+          <div className="font-thai text-sage-500 text-lg">กำลังโหลด…</div>
+        </div>
+      </main>
+    );
+  }
+
+  if (!campsite) {
+    return (
+      <main className="bg-paper text-ink min-h-screen">
+        <Nav active="search" variant="solid" />
+        <div className="flex items-center justify-center py-40">
+          <div className="font-thai text-sage-500 text-lg">ไม่พบลานกางเต็นท์นี้</div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="bg-paper text-ink">
       <Nav active="search" variant="solid" />
@@ -42,9 +92,9 @@ export default function CampsiteDetailPage() {
         <span className="hidden sm:inline">
           หน้าแรก <span className="mx-2">›</span>
           ค้นหาลานกางเต็นท์ <span className="mx-2">›</span>
-          นครราชสีมา <span className="mx-2 text-ink">›</span>
+          {campsite.location && <><span>{campsite.location}</span><span className="mx-2 text-ink">›</span></>}
         </span>
-        <span className="text-ink">เขาใหญ่ แคมป์วิว</span>
+        <span className="text-ink">{campsite.name}</span>
       </div>
 
       {/* Title block */}
@@ -53,26 +103,31 @@ export default function CampsiteDetailPage() {
           <div>
             <div className="flex gap-2 mb-3.5 flex-wrap">
               <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-full text-xs font-thai bg-[#C7D1B8] text-forest-900">
-                <LeafIcon style={{ width: 12, height: 12 }} /> Superhost
+                <LeafIcon style={{ width: 12, height: 12 }} /> {campsite.pitches.length} ลาน
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-full text-xs font-thai bg-cream-100 text-ink">
-                ที่ 9.8 ⭐ · 248 รีวิว
-              </span>
+              {campsite.amenities && campsite.amenities.length > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-full text-xs font-thai bg-cream-100 text-ink">
+                  {campsite.amenities.slice(0, 2).join(" · ")}
+                </span>
+              )}
             </div>
             <h1
               className="font-serif m-0"
               style={{ fontSize: "clamp(36px, 6vw, 64px)", fontWeight: 400, letterSpacing: "-0.025em", lineHeight: 1 }}
             >
-              เขาใหญ่ <em className="text-ember">แคมป์วิว</em>
+              {campsite.name.split(" ").slice(0, -1).join(" ")}{" "}
+              <em className="text-ember">{campsite.name.split(" ").slice(-1)}</em>
             </h1>
             <div className="font-thai flex flex-wrap items-center gap-x-4 gap-y-1 mt-3.5 text-sm text-forest-600">
-              <span className="flex items-center gap-1.5">
-                <PinIcon style={{ width: 14, height: 14 }} /> ปากช่อง, นครราชสีมา
-              </span>
+              {campsite.location && (
+                <span className="flex items-center gap-1.5">
+                  <PinIcon style={{ width: 14, height: 14 }} /> {campsite.location}
+                </span>
+              )}
               <span className="hidden sm:inline w-[3px] h-[3px] rounded-full bg-current opacity-50" />
               <span>เปิดตลอดปี</span>
               <span className="hidden sm:inline w-[3px] h-[3px] rounded-full bg-current opacity-50" />
-              <span>รองรับ 45 เต็นท์</span>
+              <span>รองรับ {campsite.pitches.reduce((s, p) => s + p.maxGuests, 0)} ท่าน</span>
             </div>
           </div>
           <div className="flex gap-2.5">
@@ -93,7 +148,7 @@ export default function CampsiteDetailPage() {
 
       {/* Main two-column layout */}
       <section className="px-4 md:px-14 pt-12 pb-12 grid grid-cols-1 md:grid-cols-[1fr_420px] gap-8 md:gap-14">
-        {/* Left: content */}
+        {/* Left */}
         <div>
           {/* About */}
           <div className="pb-8 border-b border-line">
@@ -101,12 +156,10 @@ export default function CampsiteDetailPage() {
               ABOUT THE PLACE
             </div>
             <h2 className="font-serif m-0 mb-4 text-[30px] font-medium" style={{ lineHeight: 1.2 }}>
-              ท่ามกลางขุนเขา และหมอกยามเช้า
+              {campsite.name}
             </h2>
             <p className="font-thai m-0 max-w-[680px] text-forest-600" style={{ fontSize: 16, lineHeight: 1.75 }}>
-              ตั้งอยู่ท่ามกลางธรรมชาติของเขาใหญ่ ลานกางเต็นท์ &ldquo;เขาใหญ่ แคมป์วิว&rdquo; มอบประสบการณ์การพักผ่อน
-              ท่ามกลางขุนเขาและหมอกยามเช้า เหมาะสำหรับทั้งครอบครัวและนักเดินทางสายแคมป์
-              ที่ต้องการสัมผัสความสงบ เงียบ และอากาศบริสุทธิ์
+              {campsite.description ?? "ลานกางเต็นท์ท่ามกลางธรรมชาติ เหมาะสำหรับทั้งครอบครัวและนักเดินทางสายแคมป์"}
             </p>
           </div>
 
@@ -117,12 +170,15 @@ export default function CampsiteDetailPage() {
             </div>
             <h3 className="font-serif m-0 mb-6 text-[24px] font-medium">ทุกอย่างที่คุณต้องการ</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {AMENITIES.map(({ Icon, title, sub }) => (
+              {(campsite.amenities && campsite.amenities.length > 0
+                ? campsite.amenities.map((a) => ({ title: a, sub: "" }))
+                : AMENITIES
+              ).map(({ Icon, title, sub }: { Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>; title: string; sub: string }) => (
                 <div key={title} className="flex gap-3 items-start py-2">
-                  <Icon style={{ width: 20, height: 20, marginTop: 2 }} className="text-forest-700 shrink-0" />
+                  {Icon && <Icon style={{ width: 20, height: 20, marginTop: 2 }} className="text-forest-700 shrink-0" />}
                   <div>
                     <div className="font-thai text-[14px]">{title}</div>
-                    <div className="font-thai text-xs mt-0.5 text-sage-500">{sub}</div>
+                    {sub && <div className="font-thai text-xs mt-0.5 text-sage-500">{sub}</div>}
                   </div>
                 </div>
               ))}
@@ -153,7 +209,12 @@ export default function CampsiteDetailPage() {
                 <MapIcon style={{ width: 16, height: 16 }} /> ดูแผนที่ลาน
               </button>
             </div>
-            <CampPitchList />
+            <CampPitchList
+              pitches={campsite.pitches}
+              selectedPitchId={selectedPitch?._id ?? selectedPitch?.name}
+              qty={qty}
+              onSelect={handleSelectPitch}
+            />
           </div>
 
           {/* Reviews */}
@@ -197,7 +258,17 @@ export default function CampsiteDetailPage() {
 
         {/* Right: booking sidebar */}
         <aside>
-          <BookingSidebar />
+          <BookingSidebar
+            campsite={campsite}
+            selectedPitch={selectedPitch}
+            qty={qty}
+            checkIn={checkIn}
+            checkOut={checkOut}
+            guests={guests}
+            onCheckInChange={setCheckIn}
+            onCheckOutChange={setCheckOut}
+            onGuestsChange={setGuests}
+          />
         </aside>
       </section>
 

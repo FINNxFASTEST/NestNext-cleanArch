@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { KangtentMark } from "./KangtentMark";
+import { useAuth } from "@/contexts/AuthContext";
 
 type NavVariant = "overlay" | "solid";
 type NavActive = "home" | "search" | "bookings" | "none";
@@ -24,6 +26,16 @@ const LINKS = [
 export function Nav({ active = "home", variant = "overlay" }: NavProps) {
   const isOverlay = variant === "overlay";
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  function handleLogout() {
+    logout();
+    router.push("/");
+    setMobileOpen(false);
+  }
+
+  const displayName = user?.firstName ?? user?.email?.split("@")[0] ?? "บัญชีของฉัน";
 
   return (
     <>
@@ -36,13 +48,10 @@ export function Nav({ active = "home", variant = "overlay" }: NavProps) {
         )}
       >
         {/* Brand */}
-        <div className="flex items-center gap-2.5 font-serif text-[22px]">
-          <KangtentMark
-            bg={isOverlay ? "#C97B4A" : "#2F4034"}
-            fg="#F7F2E7"
-          />
+        <Link href="/" className="flex items-center gap-2.5 font-serif text-[22px] no-underline" style={{ color: "inherit" }}>
+          <KangtentMark bg={isOverlay ? "#C97B4A" : "#2F4034"} fg="#F7F2E7" />
           <span className="font-medium tracking-[-0.01em]">Kangtent</span>
-        </div>
+        </Link>
 
         {/* Links — desktop only */}
         <div className="hidden lg:flex gap-8 text-sm font-thai">
@@ -63,15 +72,29 @@ export function Nav({ active = "home", variant = "overlay" }: NavProps) {
 
         {/* Right actions — desktop only */}
         <div className="hidden lg:flex items-center gap-[18px] text-sm">
-          <Link href="/login" className="font-thai no-underline opacity-90 cursor-pointer" style={{ color: "inherit" }}>
-            เข้าสู่ระบบ
-          </Link>
-          <Link
-            href="/register"
-            className="font-thai font-medium text-sm px-5 py-[10px] rounded-full cursor-pointer transition-colors bg-ember text-cream-50 no-underline"
-          >
-            สมัครสมาชิก
-          </Link>
+          {user ? (
+            <>
+              <span className="font-thai opacity-90">สวัสดี, {displayName}</span>
+              <button
+                onClick={handleLogout}
+                className="font-thai font-medium text-sm px-5 py-[10px] rounded-full cursor-pointer transition-colors bg-ember text-cream-50 border-0"
+              >
+                ออกจากระบบ
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="font-thai no-underline opacity-90 cursor-pointer" style={{ color: "inherit" }}>
+                เข้าสู่ระบบ
+              </Link>
+              <Link
+                href="/register"
+                className="font-thai font-medium text-sm px-5 py-[10px] rounded-full cursor-pointer transition-colors bg-ember text-cream-50 no-underline"
+              >
+                สมัครสมาชิก
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Hamburger — mobile only */}
@@ -96,7 +119,6 @@ export function Nav({ active = "home", variant = "overlay" }: NavProps) {
       {/* Mobile menu overlay */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex flex-col bg-paper text-ink">
-          {/* Header */}
           <div className="flex items-center justify-between px-5 py-[22px] border-b border-line">
             <div className="flex items-center gap-2.5 font-serif text-[22px]">
               <KangtentMark bg="#2F4034" fg="#F7F2E7" />
@@ -113,7 +135,6 @@ export function Nav({ active = "home", variant = "overlay" }: NavProps) {
             </button>
           </div>
 
-          {/* Links */}
           <div className="flex-1 overflow-y-auto">
             {LINKS.map(({ id, label, href }) => (
               <Link
@@ -130,22 +151,35 @@ export function Nav({ active = "home", variant = "overlay" }: NavProps) {
             ))}
           </div>
 
-          {/* Auth actions */}
           <div className="px-5 pb-10 pt-5 flex flex-col gap-3">
-            <Link
-              href="/login"
-              className="font-thai text-center py-3 cursor-pointer text-ink no-underline"
-              onClick={() => setMobileOpen(false)}
-            >
-              เข้าสู่ระบบ
-            </Link>
-            <Link
-              href="/register"
-              className="w-full font-thai font-medium text-[15px] py-4 rounded-full text-center bg-ember text-cream-50 no-underline"
-              onClick={() => setMobileOpen(false)}
-            >
-              สมัครสมาชิก
-            </Link>
+            {user ? (
+              <>
+                <span className="font-thai text-center py-3 text-ink">สวัสดี, {displayName}</span>
+                <button
+                  onClick={handleLogout}
+                  className="w-full font-thai font-medium text-[15px] py-4 rounded-full border-0 cursor-pointer bg-ember text-cream-50"
+                >
+                  ออกจากระบบ
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="font-thai text-center py-3 cursor-pointer text-ink no-underline"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  เข้าสู่ระบบ
+                </Link>
+                <Link
+                  href="/register"
+                  className="w-full font-thai font-medium text-[15px] py-4 rounded-full text-center bg-ember text-cream-50 no-underline"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  สมัครสมาชิก
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

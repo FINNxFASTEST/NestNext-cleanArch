@@ -1,17 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Nav } from "@/components/common/Nav";
 import { Footer } from "@/components/common/Footer";
-import { Scene } from "@/components/common/Scene";
+import { Scene, SceneVariant } from "@/components/common/Scene";
 import { SearchBar } from "@/components/home/SearchBar";
 import { FeatureCard } from "@/components/home/FeatureCard";
 import { TestimonialCard } from "@/components/home/TestimonialCard";
 import { DestinationCard } from "@/components/home/DestinationCard";
 import { LeafIcon, FlameIcon, MoonIcon, ArrowRIcon } from "@/components/common/Icons";
 import { cn } from "@/lib/utils";
-
-const TABS = ["ลาน สมใจ", "ลาน สมใจ 2", "ลาน สมใจ 3", "ลาน สมใจ 4"];
+import { campsitesApi } from "@/lib/api";
+import type { Campsite } from "@/types";
 
 const DESTINATIONS = [
   { name: "เชียงใหม่", count: "248 ลาน", scene: "forest" },
@@ -25,46 +26,50 @@ const DESTINATIONS = [
 ] as const;
 
 const TESTIMONIALS = [
-  {
-    quote: "ตื่นเช้ามาเจอหมอกลอยเต็มหุบเขา เงียบมาก — แบบที่กรุงเทพฯ ให้ไม่ได้",
-    name: "สิริพร ช.",
-    place: "เขาใหญ่แคมป์วิว · มิ.ย. 2568",
-    scene: "forest",
-  },
-  {
-    quote: "จองง่ายกว่าที่คิด เจ้าของลานใจดี ส่งแผนที่มาทางไลน์ก่อนถึง",
-    name: "ณัฐพล ว.",
-    place: "ป่าสนวัดจันทร์ · มี.ค. 2568",
-    scene: "dusk",
-  },
-  {
-    quote: "ไปกับลูกครั้งแรก กลายเป็นกิจกรรมประจำครอบครัว จองอีกสองคืนเลย",
-    name: "พิมพ์ลภัส ก.",
-    place: "ริมโขง · ก.พ. 2568",
-    scene: "lake",
-  },
+  { quote: "ตื่นเช้ามาเจอหมอกลอยเต็มหุบเขา เงียบมาก — แบบที่กรุงเทพฯ ให้ไม่ได้", name: "สิริพร ช.", place: "เขาใหญ่แคมป์วิว · มิ.ย. 2568", scene: "forest" },
+  { quote: "จองง่ายกว่าที่คิด เจ้าของลานใจดี ส่งแผนที่มาทางไลน์ก่อนถึง", name: "ณัฐพล ว.", place: "ป่าสนวัดจันทร์ · มี.ค. 2568", scene: "dusk" },
+  { quote: "ไปกับลูกครั้งแรก กลายเป็นกิจกรรมประจำครอบครัว จองอีกสองคืนเลย", name: "พิมพ์ลภัส ก.", place: "ริมโขง · ก.พ. 2568", scene: "lake" },
 ] as const;
 
 const WHY_ITEMS = [
-  {
-    Icon: LeafIcon,
-    title: "คัดสรรด้วยมือ",
-    desc: "ทุกลานผ่านการตรวจเยี่ยม จากทีมงาน Kangtent เอง",
-  },
-  {
-    Icon: FlameIcon,
-    title: "จองง่าย จ่ายปลอดภัย",
-    desc: "ยืนยันทันที คืนเงินได้ ภายใน 48 ชั่วโมงก่อนเดินทาง",
-  },
-  {
-    Icon: MoonIcon,
-    title: "รีวิวจริงจากนักเดินทาง",
-    desc: "กว่า 12,000 รีวิว พร้อมภาพจากผู้พักจริง",
-  },
+  { Icon: LeafIcon, title: "คัดสรรด้วยมือ", desc: "ทุกลานผ่านการตรวจเยี่ยม จากทีมงาน Kangtent เอง" },
+  { Icon: FlameIcon, title: "จองง่าย จ่ายปลอดภัย", desc: "ยืนยันทันที คืนเงินได้ ภายใน 48 ชั่วโมงก่อนเดินทาง" },
+  { Icon: MoonIcon, title: "รีวิวจริงจากนักเดินทาง", desc: "กว่า 12,000 รีวิว พร้อมภาพจากผู้พักจริง" },
 ];
 
+const PITCH_SCENES: Record<string, SceneVariant> = {
+  tent: "forest",
+  glamping: "dusk",
+  rv: "meadow",
+  cabin: "cabin",
+};
+
+function campsiteToCardProps(c: Campsite, big = false) {
+  const lowestPrice = c.pitches.length > 0
+    ? Math.min(...c.pitches.map((p) => p.pricePerNight))
+    : 0;
+  const firstPitchType = c.pitches[0]?.type ?? "tent";
+  const scene = PITCH_SCENES[firstPitchType] ?? "forest";
+  return {
+    title: c.name,
+    sub: c.location ?? "ประเทศไทย",
+    price: lowestPrice.toLocaleString(),
+    scene: scene as SceneVariant,
+    big,
+  };
+}
+
 export default function HomePage() {
+  const [campsites, setCampsites] = useState<Campsite[]>([]);
   const [activeTab, setActiveTab] = useState(0);
+
+  useEffect(() => {
+    campsitesApi.list().then(setCampsites).catch(() => {});
+  }, []);
+
+  const tabs = campsites.length > 0
+    ? campsites.slice(0, 4).map((c) => c.name)
+    : ["ลาน สมใจ", "ลาน สมใจ 2", "ลาน สมใจ 3", "ลาน สมใจ 4"];
 
   return (
     <main className="bg-paper text-ink overflow-x-hidden">
@@ -78,11 +83,7 @@ export default function HomePage() {
         />
         <Nav active="home" variant="overlay" />
 
-        {/* Hero copy */}
-        <div
-          className="absolute left-0 right-0 px-5 md:px-14"
-          style={{ top: "clamp(72px, 14vw, 180px)" }}
-        >
+        <div className="absolute left-0 right-0 px-5 md:px-14" style={{ top: "clamp(72px, 14vw, 180px)" }}>
           <div className="text-cream-50 max-w-[720px]">
             <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-4 text-clay">
               A FOREST RETREAT · ไทยแลนด์
@@ -104,7 +105,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Search bar */}
         <div className="absolute left-0 right-0 flex justify-center px-4 md:px-14 bottom-4 md:-bottom-[44px]">
           <SearchBar />
         </div>
@@ -112,7 +112,6 @@ export default function HomePage() {
 
       {/* FEATURED CAMPSITES */}
       <section className="px-4 md:px-14" style={{ paddingTop: "clamp(32px, 8vw, 120px)" }}>
-        {/* Section header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-9">
           <div>
             <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-3 text-sage-500">
@@ -127,9 +126,8 @@ export default function HomePage() {
               <em className="text-ember">ที่น่าสนใจ</em>
             </h2>
           </div>
-          {/* Tabs — scrollable on mobile */}
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            {TABS.map((tab, i) => (
+            {tabs.map((tab, i) => (
               <button
                 key={i}
                 onClick={() => setActiveTab(i)}
@@ -146,25 +144,32 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Feature grid — big card + 4 small cards */}
-        <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr] gap-5">
-          {/* Big card — full width on mobile, row-span-2 on desktop */}
-          <div className="col-span-2 md:col-span-1 md:row-span-2">
-            <FeatureCard
-              big
-              title="เขาใหญ่ แคมป์วิว"
-              sub="ปากช่อง · นครราชสีมา"
-              rating="9.8"
-              price="400"
-              scene="forest"
-              badges={["Superhost", "Dark sky"]}
-            />
+        {/* Real campsite grid */}
+        {campsites.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr] gap-5">
+            <div className="col-span-2 md:col-span-1 md:row-span-2">
+              <Link href={`/campsites/${campsites[0]._id}`} className="no-underline block h-full">
+                <FeatureCard {...campsiteToCardProps(campsites[0], true)} big />
+              </Link>
+            </div>
+            {campsites.slice(1, 5).map((c) => (
+              <Link key={c._id} href={`/campsites/${c._id}`} className="no-underline block">
+                <FeatureCard {...campsiteToCardProps(c)} />
+              </Link>
+            ))}
           </div>
-          <FeatureCard title="ป่าสนวัดจันทร์" sub="กัลยาณิวัฒนา · เชียงใหม่" rating="9.6" price="350" scene="dusk" />
-          <FeatureCard title="ดอยม่อนเงาะ" sub="แม่แตง · เชียงใหม่" rating="9.4" price="290" scene="meadow" />
-          <FeatureCard title="ริมโขง แคมป์" sub="เชียงคาน · เลย" rating="9.2" price="320" scene="lake" />
-          <FeatureCard title="บ้านไม้ A-Frame" sub="ปาย · แม่ฮ่องสอน" rating="9.7" price="1,250" scene="cabin" cabin />
-        </div>
+        ) : (
+          /* Fallback static cards while DB is empty */
+          <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr] gap-5">
+            <div className="col-span-2 md:col-span-1 md:row-span-2">
+              <FeatureCard big title="เขาใหญ่ แคมป์วิว" sub="ปากช่อง · นครราชสีมา" rating="9.8" price="400" scene="forest" badges={["Superhost", "Dark sky"]} />
+            </div>
+            <FeatureCard title="ป่าสนวัดจันทร์" sub="กัลยาณิวัฒนา · เชียงใหม่" rating="9.6" price="350" scene="dusk" />
+            <FeatureCard title="ดอยม่อนเงาะ" sub="แม่แตง · เชียงใหม่" rating="9.4" price="290" scene="meadow" />
+            <FeatureCard title="ริมโขง แคมป์" sub="เชียงคาน · เลย" rating="9.2" price="320" scene="lake" />
+            <FeatureCard title="บ้านไม้ A-Frame" sub="ปาย · แม่ฮ่องสอน" rating="9.7" price="1,250" scene="cabin" cabin />
+          </div>
+        )}
       </section>
 
       {/* POPULAR DESTINATIONS */}
@@ -196,13 +201,8 @@ export default function HomePage() {
         <div className="rounded-[20px] md:rounded-[28px] p-6 md:p-14 bg-cream-100">
           <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr_1fr_1fr] gap-8 items-start">
             <div>
-              <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-3 text-sage-500">
-                ทำไมต้อง KANGTENT
-              </div>
-              <h2
-                className="font-serif m-0 text-forest-900"
-                style={{ fontSize: "clamp(26px, 3.5vw, 36px)", lineHeight: 1.1, letterSpacing: "-0.02em" }}
-              >
+              <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-3 text-sage-500">ทำไมต้อง KANGTENT</div>
+              <h2 className="font-serif m-0 text-forest-900" style={{ fontSize: "clamp(26px, 3.5vw, 36px)", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
                 ออกเดินทาง
                 <br />
                 อย่าง<em className="text-ember">สบายใจ</em>
@@ -226,13 +226,8 @@ export default function HomePage() {
       {/* TESTIMONIALS */}
       <section className="px-4 md:px-14" style={{ paddingTop: "clamp(60px, 8vw, 120px)" }}>
         <div className="text-center max-w-[600px] mx-auto mb-12">
-          <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-3 text-sage-500">
-            CAMPFIRE STORIES · เรื่องเล่ารอบกองไฟ
-          </div>
-          <h2
-            className="font-serif m-0 text-forest-900"
-            style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1, letterSpacing: "-0.02em" }}
-          >
+          <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-3 text-sage-500">CAMPFIRE STORIES · เรื่องเล่ารอบกองไฟ</div>
+          <h2 className="font-serif m-0 text-forest-900" style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
             เรื่องเล่าจาก
             <br />
             <em className="text-ember">นักเดินทาง</em>
@@ -256,10 +251,7 @@ export default function HomePage() {
             <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-4 text-clay">
               YOUR NEXT NIGHT UNDER THE STARS
             </div>
-            <h2
-              className="font-serif m-0 max-w-[700px] font-normal"
-              style={{ fontSize: "clamp(28px, 5vw, 56px)", letterSpacing: "-0.02em", lineHeight: 1.1 }}
-            >
+            <h2 className="font-serif m-0 max-w-[700px] font-normal" style={{ fontSize: "clamp(28px, 5vw, 56px)", letterSpacing: "-0.02em", lineHeight: 1.1 }}>
               คืนสุดสัปดาห์นี้
               <br />
               <em className="text-clay">อยู่ใต้ดาว</em>ดีกว่าไหม
