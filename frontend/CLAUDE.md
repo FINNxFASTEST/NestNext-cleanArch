@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 npm run dev      # Start dev server (Next.js 15, port 3000)
 npm run build    # Production build
+npm run start    # Start production server
 npm run lint     # ESLint via next lint
 ```
 
@@ -24,6 +25,8 @@ No test suite is configured yet.
 | `/campsites/[id]` | `src/app/campsites/[id]/page.tsx` | Campsite detail: gallery, amenities, seasonal calendar, pitches, reviews, booking sidebar |
 | `/booking` | `src/app/booking/page.tsx` | Multi-step checkout: contact, guests, add-ons, payment |
 | `/admin` | `src/app/admin/page.tsx` | Admin panel with sidebar navigation and swappable views |
+| `/login` | `src/app/login/page.tsx` | Login form |
+| `/register` | `src/app/register/page.tsx` | Registration form |
 
 All pages are currently UI-only with hardcoded data — no backend or API layer exists yet.
 
@@ -36,7 +39,14 @@ src/components/
   detail/     # Gallery, SeasonalCalendar, CampPitchList, BookingSidebar
   booking/    # FormCard, Field, StepHeader
   admin/      # AdminSidebar, Panel, StatCard, views/{Dashboard,Camps,Bookings,Users,Coupons,Settings}View
+  ui/         # shadcn/ui primitives (pre-generated; edit sparingly)
 ```
+
+`src/lib/utils.ts` exports the `cn()` helper (clsx + tailwind-merge). Path alias `@/*` maps to `src/*`.
+
+### Forms
+
+Forms use **react-hook-form** with **Zod** schemas for validation (via `@hookform/resolvers/zod`). The `src/components/booking/Field.tsx` wrapper handles label + error display for form fields.
 
 ### Design System
 

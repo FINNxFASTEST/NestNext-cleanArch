@@ -1,3 +1,6 @@
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
 interface FieldProps {
   label: string;
   value: string;
@@ -7,24 +10,17 @@ interface FieldProps {
 export function Field({ label, value, mono }: FieldProps) {
   return (
     <label className="block">
-      <div
-        className="font-sans text-[10px] tracking-[0.18em] uppercase font-medium mb-1.5"
-        style={{ color: "#7C8F6F" }}
-      >
+      <div className="font-sans text-[10px] tracking-[0.18em] uppercase font-medium mb-1.5 text-sage-500">
         {label}
       </div>
-      <div
-        className="rounded-xl text-sm"
-        style={{
-          padding: "12px 14px",
-          border: "1px solid var(--line-strong)",
-          background: "var(--paper)",
-          fontFamily: mono ? "monospace" : "var(--font-thai)",
-          color: "var(--ink)",
-        }}
-      >
-        {value}
-      </div>
+      <Input
+        readOnly
+        value={value}
+        className={cn(
+          "rounded-xl border-line-strong bg-paper text-ink h-auto py-3 px-3.5 text-sm",
+          mono && "font-mono"
+        )}
+      />
     </label>
   );
 }

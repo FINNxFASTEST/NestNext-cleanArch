@@ -23,35 +23,26 @@ export function DashboardView() {
       {/* Stat cards row */}
       <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
         {/* Revenue card */}
-        <div
-          className="relative rounded-2xl overflow-hidden"
-          style={{ padding: 24, background: "#263328", color: "#F7F2E7", minHeight: 180 }}
-        >
-          <Scene variant="dusk" style={{ position: "absolute", inset: 0, opacity: 0.35 }} />
+        <div className="relative rounded-2xl overflow-hidden p-6 bg-forest-800 text-cream-50 min-h-[180px]">
+          <Scene variant="dusk" className="absolute inset-0 opacity-[0.35]" />
           <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "linear-gradient(135deg, rgba(27,38,32,.85) 0%, rgba(27,38,32,.4) 100%)",
-            }}
+            className="absolute inset-0"
+            style={{ background: "linear-gradient(135deg, rgba(27,38,32,.85) 0%, rgba(27,38,32,.4) 100%)" }}
           />
           <div className="relative">
-            <div
-              className="font-thai text-[11px] tracking-[0.1em] uppercase"
-              style={{ opacity: 0.7 }}
-            >
+            <div className="font-thai text-[11px] tracking-[0.1em] uppercase opacity-70">
               รายได้ เดือนนี้
             </div>
             <div
-              className="font-serif leading-none my-2.5"
-              style={{ fontSize: 48, fontWeight: 500, letterSpacing: "-0.02em" }}
+              className="font-serif leading-none my-2.5 font-medium"
+              style={{ fontSize: 48, letterSpacing: "-0.02em" }}
             >
               ฿ 128,400
             </div>
-            <div className="font-thai text-xs flex items-center gap-2" style={{ opacity: 0.85 }}>
-              <span style={{ color: "#D9A273" }}>↑ 18.4%</span> vs เดือนที่แล้ว
+            <div className="font-thai text-xs flex items-center gap-2 opacity-[0.85]">
+              <span className="text-clay">↑ 18.4%</span> vs เดือนที่แล้ว
             </div>
-            <svg width="100%" height="40" viewBox="0 0 300 40" style={{ marginTop: 16 }}>
+            <svg width="100%" height="40" viewBox="0 0 300 40" className="mt-4">
               <path
                 d="M 0 30 L 30 25 L 60 28 L 90 20 L 120 22 L 150 15 L 180 18 L 210 10 L 240 14 L 270 6 L 300 8"
                 fill="none" stroke="#D9A273" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -76,21 +67,15 @@ export function DashboardView() {
           eyebrow="OCCUPANCY · อัตราการจอง"
           mb={0}
           right={
-            <div
-              className="flex gap-1 rounded-full p-[3px]"
-              style={{ background: "var(--cream-100)" }}
-            >
+            <div className="flex gap-1 rounded-full p-[3px] bg-cream-100">
               {TIME_FILTERS.map((t, i) => (
                 <button
                   key={t}
-                  className="font-thai rounded-full text-[11px] cursor-pointer border-0 transition-colors"
+                  className="font-thai rounded-full text-[11px] cursor-pointer border-0 transition-colors px-3 py-1.5 text-ink"
                   style={{
-                    padding: "6px 12px",
                     background: i === 0 ? "var(--paper)" : "transparent",
-                    color: "var(--ink)",
                     fontWeight: i === 0 ? 500 : 400,
                     boxShadow: i === 0 ? "0 1px 3px rgba(0,0,0,.08)" : "none",
-                    fontFamily: "var(--font-thai)",
                   }}
                 >
                   {t}
@@ -99,16 +84,13 @@ export function DashboardView() {
             </div>
           }
         >
-          <div className="flex items-end gap-2.5 px-1" style={{ height: 180 }}>
+          <div className="flex items-end gap-2.5 px-1 h-[180px]">
             {BARS.map((b, i) => {
               const pct = (b.b / 45) * 100;
               return (
                 <div key={i} className="flex-1 flex flex-col items-center gap-2.5">
-                  <div className="relative w-full flex items-end" style={{ height: 150 }}>
-                    <div
-                      className="absolute bottom-0 left-0 right-0 rounded-lg"
-                      style={{ height: "100%", background: "var(--cream-100)" }}
-                    />
+                  <div className="relative w-full flex items-end h-[150px]">
+                    <div className="absolute bottom-0 left-0 right-0 rounded-lg h-full bg-cream-100" />
                     <div
                       className="relative w-full rounded-lg flex items-start justify-center pt-2"
                       style={{
@@ -116,12 +98,7 @@ export function DashboardView() {
                         background: b.today ? "#C97B4A" : "#2F4034",
                       }}
                     >
-                      <span
-                        className="font-thai text-[10px] font-medium"
-                        style={{ color: "#F7F2E7" }}
-                      >
-                        {b.b}
-                      </span>
+                      <span className="font-thai text-[10px] font-medium text-cream-50">{b.b}</span>
                     </div>
                   </div>
                   <div
@@ -140,21 +117,21 @@ export function DashboardView() {
           title="แขกที่จะเช็คอิน"
           eyebrow="TONIGHT · คืนนี้"
           mb={0}
-          right={<div className="font-thai text-xs" style={{ color: "#7C8F6F" }}>5 คน</div>}
+          right={<div className="font-thai text-xs text-sage-500">5 คน</div>}
         >
           <div className="grid gap-3">
             {CHECKINS.map((g, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0">
-                  <Scene variant={g.a} style={{ width: "100%", height: "100%" }} />
+                <div className="w-9 h-9 rounded-full overflow-hidden shrink-0">
+                  <Scene variant={g.a} className="w-full h-full" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-thai text-[13px] font-medium">{g.n}</div>
-                  <div className="font-thai text-[11px] mt-0.5" style={{ color: "#7C8F6F" }}>{g.te}</div>
+                  <div className="font-thai text-[11px] mt-0.5 text-sage-500">{g.te}</div>
                 </div>
                 <div className="text-right">
                   <div className="font-serif text-sm font-medium">{g.t}</div>
-                  <div className="font-thai text-[10px] mt-0.5" style={{ color: "#C97B4A" }}>● รอเช็คอิน</div>
+                  <div className="font-thai text-[10px] mt-0.5 text-ember">● รอเช็คอิน</div>
                 </div>
               </div>
             ))}

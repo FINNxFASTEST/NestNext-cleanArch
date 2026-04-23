@@ -11,16 +11,8 @@ export function KangtentMark({
 }: KangtentMarkProps) {
   return (
     <span
-      style={{
-        width: size,
-        height: size,
-        background: bg,
-        color: fg,
-        display: "grid",
-        placeItems: "center",
-        borderRadius: "50%",
-        flexShrink: 0,
-      }}
+      className="grid place-items-center rounded-full shrink-0"
+      style={{ width: size, height: size, background: bg, color: fg }}
     >
       <svg
         viewBox="0 0 24 24"

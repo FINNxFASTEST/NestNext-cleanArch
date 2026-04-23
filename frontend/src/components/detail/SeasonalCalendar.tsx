@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 const MONTHS = [
   { m: "ม.ค", rate: 4, note: "หนาว" },
   { m: "ก.พ", rate: 4, note: "หมอก" },
@@ -27,30 +29,29 @@ export function SeasonalCalendar() {
             >
               {m.note && (
                 <span
-                  className="font-thai text-[10px]"
-                  style={{ color: m.rate >= 4 ? "#F7F2E7" : "#1B2620" }}
+                  className={cn("font-thai text-[10px]", m.rate >= 4 ? "text-cream-50" : "text-forest-900")}
                 >
                   {m.note}
                 </span>
               )}
             </div>
-            <div
-              className="font-thai text-[11px] py-2"
-              style={{ color: "#4C5A4E", letterSpacing: "0.03em" }}
-            >
+            <div className="font-thai text-[11px] py-2 text-forest-600" style={{ letterSpacing: "0.03em" }}>
               {m.m}
             </div>
           </div>
         ))}
       </div>
-      <div className="flex gap-5 mt-4 text-[11px] font-thai" style={{ color: "#7C8F6F" }}>
+      <div className="flex gap-5 mt-4 text-[11px] font-thai text-sage-500">
         {[
           { color: "#E7E4D8", label: "เงียบ" },
           { color: "#8B9A7A", label: "ดี" },
           { color: "#5B7254", label: "พีคซีซัน" },
         ].map(({ color, label }) => (
           <span key={label} className="flex items-center gap-1.5">
-            <span style={{ width: 10, height: 10, background: color, borderRadius: 2, display: "inline-block" }} />
+            <span
+              className="inline-block rounded-[2px]"
+              style={{ width: 10, height: 10, background: color }}
+            />
             {label}
           </span>
         ))}

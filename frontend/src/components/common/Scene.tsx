@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import { cn } from "@/lib/utils";
 
 export type SceneVariant =
   | "hero"
@@ -80,14 +81,11 @@ export function Scene({ variant = "hero", className, style }: SceneProps) {
   const fogId = `fog-${uid}`;
 
   return (
-    <div
-      className={className}
-      style={{ position: "relative", overflow: "hidden", ...style }}
-    >
+    <div className={cn("relative overflow-hidden", className)} style={style}>
       <svg
         viewBox="0 0 800 500"
         preserveAspectRatio="xMidYMid slice"
-        style={{ width: "100%", height: "100%", display: "block" }}
+        className="block w-full h-full"
       >
         <defs>
           <linearGradient id={skyId} x1="0" y1="0" x2="0" y2="1">
@@ -189,14 +187,8 @@ export function Scene({ variant = "hero", className, style }: SceneProps) {
         {/* Foreground pines */}
         {[60, 720].map((x, i) => (
           <g key={i}>
-            <path
-              d={`M ${x} 280 L ${x - 30} 380 L ${x + 30} 380 Z`}
-              fill={p.tree}
-            />
-            <path
-              d={`M ${x} 240 L ${x - 22} 320 L ${x + 22} 320 Z`}
-              fill={p.tree}
-            />
+            <path d={`M ${x} 280 L ${x - 30} 380 L ${x + 30} 380 Z`} fill={p.tree} />
+            <path d={`M ${x} 240 L ${x - 22} 320 L ${x + 22} 320 Z`} fill={p.tree} />
             <rect x={x - 3} y="380" width="6" height="10" fill={p.mtn2} />
           </g>
         ))}

@@ -1,3 +1,4 @@
+import React from "react";
 import { Scene, SceneVariant } from "@/components/common/Scene";
 import { StatusPill } from "@/components/common/StatusPill";
 import { Panel } from "@/components/admin/Panel";
@@ -14,17 +15,6 @@ const ROWS = ["ลานริมเขา", "ลานใต้ต้นสน"
 const DAYS = ["พ","พฤ","ศ","ส","อา","จ","อ","พ","พฤ","ศ","ส","อา","จ","อ"];
 const CAL_COLORS = ["#C7D1B8", "#C7D1B8", "#F3DCB2", "#F3C5A8", "#2F4034"];
 
-const actionBtn: React.CSSProperties = {
-  padding: "5px 12px",
-  fontSize: 11,
-  borderRadius: 999,
-  background: "var(--cream-100)",
-  border: "1px solid var(--line)",
-  cursor: "pointer",
-  color: "var(--ink)",
-  fontFamily: "var(--font-thai)",
-};
-
 export function CampsView() {
   return (
     <>
@@ -33,16 +23,10 @@ export function CampsView() {
         eyebrow="CAMP SITES · 4 ลาน"
         right={
           <div className="flex gap-2">
-            <button
-              className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full cursor-pointer"
-              style={{ background: "transparent", border: "1px solid var(--line-strong)", color: "var(--ink)" }}
-            >
+            <button className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full cursor-pointer bg-transparent border border-line-strong text-ink">
               <MapIcon style={{ width: 16, height: 16 }} /> แผนผังลาน
             </button>
-            <button
-              className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full border-0 cursor-pointer"
-              style={{ background: "#C97B4A", color: "#F7F2E7" }}
-            >
+            <button className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full border-0 cursor-pointer bg-ember text-cream-50">
               <PlusIcon style={{ width: 16, height: 16 }} /> เพิ่มพื้นที่
             </button>
           </div>
@@ -50,47 +34,32 @@ export function CampsView() {
       >
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
           {CAMPS.map((c, i) => (
-            <div
-              key={i}
-              className="rounded-xl overflow-hidden"
-              style={{ border: "1px solid var(--line)" }}
-            >
-              <div className="relative" style={{ height: 140 }}>
-                <Scene variant={c.scene as SceneVariant} style={{ position: "absolute", inset: 0 }} />
+            <div key={i} className="rounded-xl overflow-hidden border border-line">
+              <div className="relative h-[140px]">
+                <Scene variant={c.scene as SceneVariant} className="absolute inset-0" />
                 <div className="absolute top-2.5 left-2.5">
                   <StatusPill status={c.s as "Active" | "Full"} />
                 </div>
                 <div className="absolute top-2.5 right-2.5">
-                  <span
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-thai"
-                    style={{ background: "rgba(247,242,231,.95)", color: "#1B2620" }}
-                  >
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-thai bg-cream-50/[0.95] text-forest-900">
                     {c.size} ม.
                   </span>
                 </div>
               </div>
-              <div style={{ padding: 14 }}>
+              <div className="p-[14px]">
                 <div className="font-thai text-sm font-medium">{c.n}</div>
                 <div className="flex justify-between items-center mt-2">
                   <div>
                     <span className="font-serif text-[17px] font-medium">฿ {c.p}</span>
-                    <span className="font-thai text-[11px] ml-1" style={{ color: "#7C8F6F" }}>/คืน</span>
+                    <span className="font-thai text-[11px] ml-1 text-sage-500">/คืน</span>
                   </div>
-                  <div className="font-thai text-[11px]" style={{ color: "#7C8F6F" }}>
-                    ว่าง {c.avail}/{c.total}
-                  </div>
+                  <div className="font-thai text-[11px] text-sage-500">ว่าง {c.avail}/{c.total}</div>
                 </div>
                 <div className="flex gap-1.5 mt-3">
-                  <button
-                    className="flex-1 font-thai text-xs py-[7px] px-2.5 rounded-full cursor-pointer"
-                    style={{ background: "transparent", border: "1px solid var(--line-strong)", color: "var(--ink)" }}
-                  >
+                  <button className="flex-1 font-thai text-xs py-[7px] px-2.5 rounded-full cursor-pointer bg-transparent border border-line-strong text-ink">
                     Edit
                   </button>
-                  <button
-                    className="font-thai text-xs py-[7px] px-2.5 rounded-full cursor-pointer"
-                    style={{ background: "transparent", border: "1px solid var(--line)", color: "#A96438" }}
-                  >
+                  <button className="font-thai text-xs py-[7px] px-2.5 rounded-full cursor-pointer bg-transparent border border-line text-ember-dark">
                     Delete
                   </button>
                 </div>
@@ -105,8 +74,12 @@ export function CampsView() {
         eyebrow="AVAILABILITY · เมษายน 2569"
         right={
           <div className="flex gap-1.5">
-            <button style={actionBtn}><ChevronLIcon style={{ width: 12, height: 12 }} /></button>
-            <button style={actionBtn}><ChevronRIcon style={{ width: 12, height: 12 }} /></button>
+            <button className="p-[5px_12px] text-[11px] rounded-full cursor-pointer bg-cream-100 border border-line text-ink">
+              <ChevronLIcon style={{ width: 12, height: 12 }} />
+            </button>
+            <button className="p-[5px_12px] text-[11px] rounded-full cursor-pointer bg-cream-100 border border-line text-ink">
+              <ChevronRIcon style={{ width: 12, height: 12 }} />
+            </button>
           </div>
         }
       >
@@ -127,26 +100,21 @@ export function CampsView() {
           ))}
           {ROWS.map((row, r) => (
             <React.Fragment key={r}>
-              <div
-                className="py-2.5 px-3 font-thai text-[11px]"
-                style={{ borderRight: "1px solid var(--line)", color: "var(--ink)" }}
-              >
-                {row}
-              </div>
+              <div className="py-2.5 px-3 font-thai text-[11px] border-r border-line text-ink">{row}</div>
               {Array.from({ length: 14 }).map((_, c) => {
                 const rand = (r * 13 + c * 7) % 5;
                 return (
                   <div
                     key={c}
-                    className="rounded-[4px]"
-                    style={{ background: CAL_COLORS[rand], height: 32 }}
+                    className="rounded-[4px] h-8"
+                    style={{ background: CAL_COLORS[rand] }}
                   />
                 );
               })}
             </React.Fragment>
           ))}
         </div>
-        <div className="flex gap-5 mt-4 font-thai text-[11px]" style={{ color: "#7C8F6F" }}>
+        <div className="flex gap-5 mt-4 font-thai text-[11px] text-sage-500">
           {[
             { color: "#C7D1B8", label: "ว่าง" },
             { color: "#F3DCB2", label: "บางส่วน" },
@@ -154,7 +122,10 @@ export function CampsView() {
             { color: "#2F4034", label: "เต็ม" },
           ].map(({ color, label }) => (
             <span key={label} className="flex items-center gap-1.5">
-              <span style={{ width: 12, height: 12, background: color, borderRadius: 3, display: "inline-block" }} />
+              <span
+                className="inline-block rounded-[3px]"
+                style={{ width: 12, height: 12, background: color }}
+              />
               {label}
             </span>
           ))}
@@ -163,5 +134,3 @@ export function CampsView() {
     </>
   );
 }
-
-import React from "react";

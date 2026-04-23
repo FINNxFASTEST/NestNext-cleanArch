@@ -10,20 +10,9 @@ interface StatCardProps {
 
 export function StatCard({ label, value, sub, icon: Icon, accent }: StatCardProps) {
   return (
-    <div
-      className="rounded-2xl border flex flex-col justify-between"
-      style={{
-        padding: 20,
-        background: "var(--paper)",
-        borderColor: "var(--line)",
-        minHeight: 170,
-      }}
-    >
+    <div className="rounded-2xl border border-line bg-paper p-5 flex flex-col justify-between min-h-[170px]">
       <div className="flex justify-between items-start">
-        <div
-          className="font-thai text-[11px] tracking-[0.08em] uppercase leading-[1.4]"
-          style={{ color: "#7C8F6F" }}
-        >
+        <div className="font-thai text-[11px] tracking-[0.08em] uppercase leading-[1.4] text-sage-500">
           {label}
         </div>
         <div
@@ -35,14 +24,12 @@ export function StatCard({ label, value, sub, icon: Icon, accent }: StatCardProp
       </div>
       <div>
         <div
-          className="font-serif leading-none"
-          style={{ fontSize: 38, fontWeight: 500, letterSpacing: "-0.02em" }}
+          className="font-serif leading-none font-medium"
+          style={{ fontSize: 38, letterSpacing: "-0.02em" }}
         >
           {value}
         </div>
-        <div className="font-thai text-xs mt-1.5" style={{ color: "#7C8F6F" }}>
-          {sub}
-        </div>
+        <div className="font-thai text-xs mt-1.5 text-sage-500">{sub}</div>
       </div>
     </div>
   );

@@ -26,10 +26,7 @@ export function CouponsView() {
         title="โปรโมชั่นปัจจุบัน"
         eyebrow="ACTIVE PROMOS · โปรที่กำลังเปิด"
         right={
-          <button
-            className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full border-0 cursor-pointer"
-            style={{ background: "#C97B4A", color: "#F7F2E7" }}
-          >
+          <button className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full border-0 cursor-pointer bg-ember text-cream-50">
             <PlusIcon style={{ width: 16, height: 16 }} /> สร้างคูปอง
           </button>
         }
@@ -37,34 +34,20 @@ export function CouponsView() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
           {COUPONS.map((c, i) => {
             const usedPct = Math.min(100, Math.round((c.used / c.cap) * 100));
-            const discountLabel = c.pct
-              ? `-${c.pct}%`
-              : c.flat
-              ? `-฿${c.flat}`
-              : "FREE";
+            const discountLabel = c.pct ? `-${c.pct}%` : c.flat ? `-฿${c.flat}` : "FREE";
             return (
-              <div
-                key={i}
-                className="relative rounded-xl overflow-hidden"
-                style={{ border: "1px solid var(--line)" }}
-              >
+              <div key={i} className="relative rounded-xl overflow-hidden border border-line">
                 {/* Image header */}
-                <div className="relative" style={{ height: 90 }}>
+                <div className="relative h-[90px]">
                   <Scene
                     variant={c.scene as SceneVariant}
-                    style={{ position: "absolute", inset: 0, opacity: 0.9 }}
+                    className="absolute inset-0 opacity-90"
                   />
                   <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      background: "linear-gradient(135deg, rgba(27,38,32,.55), rgba(27,38,32,.2))",
-                    }}
+                    className="absolute inset-0"
+                    style={{ background: "linear-gradient(135deg, rgba(27,38,32,.55), rgba(27,38,32,.2))" }}
                   />
-                  <div
-                    className="absolute inset-0 p-3.5"
-                    style={{ color: "#F7F2E7" }}
-                  >
+                  <div className="absolute inset-0 p-3.5 text-cream-50">
                     <div className="flex justify-between items-start">
                       <div
                         className="font-serif text-[22px] font-semibold"
@@ -74,35 +57,21 @@ export function CouponsView() {
                       </div>
                       <StatusPill status={c.s as "Active" | "Expired" | "Draft"} />
                     </div>
-                    <div
-                      className="absolute bottom-3.5 left-3.5 font-serif font-medium"
-                      style={{ fontSize: 28 }}
-                    >
+                    <div className="absolute bottom-3.5 left-3.5 font-serif font-medium text-[28px]">
                       {discountLabel}
                     </div>
                   </div>
                 </div>
 
                 {/* Details */}
-                <div style={{ padding: 14 }}>
-                  <div
-                    className="font-thai text-[13px] min-h-[36px]"
-                    style={{ color: "#3F4A42" }}
-                  >
-                    {c.desc}
-                  </div>
-                  <div
-                    className="flex justify-between font-thai text-[11px] mt-2.5 mb-1"
-                    style={{ color: "#7C8F6F" }}
-                  >
+                <div className="p-[14px]">
+                  <div className="font-thai text-[13px] min-h-[36px] text-forest-600">{c.desc}</div>
+                  <div className="flex justify-between font-thai text-[11px] mt-2.5 mb-1 text-sage-500">
                     <span>ใช้แล้ว {c.used}/{c.cap}</span>
                     <span>{usedPct}%</span>
                   </div>
                   {/* Progress bar */}
-                  <div
-                    className="h-1 rounded-full overflow-hidden"
-                    style={{ background: "var(--cream-100)" }}
-                  >
+                  <div className="h-1 rounded-full overflow-hidden bg-cream-100">
                     <div
                       className="h-full"
                       style={{
@@ -112,16 +81,10 @@ export function CouponsView() {
                     />
                   </div>
                   <div className="flex gap-1.5 mt-3">
-                    <button
-                      className="flex-1 font-thai text-xs py-[7px] px-2.5 rounded-full cursor-pointer"
-                      style={{ background: "transparent", border: "1px solid var(--line-strong)", color: "var(--ink)" }}
-                    >
+                    <button className="flex-1 font-thai text-xs py-[7px] px-2.5 rounded-full cursor-pointer bg-transparent border border-line-strong text-ink">
                       Edit
                     </button>
-                    <button
-                      className="font-thai text-xs py-[7px] px-3 rounded-full cursor-pointer"
-                      style={{ background: "transparent", border: "1px solid var(--line)", color: "#7C8F6F" }}
-                    >
+                    <button className="font-thai text-xs py-[7px] px-3 rounded-full cursor-pointer bg-transparent border border-line text-sage-500">
                       ปิด
                     </button>
                   </div>
