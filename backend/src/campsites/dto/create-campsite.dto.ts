@@ -30,10 +30,19 @@ export class CreateCampsiteDto {
   @ApiProperty() @IsString() name!: string;
   @ApiPropertyOptional() @IsOptional() @IsString() description?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() location?: string;
-  @ApiPropertyOptional({ type: [String] }) @IsOptional() @IsArray() images?: string[];
-  @ApiPropertyOptional({ type: [String] }) @IsOptional() @IsArray() amenities?: string[];
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  images?: string[];
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  amenities?: string[];
   @ApiPropertyOptional({ type: [PitchDto] })
-  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => PitchDto)
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PitchDto)
   pitches?: PitchDto[];
 
   // Merchant profile fields
@@ -41,6 +50,8 @@ export class CreateCampsiteDto {
   @ApiPropertyOptional() @IsOptional() @IsString() address?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() taxId?: string;
   @ApiPropertyOptional({ type: BankAccountDto })
-  @IsOptional() @ValidateNested() @Type(() => BankAccountDto)
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => BankAccountDto)
   bankAccount?: BankAccountDto;
 }

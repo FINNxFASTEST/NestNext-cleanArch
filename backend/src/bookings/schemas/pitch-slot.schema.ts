@@ -12,7 +12,8 @@ export type PitchSlotDocument = PitchSlot & Document;
 export class PitchSlot {
   @Prop({ required: true }) pitchId: string;
   @Prop({ required: true }) date: Date;
-  @Prop({ type: Types.ObjectId, ref: 'Booking', required: true }) bookingId: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Booking', required: true })
+  bookingId: Types.ObjectId;
 }
 
 export const PitchSlotSchema = SchemaFactory.createForClass(PitchSlot);
