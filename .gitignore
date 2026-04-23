@@ -1,0 +1,9 @@
+# IDE / tool config
+.claude/
+.cursor/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
