@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { KangtentMark } from "./KangtentMark";
 
 type NavVariant = "overlay" | "solid";
@@ -27,17 +28,12 @@ export function Nav({ active = "home", variant = "overlay" }: NavProps) {
   return (
     <>
       <nav
-        className="flex items-center justify-between px-5 md:px-14 py-[22px]"
-        style={{
-          position: isOverlay ? "absolute" : "relative",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 10,
-          color: isOverlay ? "var(--cream-50)" : "var(--ink)",
-          borderBottom: isOverlay ? "none" : "1px solid var(--line)",
-          background: isOverlay ? "transparent" : "var(--paper)",
-        }}
+        className={cn(
+          "flex items-center justify-between px-5 md:px-14 py-[22px] top-0 left-0 right-0 z-10",
+          isOverlay
+            ? "absolute bg-transparent text-cream-50"
+            : "relative bg-paper text-ink border-b border-line"
+        )}
       >
         {/* Brand */}
         <div className="flex items-center gap-2.5 font-serif text-[22px]">
@@ -45,9 +41,7 @@ export function Nav({ active = "home", variant = "overlay" }: NavProps) {
             bg={isOverlay ? "#C97B4A" : "#2F4034"}
             fg="#F7F2E7"
           />
-          <span style={{ fontWeight: 500, letterSpacing: "-0.01em" }}>
-            Kangtent
-          </span>
+          <span className="font-medium tracking-[-0.01em]">Kangtent</span>
         </div>
 
         {/* Links — desktop only */}
@@ -56,27 +50,12 @@ export function Nav({ active = "home", variant = "overlay" }: NavProps) {
             <Link
               key={id}
               href={href}
-              style={{
-                color: "inherit",
-                textDecoration: "none",
-                opacity: 0.92,
-                position: "relative",
-                cursor: "pointer",
-              }}
+              className="no-underline opacity-[0.92] relative cursor-pointer"
+              style={{ color: "inherit" }}
             >
               {label}
               {active === id && (
-                <span
-                  style={{
-                    position: "absolute",
-                    left: 0,
-                    right: 0,
-                    bottom: -8,
-                    height: 2,
-                    background: "#C97B4A",
-                    borderRadius: 1,
-                  }}
-                />
+                <span className="absolute left-0 right-0 -bottom-2 h-0.5 bg-ember rounded-[1px]" />
               )}
             </Link>
           ))}
@@ -84,21 +63,12 @@ export function Nav({ active = "home", variant = "overlay" }: NavProps) {
 
         {/* Right actions — desktop only */}
         <div className="hidden lg:flex items-center gap-[18px] text-sm">
-          <Link
-            href="/login"
-            style={{ color: "inherit", opacity: 0.9, cursor: "pointer", fontFamily: "var(--font-thai)" }}
-          >
+          <Link href="/login" className="font-thai no-underline opacity-90 cursor-pointer" style={{ color: "inherit" }}>
             เข้าสู่ระบบ
           </Link>
           <Link
             href="/register"
-            className="font-thai font-medium text-sm px-5 py-[10px] rounded-full cursor-pointer transition-colors"
-            style={{
-              background: "#C97B4A",
-              color: "#F7F2E7",
-              border: "none",
-              textDecoration: "none",
-            }}
+            className="font-thai font-medium text-sm px-5 py-[10px] rounded-full cursor-pointer transition-colors bg-ember text-cream-50 no-underline"
           >
             สมัครสมาชิก
           </Link>
@@ -106,12 +76,12 @@ export function Nav({ active = "home", variant = "overlay" }: NavProps) {
 
         {/* Hamburger — mobile only */}
         <button
-          className="lg:hidden w-10 h-10 rounded-full grid place-items-center cursor-pointer"
-          style={{
-            background: isOverlay ? "rgba(247,242,231,0.15)" : "transparent",
-            border: `1px solid ${isOverlay ? "rgba(247,242,231,0.25)" : "var(--line-strong)"}`,
-            color: "inherit",
-          }}
+          className={cn(
+            "lg:hidden w-10 h-10 rounded-full grid place-items-center cursor-pointer",
+            isOverlay
+              ? "bg-cream-50/15 border border-cream-50/25"
+              : "bg-transparent border border-line-strong"
+          )}
           onClick={() => setMobileOpen(true)}
           aria-label="เปิดเมนู"
         >
@@ -125,22 +95,15 @@ export function Nav({ active = "home", variant = "overlay" }: NavProps) {
 
       {/* Mobile menu overlay */}
       {mobileOpen && (
-        <div
-          className="lg:hidden fixed inset-0 z-50 flex flex-col"
-          style={{ background: "var(--paper)", color: "var(--ink)" }}
-        >
+        <div className="lg:hidden fixed inset-0 z-50 flex flex-col bg-paper text-ink">
           {/* Header */}
-          <div
-            className="flex items-center justify-between px-5 py-[22px]"
-            style={{ borderBottom: "1px solid var(--line)" }}
-          >
+          <div className="flex items-center justify-between px-5 py-[22px] border-b border-line">
             <div className="flex items-center gap-2.5 font-serif text-[22px]">
               <KangtentMark bg="#2F4034" fg="#F7F2E7" />
-              <span style={{ fontWeight: 500, letterSpacing: "-0.01em" }}>Kangtent</span>
+              <span className="font-medium tracking-[-0.01em]">Kangtent</span>
             </div>
             <button
-              className="w-10 h-10 rounded-full grid place-items-center cursor-pointer"
-              style={{ border: "1px solid var(--line)", background: "transparent", color: "var(--ink)" }}
+              className="w-10 h-10 rounded-full grid place-items-center cursor-pointer border border-line bg-transparent text-ink"
               onClick={() => setMobileOpen(false)}
               aria-label="ปิดเมนู"
             >
@@ -156,12 +119,10 @@ export function Nav({ active = "home", variant = "overlay" }: NavProps) {
               <Link
                 key={id}
                 href={href}
-                className="flex items-center font-thai text-base px-5 py-4 cursor-pointer"
-                style={{
-                  borderBottom: "1px solid var(--line)",
-                  color: active === id ? "#C97B4A" : "var(--ink)",
-                  textDecoration: "none",
-                }}
+                className={cn(
+                  "flex items-center font-thai text-base px-5 py-4 cursor-pointer border-b border-line no-underline",
+                  active === id ? "text-ember" : "text-ink"
+                )}
                 onClick={() => setMobileOpen(false)}
               >
                 {label}
@@ -173,16 +134,14 @@ export function Nav({ active = "home", variant = "overlay" }: NavProps) {
           <div className="px-5 pb-10 pt-5 flex flex-col gap-3">
             <Link
               href="/login"
-              className="font-thai text-center py-3 cursor-pointer"
-              style={{ color: "var(--ink)" }}
+              className="font-thai text-center py-3 cursor-pointer text-ink no-underline"
               onClick={() => setMobileOpen(false)}
             >
               เข้าสู่ระบบ
             </Link>
             <Link
               href="/register"
-              className="w-full font-thai font-medium text-[15px] py-4 rounded-full border-0 cursor-pointer"
-              style={{ background: "#C97B4A", color: "#F7F2E7" }}
+              className="w-full font-thai font-medium text-[15px] py-4 rounded-full text-center bg-ember text-cream-50 no-underline"
               onClick={() => setMobileOpen(false)}
             >
               สมัครสมาชิก

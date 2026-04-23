@@ -16,24 +16,13 @@ const USERS = [
 
 const FILTERS = ["ทั้งหมด", "Traveler", "Superguest", "ถูกระงับ"];
 
-const actionBtn: React.CSSProperties = {
-  padding: "5px 12px",
-  fontSize: 11,
-  borderRadius: 999,
-  background: "var(--cream-100)",
-  border: "1px solid var(--line)",
-  cursor: "pointer",
-  color: "var(--ink)",
-  fontFamily: "var(--font-thai)",
-};
-
 const Th = ({ children, align }: { children: React.ReactNode; align?: string }) => (
-  <th style={{ textAlign: (align as "left" | "right") || "left", padding: "10px 12px", fontWeight: 500 }}>
+  <th className="font-medium" style={{ textAlign: (align as "left" | "right") || "left", padding: "10px 12px" }}>
     {children}
   </th>
 );
 const Td = ({ children, align }: { children: React.ReactNode; align?: string }) => (
-  <td style={{ textAlign: (align as "left" | "right") || "left", padding: "14px 12px", color: "var(--ink)" }}>
+  <td className="text-ink" style={{ textAlign: (align as "left" | "right") || "left", padding: "14px 12px" }}>
     {children}
   </td>
 );
@@ -56,13 +45,11 @@ export function UsersView() {
             {FILTERS.map((t, i) => (
               <button
                 key={t}
-                className="font-thai rounded-full text-xs cursor-pointer"
+                className="font-thai rounded-full text-xs cursor-pointer px-[14px] py-[7px]"
                 style={{
-                  padding: "7px 14px",
                   background: i === 0 ? "#263328" : "var(--paper)",
                   color: i === 0 ? "#F7F2E7" : "var(--ink)",
                   border: `1px solid ${i === 0 ? "#263328" : "var(--line)"}`,
-                  fontFamily: "var(--font-thai)",
                 }}
               >
                 {t}
@@ -71,9 +58,9 @@ export function UsersView() {
           </div>
         }
       >
-        <table className="w-full" style={{ borderCollapse: "collapse", fontFamily: "var(--font-thai)" }}>
+        <table className="w-full font-thai" style={{ borderCollapse: "collapse" }}>
           <thead>
-            <tr className="text-[11px] tracking-[0.08em] uppercase" style={{ color: "#7C8F6F" }}>
+            <tr className="text-[11px] tracking-[0.08em] uppercase text-sage-500">
               <Th>User</Th>
               <Th>Level</Th>
               <Th>Trips</Th>
@@ -85,25 +72,27 @@ export function UsersView() {
           </thead>
           <tbody>
             {USERS.map((u, i) => (
-              <tr key={i} style={{ borderTop: "1px solid var(--line)" }}>
+              <tr key={i} className="border-t border-line">
                 <Td>
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full overflow-hidden">
-                      <Scene variant={u.a as "forest" | "dusk" | "meadow" | "lake" | "night"} style={{ width: "100%", height: "100%" }} />
+                      <Scene variant={u.a as "forest" | "dusk" | "meadow" | "lake" | "night"} className="w-full h-full" />
                     </div>
                     <div>
                       <div className="text-[13px] font-medium">{u.n}</div>
-                      <div className="text-[11px] mt-0.5" style={{ color: "#7C8F6F" }}>{u.e}</div>
+                      <div className="text-[11px] mt-0.5 text-sage-500">{u.e}</div>
                     </div>
                   </div>
                 </Td>
-                <Td><span className="font-thai text-xs" style={{ color: "#4C5A4E" }}>{u.lv}</span></Td>
+                <Td><span className="font-thai text-xs text-forest-600">{u.lv}</span></Td>
                 <Td><span className="font-serif font-medium">{u.trips}</span></Td>
                 <Td><span className="font-serif text-sm font-medium">฿ {u.spent.toLocaleString()}</span></Td>
-                <Td><span className="font-thai text-xs" style={{ color: "#7C8F6F" }}>{u.last}</span></Td>
+                <Td><span className="font-thai text-xs text-sage-500">{u.last}</span></Td>
                 <Td><StatusPill status={u.s as "Active" | "Paused"} /></Td>
                 <Td align="right">
-                  <button style={actionBtn}>ดูโปรไฟล์</button>
+                  <button className="font-thai rounded-full text-[11px] cursor-pointer px-3 py-[5px] bg-cream-100 border border-line text-ink">
+                    ดูโปรไฟล์
+                  </button>
                 </Td>
               </tr>
             ))}

@@ -11,31 +11,34 @@ const config: Config = {
     extend: {
       colors: {
         /* Kangtent brand tokens — sourced from CSS HSL channels in globals.css */
-        ink: "hsl(var(--ink-hsl))",
+        ink: "hsl(var(--ink-hsl) / <alpha-value>)",
         forest: {
-          600: "hsl(var(--forest-600-hsl))",
-          700: "hsl(var(--forest-700-hsl))",
-          800: "hsl(var(--forest-800-hsl))",
-          900: "hsl(var(--forest-900-hsl))",
+          600: "hsl(var(--forest-600-hsl) / <alpha-value>)",
+          700: "hsl(var(--forest-700-hsl) / <alpha-value>)",
+          800: "hsl(var(--forest-800-hsl) / <alpha-value>)",
+          900: "hsl(var(--forest-900-hsl) / <alpha-value>)",
         },
         sage: {
-          300: "hsl(var(--sage-300-hsl))",
-          500: "hsl(var(--sage-500-hsl))",
+          300: "hsl(var(--sage-300-hsl) / <alpha-value>)",
+          500: "hsl(var(--sage-500-hsl) / <alpha-value>)",
         },
         moss: {
-          200: "hsl(var(--moss-200-hsl))",
+          200: "hsl(var(--moss-200-hsl) / <alpha-value>)",
         },
         cream: {
-          50: "hsl(var(--cream-50-hsl))",
-          100: "hsl(var(--cream-100-hsl))",
+          50: "hsl(var(--cream-50-hsl) / <alpha-value>)",
+          100: "hsl(var(--cream-100-hsl) / <alpha-value>)",
         },
-        paper: "hsl(var(--paper-hsl))",
+        paper: "hsl(var(--paper-hsl) / <alpha-value>)",
         ember: {
-          DEFAULT: "hsl(var(--ember-hsl))",
-          dark: "hsl(var(--ember-dark-hsl))",
+          DEFAULT: "hsl(var(--ember-hsl) / <alpha-value>)",
+          dark: "hsl(var(--ember-dark-hsl) / <alpha-value>)",
         },
-        clay: "hsl(var(--clay-hsl))",
-        mist: "hsl(var(--mist-hsl))",
+        clay: "hsl(var(--clay-hsl) / <alpha-value>)",
+        mist: "hsl(var(--mist-hsl) / <alpha-value>)",
+        /* Border tokens */
+        line: "var(--line)",
+        "line-strong": "var(--line-strong)",
         /* shadcn/ui semantic tokens */
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

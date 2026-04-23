@@ -9,6 +9,7 @@ import { FeatureCard } from "@/components/home/FeatureCard";
 import { TestimonialCard } from "@/components/home/TestimonialCard";
 import { DestinationCard } from "@/components/home/DestinationCard";
 import { LeafIcon, FlameIcon, MoonIcon, ArrowRIcon } from "@/components/common/Icons";
+import { cn } from "@/lib/utils";
 
 const TABS = ["ลาน สมใจ", "ลาน สมใจ 2", "ลาน สมใจ 3", "ลาน สมใจ 4"];
 
@@ -66,18 +67,14 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <main style={{ background: "var(--paper)", color: "var(--ink)", overflowX: "hidden" }}>
+    <main className="bg-paper text-ink overflow-x-hidden">
 
       {/* HERO */}
       <section className="relative h-[640px] md:h-[780px]">
-        <Scene variant="hero" style={{ position: "absolute", inset: 0 }} />
+        <Scene variant="hero" className="absolute inset-0" />
         <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(180deg, rgba(21,24,20,.25) 0%, rgba(21,24,20,.05) 35%, rgba(21,24,20,.55) 100%)",
-          }}
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(180deg, rgba(21,24,20,.25) 0%, rgba(21,24,20,.05) 35%, rgba(21,24,20,.55) 100%)" }}
         />
         <Nav active="home" variant="overlay" />
 
@@ -86,31 +83,20 @@ export default function HomePage() {
           className="absolute left-0 right-0 px-5 md:px-14"
           style={{ top: "clamp(72px, 14vw, 180px)" }}
         >
-          <div style={{ color: "#F7F2E7", maxWidth: 720 }}>
-            <div
-              className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-4"
-              style={{ color: "#D9A273" }}
-            >
+          <div className="text-cream-50 max-w-[720px]">
+            <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-4 text-clay">
               A FOREST RETREAT · ไทยแลนด์
             </div>
             <h1
-              className="font-serif m-0"
-              style={{
-                fontSize: "clamp(34px, 7vw, 84px)",
-                lineHeight: 1.02,
-                fontWeight: 400,
-                letterSpacing: "-0.03em",
-              }}
+              className="font-serif m-0 font-normal"
+              style={{ fontSize: "clamp(34px, 7vw, 84px)", lineHeight: 1.02, letterSpacing: "-0.03em" }}
             >
               Pitch a tent.
               <br />
-              <em style={{ fontStyle: "italic", color: "#D9A273" }}>Unfold</em>{" "}
+              <em className="italic text-clay">Unfold</em>{" "}
               the quiet.
             </h1>
-            <p
-              className="font-thai mt-4 md:mt-5 max-w-[540px] hidden sm:block"
-              style={{ fontSize: 18, lineHeight: 1.6, opacity: 0.88 }}
-            >
+            <p className="font-thai mt-4 md:mt-5 max-w-[540px] hidden sm:block text-lg leading-relaxed opacity-[0.88]">
               จองลานกางเต็นท์ทั่วไทยง่ายๆ ในไม่กี่คลิก
               <br />
               ค้นหาแคมป์ในฝัน ดูรีวิว จองล่วงหน้า พร้อมออกเดินทางได้ทันที
@@ -119,9 +105,7 @@ export default function HomePage() {
         </div>
 
         {/* Search bar */}
-        <div
-          className="absolute left-0 right-0 flex justify-center px-4 md:px-14 bottom-4 md:-bottom-[44px]"
-        >
+        <div className="absolute left-0 right-0 flex justify-center px-4 md:px-14 bottom-4 md:-bottom-[44px]">
           <SearchBar />
         </div>
       </section>
@@ -131,19 +115,16 @@ export default function HomePage() {
         {/* Section header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-9">
           <div>
-            <div
-              className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-3"
-              style={{ color: "#7C8F6F" }}
-            >
+            <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-3 text-sage-500">
               FEATURED · ลานน่าสนใจ
             </div>
             <h2
-              className="font-serif m-0"
-              style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1, letterSpacing: "-0.02em", color: "#1B2620" }}
+              className="font-serif m-0 text-forest-900"
+              style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1, letterSpacing: "-0.02em" }}
             >
               ลานกางเต็นท์
               <br />
-              <em style={{ color: "#C97B4A" }}>ที่น่าสนใจ</em>
+              <em className="text-ember">ที่น่าสนใจ</em>
             </h2>
           </div>
           {/* Tabs — scrollable on mobile */}
@@ -152,12 +133,12 @@ export default function HomePage() {
               <button
                 key={i}
                 onClick={() => setActiveTab(i)}
-                className="font-thai px-[18px] py-2.5 rounded-full text-[13px] cursor-pointer transition-all whitespace-nowrap flex-shrink-0"
-                style={{
-                  background: activeTab === i ? "#263328" : "transparent",
-                  color: activeTab === i ? "#F7F2E7" : "var(--ink)",
-                  border: `1px solid ${activeTab === i ? "#263328" : "var(--line-strong)"}`,
-                }}
+                className={cn(
+                  "font-thai px-[18px] py-2.5 rounded-full text-[13px] cursor-pointer transition-all whitespace-nowrap flex-shrink-0 border",
+                  activeTab === i
+                    ? "bg-forest-800 text-cream-50 border-forest-800"
+                    : "bg-transparent text-ink border-line-strong",
+                )}
               >
                 {tab}
               </button>
@@ -188,24 +169,18 @@ export default function HomePage() {
 
       {/* POPULAR DESTINATIONS */}
       <section className="px-4 md:px-14" style={{ paddingTop: "clamp(60px, 8vw, 120px)" }}>
-        <div
-          className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-3"
-          style={{ color: "#7C8F6F" }}
-        >
+        <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-3 text-sage-500">
           DESTINATIONS · ค้นหาด้วยจังหวัด
         </div>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-9">
           <h2
-            className="font-serif m-0"
-            style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1, letterSpacing: "-0.02em", color: "#1B2620" }}
+            className="font-serif m-0 text-forest-900"
+            style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1, letterSpacing: "-0.02em" }}
           >
             ปลายทาง
-            <em style={{ color: "#C97B4A" }}> ยอดฮิต</em>
+            <em className="text-ember"> ยอดฮิต</em>
           </h2>
-          <a
-            className="font-thai text-sm flex items-center gap-2 cursor-pointer"
-            style={{ color: "#2F4034" }}
-          >
+          <a className="font-thai text-sm flex items-center gap-2 cursor-pointer text-forest-700">
             ดูทั้งหมด <ArrowRIcon style={{ width: 16, height: 16 }} />
           </a>
         </div>
@@ -218,44 +193,29 @@ export default function HomePage() {
 
       {/* WHY KANGTENT */}
       <section className="px-4 md:px-14" style={{ paddingTop: "clamp(60px, 8vw, 120px)" }}>
-        <div
-          className="rounded-[20px] md:rounded-[28px] p-6 md:p-14"
-          style={{ background: "var(--cream-100)" }}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr_1fr_1fr] gap-8 md:gap-8 items-start">
+        <div className="rounded-[20px] md:rounded-[28px] p-6 md:p-14 bg-cream-100">
+          <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr_1fr_1fr] gap-8 items-start">
             <div>
-              <div
-                className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-3"
-                style={{ color: "#7C8F6F" }}
-              >
+              <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-3 text-sage-500">
                 ทำไมต้อง KANGTENT
               </div>
               <h2
-                className="font-serif m-0"
-                style={{ fontSize: "clamp(26px, 3.5vw, 36px)", lineHeight: 1.1, letterSpacing: "-0.02em", color: "#1B2620" }}
+                className="font-serif m-0 text-forest-900"
+                style={{ fontSize: "clamp(26px, 3.5vw, 36px)", lineHeight: 1.1, letterSpacing: "-0.02em" }}
               >
                 ออกเดินทาง
                 <br />
-                อย่าง<em style={{ color: "#C97B4A" }}>สบายใจ</em>
+                อย่าง<em className="text-ember">สบายใจ</em>
               </h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 md:contents gap-6 md:gap-0">
               {WHY_ITEMS.map(({ Icon, title, desc }) => (
                 <div key={title}>
-                  <div
-                    className="w-12 h-12 rounded-[14px] grid place-items-center mb-4"
-                    style={{
-                      background: "var(--paper)",
-                      border: "1px solid var(--line)",
-                      color: "#2F4034",
-                    }}
-                  >
+                  <div className="w-12 h-12 rounded-[14px] grid place-items-center mb-4 bg-paper border border-line text-forest-700">
                     <Icon style={{ width: 22, height: 22 }} />
                   </div>
                   <div className="font-serif text-xl mb-2">{title}</div>
-                  <div className="font-thai text-sm leading-relaxed" style={{ color: "#4C5A4E" }}>
-                    {desc}
-                  </div>
+                  <div className="font-thai text-sm leading-relaxed text-forest-600">{desc}</div>
                 </div>
               ))}
             </div>
@@ -266,21 +226,18 @@ export default function HomePage() {
       {/* TESTIMONIALS */}
       <section className="px-4 md:px-14" style={{ paddingTop: "clamp(60px, 8vw, 120px)" }}>
         <div className="text-center max-w-[600px] mx-auto mb-12">
-          <div
-            className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-3"
-            style={{ color: "#7C8F6F" }}
-          >
+          <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-3 text-sage-500">
             CAMPFIRE STORIES · เรื่องเล่ารอบกองไฟ
           </div>
           <h2
-            className="font-serif m-0"
-            style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1, letterSpacing: "-0.02em", color: "#1B2620" }}
+            className="font-serif m-0 text-forest-900"
+            style={{ fontSize: "clamp(28px, 4vw, 40px)", lineHeight: 1.1, letterSpacing: "-0.02em" }}
           >
             เรื่องเล่าจาก
             <br />
-            <em style={{ color: "#C97B4A" }}>นักเดินทาง</em>
+            <em className="text-ember">นักเดินทาง</em>
           </h2>
-          <p className="font-thai text-[15px] leading-relaxed mt-4 mx-auto" style={{ color: "#4C5A4E", maxWidth: 500 }}>
+          <p className="font-thai text-[15px] leading-relaxed mt-4 mx-auto text-forest-600 max-w-[500px]">
             ประสบการณ์จริง จากคนที่ใช้คืนสุดสัปดาห์ ออกไปหาดาว หาหมอก หาตัวเอง
           </p>
         </div>
@@ -293,51 +250,25 @@ export default function HomePage() {
 
       {/* CTA BANNER */}
       <section className="px-4 md:px-14 pb-16 md:pb-24" style={{ paddingTop: "clamp(60px, 8vw, 120px)" }}>
-        <div className="relative rounded-[20px] md:rounded-[28px] overflow-hidden" style={{ minHeight: 280 }}>
-          <Scene variant="night" style={{ position: "absolute", inset: 0 }} />
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              color: "#F7F2E7",
-              textAlign: "center",
-              padding: "40px 24px",
-            }}
-          >
-            <div
-              className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-4"
-              style={{ color: "#D9A273" }}
-            >
+        <div className="relative rounded-[20px] md:rounded-[28px] overflow-hidden min-h-[280px]">
+          <Scene variant="night" className="absolute inset-0" />
+          <div className="absolute inset-0 flex flex-col justify-center items-center text-cream-50 text-center py-10 px-6">
+            <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-4 text-clay">
               YOUR NEXT NIGHT UNDER THE STARS
             </div>
             <h2
-              className="font-serif m-0 max-w-[700px]"
-              style={{ fontSize: "clamp(28px, 5vw, 56px)", fontWeight: 400, letterSpacing: "-0.02em", lineHeight: 1.1 }}
+              className="font-serif m-0 max-w-[700px] font-normal"
+              style={{ fontSize: "clamp(28px, 5vw, 56px)", letterSpacing: "-0.02em", lineHeight: 1.1 }}
             >
               คืนสุดสัปดาห์นี้
               <br />
-              <em style={{ color: "#D9A273" }}>อยู่ใต้ดาว</em>ดีกว่าไหม
+              <em className="text-clay">อยู่ใต้ดาว</em>ดีกว่าไหม
             </h2>
             <div className="flex flex-col sm:flex-row gap-3 mt-8 w-full sm:w-auto">
-              <button
-                className="font-thai font-medium text-[15px] px-7 py-4 rounded-full border-0 cursor-pointer transition-colors"
-                style={{ background: "#C97B4A", color: "#F7F2E7" }}
-              >
+              <button className="font-thai font-medium text-[15px] px-7 py-4 rounded-full border-0 cursor-pointer transition-colors bg-ember text-cream-50">
                 ค้นหาแคมป์ในฝัน
               </button>
-              <button
-                className="font-thai font-medium text-[15px] px-7 py-4 rounded-full cursor-pointer transition-colors"
-                style={{
-                  background: "rgba(247,242,231,.12)",
-                  color: "#F7F2E7",
-                  border: "1px solid rgba(247,242,231,.3)",
-                  backdropFilter: "blur(6px)",
-                }}
-              >
+              <button className="font-thai font-medium text-[15px] px-7 py-4 rounded-full cursor-pointer transition-colors bg-cream-50/[0.12] text-cream-50 border border-cream-50/30 backdrop-blur-[6px]">
                 ลงทะเบียนเจ้าของลาน
               </button>
             </div>

@@ -34,15 +34,17 @@ const REVIEWS = [
 
 export default function CampsiteDetailPage() {
   return (
-    <main style={{ background: "var(--paper)", color: "var(--ink)" }}>
+    <main className="bg-paper text-ink">
       <Nav active="search" variant="solid" />
 
       {/* Breadcrumb */}
-      <div className="px-4 md:px-14 pt-5 font-thai text-[13px]" style={{ color: "#7C8F6F" }}>
-        <span className="hidden sm:inline">หน้าแรก <span className="mx-2">›</span>
-        ค้นหาลานกางเต็นท์ <span className="mx-2">›</span>
-        นครราชสีมา <span className="mx-2" style={{ color: "var(--ink)" }}>›</span></span>
-        <span style={{ color: "var(--ink)" }}>เขาใหญ่ แคมป์วิว</span>
+      <div className="px-4 md:px-14 pt-5 font-thai text-[13px] text-sage-500">
+        <span className="hidden sm:inline">
+          หน้าแรก <span className="mx-2">›</span>
+          ค้นหาลานกางเต็นท์ <span className="mx-2">›</span>
+          นครราชสีมา <span className="mx-2 text-ink">›</span>
+        </span>
+        <span className="text-ink">เขาใหญ่ แคมป์วิว</span>
       </div>
 
       {/* Title block */}
@@ -50,16 +52,10 @@ export default function CampsiteDetailPage() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
           <div>
             <div className="flex gap-2 mb-3.5 flex-wrap">
-              <span
-                className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-full text-xs font-thai"
-                style={{ background: "#C7D1B8", color: "#1B2620" }}
-              >
+              <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-full text-xs font-thai bg-[#C7D1B8] text-forest-900">
                 <LeafIcon style={{ width: 12, height: 12 }} /> Superhost
               </span>
-              <span
-                className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-full text-xs font-thai"
-                style={{ background: "var(--cream-100)", color: "var(--ink)" }}
-              >
+              <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-full text-xs font-thai bg-cream-100 text-ink">
                 ที่ 9.8 ⭐ · 248 รีวิว
               </span>
             </div>
@@ -67,9 +63,9 @@ export default function CampsiteDetailPage() {
               className="font-serif m-0"
               style={{ fontSize: "clamp(36px, 6vw, 64px)", fontWeight: 400, letterSpacing: "-0.025em", lineHeight: 1 }}
             >
-              เขาใหญ่ <em style={{ color: "#C97B4A" }}>แคมป์วิว</em>
+              เขาใหญ่ <em className="text-ember">แคมป์วิว</em>
             </h1>
-            <div className="font-thai flex flex-wrap items-center gap-x-4 gap-y-1 mt-3.5 text-sm" style={{ color: "#4C5A4E" }}>
+            <div className="font-thai flex flex-wrap items-center gap-x-4 gap-y-1 mt-3.5 text-sm text-forest-600">
               <span className="flex items-center gap-1.5">
                 <PinIcon style={{ width: 14, height: 14 }} /> ปากช่อง, นครราชสีมา
               </span>
@@ -80,16 +76,10 @@ export default function CampsiteDetailPage() {
             </div>
           </div>
           <div className="flex gap-2.5">
-            <button
-              className="inline-flex items-center gap-2 font-thai font-medium text-sm px-[22px] py-3 rounded-full cursor-pointer"
-              style={{ background: "transparent", border: "1px solid var(--line-strong)", color: "var(--ink)" }}
-            >
+            <button className="inline-flex items-center gap-2 font-thai font-medium text-sm px-[22px] py-3 rounded-full cursor-pointer bg-transparent border border-line-strong text-ink">
               <ShareIcon style={{ width: 16, height: 16 }} /> แชร์
             </button>
-            <button
-              className="inline-flex items-center gap-2 font-thai font-medium text-sm px-[22px] py-3 rounded-full cursor-pointer"
-              style={{ background: "transparent", border: "1px solid var(--line-strong)", color: "var(--ink)" }}
-            >
+            <button className="inline-flex items-center gap-2 font-thai font-medium text-sm px-[22px] py-3 rounded-full cursor-pointer bg-transparent border border-line-strong text-ink">
               <HeartIcon style={{ width: 16, height: 16 }} /> บันทึก
             </button>
           </div>
@@ -101,19 +91,19 @@ export default function CampsiteDetailPage() {
         <Gallery />
       </section>
 
-      {/* Main two-column layout — stacks on mobile */}
+      {/* Main two-column layout */}
       <section className="px-4 md:px-14 pt-12 pb-12 grid grid-cols-1 md:grid-cols-[1fr_420px] gap-8 md:gap-14">
         {/* Left: content */}
         <div>
           {/* About */}
-          <div className="pb-8" style={{ borderBottom: "1px solid var(--line)" }}>
-            <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-2" style={{ color: "#7C8F6F" }}>
+          <div className="pb-8 border-b border-line">
+            <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-2 text-sage-500">
               ABOUT THE PLACE
             </div>
-            <h2 className="font-serif m-0 mb-4" style={{ fontSize: 30, lineHeight: 1.2, fontWeight: 500 }}>
+            <h2 className="font-serif m-0 mb-4 text-[30px] font-medium" style={{ lineHeight: 1.2 }}>
               ท่ามกลางขุนเขา และหมอกยามเช้า
             </h2>
-            <p className="font-thai m-0 max-w-[680px]" style={{ fontSize: 16, lineHeight: 1.75, color: "#3F4A42" }}>
+            <p className="font-thai m-0 max-w-[680px] text-forest-600" style={{ fontSize: 16, lineHeight: 1.75 }}>
               ตั้งอยู่ท่ามกลางธรรมชาติของเขาใหญ่ ลานกางเต็นท์ &ldquo;เขาใหญ่ แคมป์วิว&rdquo; มอบประสบการณ์การพักผ่อน
               ท่ามกลางขุนเขาและหมอกยามเช้า เหมาะสำหรับทั้งครอบครัวและนักเดินทางสายแคมป์
               ที่ต้องการสัมผัสความสงบ เงียบ และอากาศบริสุทธิ์
@@ -121,18 +111,18 @@ export default function CampsiteDetailPage() {
           </div>
 
           {/* Amenities */}
-          <div className="py-8" style={{ borderBottom: "1px solid var(--line)" }}>
-            <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-2" style={{ color: "#7C8F6F" }}>
+          <div className="py-8 border-b border-line">
+            <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-2 text-sage-500">
               AMENITIES · สิ่งอำนวยความสะดวก
             </div>
-            <h3 className="font-serif m-0 mb-6" style={{ fontSize: 24, fontWeight: 500 }}>ทุกอย่างที่คุณต้องการ</h3>
+            <h3 className="font-serif m-0 mb-6 text-[24px] font-medium">ทุกอย่างที่คุณต้องการ</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {AMENITIES.map(({ Icon, title, sub }) => (
                 <div key={title} className="flex gap-3 items-start py-2">
-                  <Icon style={{ width: 20, height: 20, color: "#2F4034", flexShrink: 0, marginTop: 2 }} />
+                  <Icon style={{ width: 20, height: 20, marginTop: 2 }} className="text-forest-700 shrink-0" />
                   <div>
                     <div className="font-thai text-[14px]">{title}</div>
-                    <div className="font-thai text-xs mt-0.5" style={{ color: "#7C8F6F" }}>{sub}</div>
+                    <div className="font-thai text-xs mt-0.5 text-sage-500">{sub}</div>
                   </div>
                 </div>
               ))}
@@ -140,29 +130,26 @@ export default function CampsiteDetailPage() {
           </div>
 
           {/* Seasonal */}
-          <div className="py-8" style={{ borderBottom: "1px solid var(--line)" }}>
-            <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-2" style={{ color: "#7C8F6F" }}>
+          <div className="py-8 border-b border-line">
+            <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-2 text-sage-500">
               SEASONAL · ฤดูกาลน่าไป
             </div>
-            <h3 className="font-serif m-0 mb-6" style={{ fontSize: 24, fontWeight: 500 }}>ไปช่วงไหนดี</h3>
+            <h3 className="font-serif m-0 mb-6 text-[24px] font-medium">ไปช่วงไหนดี</h3>
             <div className="overflow-x-auto">
               <SeasonalCalendar />
             </div>
           </div>
 
           {/* Camp pitches */}
-          <div className="py-8" style={{ borderBottom: "1px solid var(--line)" }}>
+          <div className="py-8 border-b border-line">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 mb-5">
               <div>
-                <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-2" style={{ color: "#7C8F6F" }}>
+                <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-2 text-sage-500">
                   PITCHES · พื้นที่กางเต็นท์
                 </div>
-                <h3 className="font-serif m-0" style={{ fontSize: 24, fontWeight: 500 }}>เลือกพื้นที่ของคุณ</h3>
+                <h3 className="font-serif m-0 text-[24px] font-medium">เลือกพื้นที่ของคุณ</h3>
               </div>
-              <button
-                className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full cursor-pointer self-start sm:self-auto"
-                style={{ background: "transparent", border: "1px solid var(--line-strong)", color: "var(--ink)" }}
-              >
+              <button className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full cursor-pointer self-start sm:self-auto bg-transparent border border-line-strong text-ink">
                 <MapIcon style={{ width: 16, height: 16 }} /> ดูแผนที่ลาน
               </button>
             </div>
@@ -173,42 +160,35 @@ export default function CampsiteDetailPage() {
           <div className="pt-8">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 mb-6">
               <div>
-                <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-2" style={{ color: "#7C8F6F" }}>
+                <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-2 text-sage-500">
                   REVIEWS · รีวิวจากผู้พัก
                 </div>
                 <div className="flex items-center gap-3.5">
                   <span className="font-serif text-[40px] font-medium">4.9</span>
                   <div>
                     <Stars value={5} size={14} />
-                    <div className="font-thai text-xs mt-1" style={{ color: "#7C8F6F" }}>จาก 248 รีวิว</div>
+                    <div className="font-thai text-xs mt-1 text-sage-500">จาก 248 รีวิว</div>
                   </div>
                 </div>
               </div>
-              <button
-                className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full cursor-pointer self-start sm:self-auto"
-                style={{ background: "transparent", border: "1px solid var(--line-strong)", color: "var(--ink)" }}
-              >
+              <button className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full cursor-pointer self-start sm:self-auto bg-transparent border border-line-strong text-ink">
                 ดูทั้งหมด <ArrowRIcon style={{ width: 16, height: 16 }} />
               </button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {REVIEWS.map((r) => (
-                <div
-                  key={r.name}
-                  className="rounded-2xl border p-5"
-                  style={{ background: "var(--paper)", borderColor: "var(--line)" }}
-                >
+                <div key={r.name} className="rounded-2xl border border-line p-5 bg-paper">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                      <Scene variant={r.scene} style={{ width: "100%", height: "100%" }} />
+                    <div className="w-10 h-10 rounded-full overflow-hidden shrink-0">
+                      <Scene variant={r.scene} className="w-full h-full" />
                     </div>
                     <div className="flex-1">
                       <div className="font-thai text-sm font-medium">{r.name}</div>
-                      <div className="font-thai text-[11px] mt-0.5" style={{ color: "#7C8F6F" }}>{r.date}</div>
+                      <div className="font-thai text-[11px] mt-0.5 text-sage-500">{r.date}</div>
                     </div>
                     <Stars value={r.rate} size={12} />
                   </div>
-                  <p className="font-thai text-sm m-0" style={{ lineHeight: 1.65, color: "#3F4A42" }}>{r.text}</p>
+                  <p className="font-thai text-sm m-0 text-forest-600" style={{ lineHeight: 1.65 }}>{r.text}</p>
                 </div>
               ))}
             </div>

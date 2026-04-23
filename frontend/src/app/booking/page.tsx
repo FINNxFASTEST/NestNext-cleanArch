@@ -7,6 +7,8 @@ import { Scene } from "@/components/common/Scene";
 import { FormCard } from "@/components/booking/FormCard";
 import { Field } from "@/components/booking/Field";
 import { StepHeader } from "@/components/booking/StepHeader";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
   ChevronLIcon, CalendarIcon, UsersIcon,
   CheckIcon, TentIcon, MoonIcon, FlameIcon, CupIcon, LeafIcon,
@@ -19,17 +21,17 @@ const GUESTS = [
 ];
 
 const ADDONS = [
-  { name: "เต็นท์ 3 คน พร้อมติดตั้ง", price: "฿ 350 / คืน", checked: true, Icon: TentIcon },
-  { name: "ถุงนอน (หนา -5°C)", price: "฿ 120 / คืน", checked: false, Icon: MoonIcon },
-  { name: "ชุดฟืน + ไฟฉาย", price: "฿ 180", checked: true, Icon: FlameIcon },
-  { name: "อาหารเช้าฝีมือเจ้าบ้าน", price: "฿ 150 / ท่าน", checked: false, Icon: CupIcon },
+  { name: "เต็นท์ 3 คน พร้อมติดตั้ง", price: "฿ 350 / คืน", Icon: TentIcon },
+  { name: "ถุงนอน (หนา -5°C)", price: "฿ 120 / คืน", Icon: MoonIcon },
+  { name: "ชุดฟืน + ไฟฉาย", price: "฿ 180", Icon: FlameIcon },
+  { name: "อาหารเช้าฝีมือเจ้าบ้าน", price: "฿ 150 / ท่าน", Icon: CupIcon },
 ];
 
 const PAYMENT_METHODS = ["บัตรเครดิต/เดบิต", "พร้อมเพย์ QR", "โอนธนาคาร", "TrueMoney"];
 
 function Row({ l, r, ember }: { l: React.ReactNode; r: React.ReactNode; ember?: boolean }) {
   return (
-    <div className="flex justify-between font-thai text-sm" style={{ color: ember ? "#A96438" : "var(--ink)" }}>
+    <div className={cn("flex justify-between font-thai text-sm", ember ? "text-ember-dark" : "text-ink")}>
       <span>{l}</span>
       <span>{r}</span>
     </div>
@@ -42,26 +44,17 @@ export default function BookingPage() {
   const [addons, setAddons] = useState([true, false, true, false]);
 
   return (
-    <main style={{ background: "var(--paper)", color: "var(--ink)" }}>
+    <main className="bg-paper text-ink">
       <Nav active="bookings" variant="solid" />
 
       {/* Step header */}
-      <section
-        className="px-4 md:px-14 pt-8 pb-6"
-        style={{ borderBottom: "1px solid var(--line)" }}
-      >
-        <div
-          className="flex items-center gap-3 font-thai text-[13px] mb-5 cursor-pointer"
-          style={{ color: "#7C8F6F" }}
-        >
+      <section className="px-4 md:px-14 pt-8 pb-6 border-b border-line">
+        <div className="flex items-center gap-3 font-thai text-[13px] mb-5 cursor-pointer text-sage-500">
           <ChevronLIcon style={{ width: 16, height: 16 }} /> กลับไปที่เขาใหญ่ แคมป์วิว
         </div>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
           <div>
-            <div
-              className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-2"
-              style={{ color: "#7C8F6F" }}
-            >
+            <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-2 text-sage-500">
               CHECKOUT · การจอง
             </div>
             <h1
@@ -82,20 +75,14 @@ export default function BookingPage() {
         {/* Left: forms */}
         <div>
           {/* Trip summary card */}
-          <div
-            className="rounded-2xl border flex gap-4 items-center mb-6 flex-wrap sm:flex-nowrap"
-            style={{ padding: "16px 20px", background: "var(--paper)", borderColor: "var(--line)" }}
-          >
+          <div className="rounded-2xl border border-line flex gap-4 items-center mb-6 flex-wrap sm:flex-nowrap px-5 py-4 bg-paper">
             <div className="relative rounded-xl overflow-hidden flex-shrink-0" style={{ width: 100, height: 80 }}>
-              <Scene variant="forest" style={{ position: "absolute", inset: 0 }} />
+              <Scene variant="forest" className="absolute inset-0" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-thai text-xs mb-1" style={{ color: "#7C8F6F" }}>ทริปของคุณ</div>
+              <div className="font-thai text-xs mb-1 text-sage-500">ทริปของคุณ</div>
               <div className="font-serif text-xl font-medium mt-1">เขาใหญ่ แคมป์วิว</div>
-              <div
-                className="font-thai text-[13px] mt-1.5 flex flex-wrap gap-x-4 gap-y-1 items-center"
-                style={{ color: "#4C5A4E" }}
-              >
+              <div className="font-thai text-[13px] mt-1.5 flex flex-wrap gap-x-4 gap-y-1 items-center text-forest-600">
                 <span className="flex items-center gap-1.5">
                   <CalendarIcon style={{ width: 14, height: 14 }} /> 24 — 26 เม.ย 2569
                 </span>
@@ -105,10 +92,7 @@ export default function BookingPage() {
                 <span>ลานริมเขา × 2</span>
               </div>
             </div>
-            <button
-              className="font-thai text-[13px] px-[22px] py-3 rounded-full cursor-pointer flex-shrink-0"
-              style={{ background: "transparent", border: "1px solid var(--line-strong)", color: "var(--ink)" }}
-            >
+            <button className="font-thai text-[13px] px-[22px] py-3 rounded-full cursor-pointer flex-shrink-0 bg-transparent border border-line-strong text-ink">
               แก้ไข
             </button>
           </div>
@@ -127,27 +111,15 @@ export default function BookingPage() {
           <FormCard title="รายชื่อผู้เดินทาง" eyebrow="GUESTS · ผู้พักค้างคืน">
             <div className="grid gap-2.5">
               {GUESTS.map((g, i) => (
-                <div
-                  key={i}
-                  className="flex gap-4 items-center rounded-xl"
-                  style={{ padding: "14px 16px", background: "var(--cream-100)" }}
-                >
-                  <div
-                    className="w-8 h-8 rounded-full grid place-items-center text-xs font-serif flex-shrink-0"
-                    style={{ background: "#2F4034", color: "#F7F2E7" }}
-                  >
+                <div key={i} className="flex gap-4 items-center rounded-xl py-3.5 px-4 bg-cream-100">
+                  <div className="w-8 h-8 rounded-full grid place-items-center text-xs font-serif flex-shrink-0 bg-forest-700 text-cream-50">
                     {i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-thai text-sm">{g.name}</div>
-                    <div className="font-thai text-[11px] mt-0.5" style={{ color: "#7C8F6F" }}>
-                      {g.role}
-                    </div>
+                    <div className="font-thai text-[11px] mt-0.5 text-sage-500">{g.role}</div>
                   </div>
-                  <button
-                    className="font-thai text-xs px-3 py-1.5 rounded-full cursor-pointer flex-shrink-0"
-                    style={{ background: "transparent", border: "1px solid var(--line-strong)", color: "var(--ink)" }}
-                  >
+                  <button className="font-thai text-xs px-3 py-1.5 rounded-full cursor-pointer flex-shrink-0 bg-transparent border border-line-strong text-ink">
                     แก้ไข
                   </button>
                 </div>
@@ -163,12 +135,10 @@ export default function BookingPage() {
                 return (
                   <div
                     key={i}
-                    className="flex gap-3.5 items-center rounded-xl cursor-pointer transition-colors"
-                    style={{
-                      padding: 16,
-                      border: `1.5px solid ${checked ? "#2F4034" : "var(--line)"}`,
-                      background: checked ? "var(--cream-100)" : "var(--paper)",
-                    }}
+                    className={cn(
+                      "flex gap-3.5 items-center rounded-xl cursor-pointer transition-colors p-4 border-[1.5px]",
+                      checked ? "border-forest-700 bg-cream-100" : "border-line bg-paper",
+                    )}
                     onClick={() => {
                       const next = [...addons];
                       next[i] = !next[i];
@@ -176,21 +146,17 @@ export default function BookingPage() {
                     }}
                   >
                     <div
-                      className="w-5 h-5 rounded-[6px] flex-shrink-0 grid place-items-center"
-                      style={{
-                        background: checked ? "#2F4034" : "var(--paper)",
-                        border: `1.5px solid ${checked ? "#2F4034" : "var(--line-strong)"}`,
-                        color: "#F7F2E7",
-                      }}
+                      className={cn(
+                        "w-5 h-5 rounded-[6px] flex-shrink-0 grid place-items-center border-[1.5px]",
+                        checked ? "bg-forest-700 border-forest-700 text-cream-50" : "bg-paper border-line-strong",
+                      )}
                     >
                       {checked && <CheckIcon style={{ width: 12, height: 12 }} />}
                     </div>
-                    <Icon style={{ width: 22, height: 22, color: "#2F4034" }} />
+                    <Icon style={{ width: 22, height: 22 }} className="text-forest-700 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="font-thai text-sm">{name}</div>
-                      <div className="font-thai text-xs mt-0.5" style={{ color: "#7C8F6F" }}>
-                        {price}
-                      </div>
+                      <div className="font-thai text-xs mt-0.5 text-sage-500">{price}</div>
                     </div>
                   </div>
                 );
@@ -204,12 +170,12 @@ export default function BookingPage() {
               {PAYMENT_METHODS.map((m, i) => (
                 <button
                   key={i}
-                  className="font-thai px-[18px] py-2.5 rounded-full text-[13px] cursor-pointer"
-                  style={{
-                    background: payMethod === i ? "#263328" : "var(--paper)",
-                    color: payMethod === i ? "#F7F2E7" : "var(--ink)",
-                    border: `1px solid ${payMethod === i ? "#263328" : "var(--line-strong)"}`,
-                  }}
+                  className={cn(
+                    "font-thai px-[18px] py-2.5 rounded-full text-[13px] cursor-pointer border",
+                    payMethod === i
+                      ? "bg-forest-800 text-cream-50 border-forest-800"
+                      : "bg-paper text-ink border-line-strong",
+                  )}
                   onClick={() => setPayMethod(i)}
                 >
                   {m}
@@ -227,18 +193,11 @@ export default function BookingPage() {
           </FormCard>
 
           {/* Cancellation note */}
-          <div
-            className="flex gap-3.5 rounded-2xl"
-            style={{
-              padding: 20,
-              background: "var(--cream-100)",
-              border: "1px dashed var(--line-strong)",
-            }}
-          >
-            <LeafIcon style={{ width: 24, height: 24, color: "#2F4034", flexShrink: 0 }} />
+          <div className="flex gap-3.5 rounded-2xl p-5 bg-cream-100 border border-dashed border-line-strong">
+            <LeafIcon style={{ width: 24, height: 24 }} className="text-forest-700 shrink-0" />
             <div>
               <div className="font-serif text-base mb-1 font-medium">ยกเลิกฟรีก่อน 22 เม.ย 23:59</div>
-              <div className="font-thai text-[13px] leading-relaxed" style={{ color: "#4C5A4E" }}>
+              <div className="font-thai text-[13px] leading-relaxed text-forest-600">
                 การจองของคุณได้รับการคุ้มครองโดย Kangtent Care — หากสภาพอากาศไม่เอื้ออำนวย เรามีนโยบายเลื่อนวันให้ฟรี
               </div>
             </div>
@@ -247,38 +206,26 @@ export default function BookingPage() {
 
         {/* Right: order summary */}
         <aside>
-          <div style={{ position: "sticky", top: 24 }}>
+          <div className="sticky top-6">
             {/* Summary card */}
-            <div
-              className="rounded-2xl border overflow-hidden"
-              style={{ boxShadow: "var(--shadow-card)", borderColor: "var(--line)" }}
-            >
+            <div className="rounded-2xl border border-line overflow-hidden shadow-card">
               {/* Illustrated header */}
-              <div className="relative" style={{ height: 140 }}>
-                <Scene variant="dusk" style={{ position: "absolute", inset: 0 }} />
+              <div className="relative h-[140px]">
+                <Scene variant="dusk" className="absolute inset-0" />
                 <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background: "linear-gradient(180deg, transparent 0%, rgba(21,24,20,.6) 100%)",
-                  }}
+                  className="absolute inset-0"
+                  style={{ background: "linear-gradient(180deg, transparent 0%, rgba(21,24,20,.6) 100%)" }}
                 />
-                <div className="absolute bottom-3.5 left-5 right-5" style={{ color: "#F7F2E7" }}>
-                  <div
-                    className="font-sans text-[11px] tracking-[0.18em] uppercase"
-                    style={{ color: "#D9A273" }}
-                  >
+                <div className="absolute bottom-3.5 left-5 right-5 text-cream-50">
+                  <div className="font-sans text-[11px] tracking-[0.18em] uppercase text-clay">
                     YOUR STAY
                   </div>
                   <div className="font-serif text-2xl font-medium mt-1">2 คืน · เขาใหญ่</div>
                 </div>
               </div>
 
-              <div style={{ padding: 24 }}>
-                <div
-                  className="grid gap-2.5 pb-4"
-                  style={{ borderBottom: "1px solid var(--line)", fontFamily: "var(--font-thai)", fontSize: 14 }}
-                >
+              <div className="p-6">
+                <div className="grid gap-2.5 pb-4 border-b border-line font-thai text-sm">
                   <Row l="ลานริมเขา × 2 × 2 คืน" r="฿ 1,600" />
                   <Row l="เต็นท์ 3 คน × 2 คืน" r="฿ 700" />
                   <Row l="ชุดฟืน + ไฟฉาย" r="฿ 180" />
@@ -288,61 +235,33 @@ export default function BookingPage() {
 
                 {/* Discount code */}
                 <div className="flex gap-2 my-4">
-                  <div className="flex-1 relative">
-                    <input
-                      className="w-full font-thai text-[13px] rounded-xl"
+                  <div className="flex-1">
+                    <Input
                       placeholder="กรอกรหัสส่วนลด"
-                      style={{
-                        padding: "12px 14px",
-                        border: "1px solid var(--line-strong)",
-                        background: "var(--paper)",
-                        fontFamily: "var(--font-thai)",
-                        color: "var(--ink)",
-                      }}
+                      className="rounded-xl border-line-strong bg-paper text-ink h-auto py-3 px-3.5 font-thai text-[13px]"
                     />
                   </div>
-                  <button
-                    className="font-thai text-[13px] px-[18px] py-3 rounded-full cursor-pointer"
-                    style={{
-                      background: "transparent",
-                      border: "1px solid var(--line-strong)",
-                      color: "var(--ink)",
-                    }}
-                  >
+                  <button className="font-thai text-[13px] px-[18px] py-3 rounded-full cursor-pointer bg-transparent border border-line-strong text-ink">
                     ใช้โค้ด
                   </button>
                 </div>
 
                 {/* Total */}
-                <div
-                  className="flex justify-between items-center pt-4"
-                  style={{ borderTop: "1px solid var(--line)" }}
-                >
+                <div className="flex justify-between items-center pt-4 border-t border-line">
                   <div>
-                    <div className="font-thai text-xs" style={{ color: "#7C8F6F" }}>ราคาสุทธิ</div>
-                    <div className="font-serif text-[34px] font-medium" style={{ color: "#1B2620" }}>
-                      ฿ 2,370
-                    </div>
+                    <div className="font-thai text-xs text-sage-500">ราคาสุทธิ</div>
+                    <div className="font-serif text-[34px] font-medium text-forest-900">฿ 2,370</div>
                   </div>
-                  <div
-                    className="font-thai text-[11px] text-right max-w-[120px]"
-                    style={{ color: "#7C8F6F" }}
-                  >
+                  <div className="font-thai text-[11px] text-right max-w-[120px] text-sage-500">
                     รวมภาษี และค่าบริการแล้ว
                   </div>
                 </div>
 
-                <button
-                  className="w-full font-thai font-medium text-[15px] py-4 rounded-full border-0 cursor-pointer mt-5"
-                  style={{ background: "#C97B4A", color: "#F7F2E7" }}
-                >
+                <button className="w-full font-thai font-medium text-[15px] py-4 rounded-full border-0 cursor-pointer mt-5 bg-ember text-cream-50">
                   ยืนยันและชำระเงิน
                 </button>
 
-                <div
-                  className="font-thai text-[11px] text-center mt-3.5 leading-relaxed"
-                  style={{ color: "#7C8F6F" }}
-                >
+                <div className="font-thai text-[11px] text-center mt-3.5 leading-relaxed text-sage-500">
                   การกดยืนยัน แสดงว่าคุณยอมรับ
                   <br />
                   <u>เงื่อนไขการใช้งาน</u> และ <u>นโยบายยกเลิก</u>
@@ -351,12 +270,9 @@ export default function BookingPage() {
             </div>
 
             {/* Reassurance mini-card */}
-            <div
-              className="flex gap-3 items-center mt-4 p-4 rounded-xl"
-              style={{ background: "#C7D1B8" }}
-            >
-              <FlameIcon style={{ width: 22, height: 22, color: "#263328", flexShrink: 0 }} />
-              <div className="font-thai text-xs leading-relaxed" style={{ color: "#1B2620" }}>
+            <div className="flex gap-3 items-center mt-4 p-4 rounded-xl bg-[#C7D1B8]">
+              <FlameIcon style={{ width: 22, height: 22 }} className="text-forest-800 shrink-0" />
+              <div className="font-thai text-xs leading-relaxed text-forest-900">
                 <b>12,480 ชาวแคมเปอร์</b> ได้ออกเดินทางกับเราในเดือนนี้
               </div>
             </div>

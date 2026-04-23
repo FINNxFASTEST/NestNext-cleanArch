@@ -1,3 +1,4 @@
+import React from "react";
 import { Scene } from "@/components/common/Scene";
 import { StatusPill } from "@/components/common/StatusPill";
 import { StatCard } from "@/components/admin/StatCard";
@@ -17,24 +18,13 @@ const BOOKINGS = [
 const SCENES = ["forest", "dusk", "meadow", "lake", "night"] as const;
 const FILTERS = ["ทั้งหมด", "รอชำระ", "ยืนยันแล้ว", "เช็คอิน", "ยกเลิก"];
 
-const actionBtn: React.CSSProperties = {
-  padding: "5px 12px",
-  fontSize: 11,
-  borderRadius: 999,
-  background: "var(--cream-100)",
-  border: "1px solid var(--line)",
-  cursor: "pointer",
-  color: "var(--ink)",
-  fontFamily: "var(--font-thai)",
-};
-
 const Th = ({ children, align }: { children: React.ReactNode; align?: string }) => (
-  <th style={{ textAlign: (align as "left" | "right") || "left", padding: "10px 12px", fontWeight: 500 }}>
+  <th className="font-medium" style={{ textAlign: (align as "left" | "right") || "left", padding: "10px 12px" }}>
     {children}
   </th>
 );
 const Td = ({ children, align }: { children: React.ReactNode; align?: string }) => (
-  <td style={{ textAlign: (align as "left" | "right") || "left", padding: "14px 12px", color: "var(--ink)" }}>
+  <td className="text-ink" style={{ textAlign: (align as "left" | "right") || "left", padding: "14px 12px" }}>
     {children}
   </td>
 );
@@ -57,13 +47,11 @@ export function BookingsView() {
             {FILTERS.map((t, i) => (
               <button
                 key={t}
-                className="font-thai rounded-full text-xs cursor-pointer"
+                className="font-thai rounded-full text-xs cursor-pointer px-[14px] py-[7px]"
                 style={{
-                  padding: "7px 14px",
                   background: i === 0 ? "#263328" : "var(--paper)",
                   color: i === 0 ? "#F7F2E7" : "var(--ink)",
                   border: `1px solid ${i === 0 ? "#263328" : "var(--line)"}`,
-                  fontFamily: "var(--font-thai)",
                 }}
               >
                 {t}
@@ -72,15 +60,9 @@ export function BookingsView() {
           </div>
         }
       >
-        <table
-          className="w-full font-thai"
-          style={{ borderCollapse: "collapse", fontFamily: "var(--font-thai)" }}
-        >
+        <table className="w-full font-thai" style={{ borderCollapse: "collapse" }}>
           <thead>
-            <tr
-              className="text-[11px] tracking-[0.08em] uppercase"
-              style={{ color: "#7C8F6F" }}
-            >
+            <tr className="text-[11px] tracking-[0.08em] uppercase text-sage-500">
               <Th>Booking #</Th>
               <Th>Guest</Th>
               <Th>Phone</Th>
@@ -93,31 +75,25 @@ export function BookingsView() {
           </thead>
           <tbody>
             {BOOKINGS.map((r, i) => (
-              <tr key={i} style={{ borderTop: "1px solid var(--line)" }}>
-                <Td>
-                  <span className="font-serif font-medium">{r.id}</span>
-                </Td>
+              <tr key={i} className="border-t border-line">
+                <Td><span className="font-serif font-medium">{r.id}</span></Td>
                 <Td>
                   <div className="flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-full overflow-hidden">
-                      <Scene variant={SCENES[i % 5]} style={{ width: "100%", height: "100%" }} />
+                      <Scene variant={SCENES[i % 5]} className="w-full h-full" />
                     </div>
                     <span className="text-[13px]">{r.n}</span>
                   </div>
                 </Td>
                 <Td><span className="text-[13px]">{r.p}</span></Td>
                 <Td><span className="text-[13px]">{r.t}</span></Td>
-                <Td><span className="text-[13px]" style={{ color: "#4C5A4E" }}>{r.d}</span></Td>
-                <Td>
-                  <span className="font-serif text-sm font-medium">฿ {r.to.toLocaleString()}</span>
-                </Td>
-                <Td>
-                  <StatusPill status={r.s as "Paid" | "Pending" | "Cancel"} />
-                </Td>
+                <Td><span className="text-[13px] text-forest-600">{r.d}</span></Td>
+                <Td><span className="font-serif text-sm font-medium">฿ {r.to.toLocaleString()}</span></Td>
+                <Td><StatusPill status={r.s as "Paid" | "Pending" | "Cancel"} /></Td>
                 <Td align="right">
                   <div className="inline-flex gap-1">
-                    <button style={actionBtn}>Edit</button>
-                    <button style={{ ...actionBtn, color: "#A96438" }}>Cancel</button>
+                    <button className="font-thai rounded-full text-[11px] cursor-pointer px-3 py-[5px] bg-cream-100 border border-line text-ink">Edit</button>
+                    <button className="font-thai rounded-full text-[11px] cursor-pointer px-3 py-[5px] bg-cream-100 border border-line text-ember-dark">Cancel</button>
                   </div>
                 </Td>
               </tr>
@@ -128,5 +104,3 @@ export function BookingsView() {
     </>
   );
 }
-
-import React from "react";
