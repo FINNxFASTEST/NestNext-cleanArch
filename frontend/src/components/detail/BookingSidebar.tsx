@@ -1,53 +1,133 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { Scene } from "@/components/common/Scene";
 import { StarIcon } from "@/components/common/Icons";
+import type { Campsite, Pitch } from "@/types";
 
-function Row({ l, r, ember }: { l: React.ReactNode; r: React.ReactNode; ember?: boolean }) {
-  return (
-    <div className={`flex justify-between font-thai text-sm ${ember ? "text-ember-dark" : "text-ink"}`}>
-      <span>{l}</span>
-      <span>{r}</span>
-    </div>
-  );
+interface BookingSidebarProps {
+  campsite: Campsite;
+  selectedPitch: Pitch | null;
+  qty: number;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  onCheckInChange: (v: string) => void;
+  onCheckOutChange: (v: string) => void;
+  onGuestsChange: (v: number) => void;
 }
 
-export function BookingSidebar() {
+function nightsBetween(a: string, b: string): number {
+  if (!a || !b) return 0;
+  const diff = new Date(b).getTime() - new Date(a).getTime();
+  return Math.max(0, Math.round(diff / 86400000));
+}
+
+export function BookingSidebar({
+  campsite,
+  selectedPitch,
+  qty,
+  checkIn,
+  checkOut,
+  guests,
+  onCheckInChange,
+  onCheckOutChange,
+  onGuestsChange,
+}: BookingSidebarProps) {
+  const router = useRouter();
+  const nights = nightsBetween(checkIn, checkOut);
+  const pricePerNight = selectedPitch?.pricePerNight ?? 0;
+  const subtotal = pricePerNight * nights * qty;
+  const serviceFee = subtotal > 0 ? Math.round(subtotal * 0.05) : 0;
+  const total = subtotal + serviceFee;
+
+  const today = new Date().toISOString().split("T")[0];
+
+  function handleBook() {
+    if (!selectedPitch || !checkIn || !checkOut || nights < 1) return;
+    const params = new URLSearchParams({
+      campsiteId: campsite._id,
+      pitchId: selectedPitch._id ?? selectedPitch.name,
+      pitchName: selectedPitch.name,
+      campsiteName: campsite.name,
+      location: campsite.location ?? "",
+      checkIn,
+      checkOut,
+      guests: String(guests),
+      qty: String(qty),
+      pricePerNight: String(pricePerNight),
+    });
+    router.push(`/booking?${params.toString()}`);
+  }
+
+  const canBook = !!selectedPitch && nights > 0;
+
   return (
     <div className="rounded-2xl border border-line sticky top-6 p-6 shadow-card bg-paper">
       {/* Price header */}
       <div className="flex justify-between items-start mb-5">
         <div>
           <div className="font-serif text-[30px] font-medium">
-            ฿ 400
-            <span className="font-thai text-sm ml-1.5 text-sage-500">/ คืน</span>
+            {selectedPitch ? (
+              <>฿ {selectedPitch.pricePerNight.toLocaleString()}<span className="font-thai text-sm ml-1.5 text-sage-500">/ คืน</span></>
+            ) : (
+              <span className="font-thai text-sm text-sage-500">เลือกลานก่อน</span>
+            )}
           </div>
-          <div className="font-thai text-xs mt-1 text-sage-500">ลานริมเขา · เหลือ 2 ที่</div>
+          {selectedPitch && (
+            <div className="font-thai text-xs mt-1 text-sage-500">{selectedPitch.name}</div>
+          )}
         </div>
         <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-thai bg-[#C7D1B8] text-forest-800">
-          <StarIcon style={{ width: 10, height: 10 }} /> 9.8
+          <StarIcon style={{ width: 10, height: 10 }} />
+          {campsite.name}
         </div>
       </div>
 
-      {/* Date + guests */}
+      {/* Date + guests inputs */}
       <div className="rounded-xl overflow-hidden mb-3.5 border border-line-strong">
         <div className="grid grid-cols-2 border-b border-line">
           <div className="p-3 px-4 border-r border-line">
             <div className="font-sans text-[9px] tracking-[0.18em] uppercase text-sage-500">เช็คอิน</div>
-            <div className="font-thai text-sm mt-1">24 เม.ย 2569</div>
+            <input
+              type="date"
+              value={checkIn}
+              min={today}
+              onChange={(e) => onCheckInChange(e.target.value)}
+              className="font-thai text-sm mt-1 w-full bg-transparent border-none outline-none cursor-pointer"
+            />
           </div>
           <div className="p-3 px-4">
             <div className="font-sans text-[9px] tracking-[0.18em] uppercase text-sage-500">เช็คเอาท์</div>
-            <div className="font-thai text-sm mt-1">26 เม.ย 2569</div>
+            <input
+              type="date"
+              value={checkOut}
+              min={checkIn || today}
+              onChange={(e) => onCheckOutChange(e.target.value)}
+              className="font-thai text-sm mt-1 w-full bg-transparent border-none outline-none cursor-pointer"
+            />
           </div>
         </div>
         <div className="p-3 px-4">
           <div className="font-sans text-[9px] tracking-[0.18em] uppercase text-sage-500">ผู้พัก</div>
-          <div className="font-thai text-sm mt-1">2 ผู้ใหญ่ · 1 เด็ก</div>
+          <input
+            type="number"
+            min={1}
+            max={selectedPitch?.maxGuests ?? 20}
+            value={guests}
+            onChange={(e) => onGuestsChange(Number(e.target.value))}
+            className="font-thai text-sm mt-1 w-full bg-transparent border-none outline-none"
+          />
         </div>
       </div>
 
       {/* CTA */}
-      <button className="w-full font-thai font-medium text-[15px] py-3.5 rounded-full border-0 cursor-pointer bg-ember text-cream-50">
-        จองพื้นที่กางเต็นท์
+      <button
+        disabled={!canBook}
+        onClick={handleBook}
+        className="w-full font-thai font-medium text-[15px] py-3.5 rounded-full border-0 cursor-pointer bg-ember text-cream-50 disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        {canBook ? "จองพื้นที่กางเต็นท์" : "เลือกลานและวันที่"}
       </button>
 
       <div className="font-thai text-xs text-center my-3.5 text-sage-500">
@@ -55,29 +135,33 @@ export function BookingSidebar() {
       </div>
 
       {/* Price breakdown */}
-      <div className="grid gap-2.5 pt-4 border-t border-line">
-        <Row l="฿ 400 × 2 คืน" r="฿ 800" />
-        <Row l="ค่าบริการ" r="฿ 50" />
-        <Row l="ส่วนลดสมาชิก" r="−฿ 80" ember />
-        <div className="h-px bg-line" />
-        <Row
-          l={<span className="font-serif text-base">รวมทั้งหมด</span>}
-          r={<span className="font-serif text-xl font-medium">฿ 770</span>}
-        />
-      </div>
+      {canBook && (
+        <div className="grid gap-2.5 pt-4 border-t border-line">
+          <div className="flex justify-between font-thai text-sm text-ink">
+            <span>฿ {pricePerNight.toLocaleString()} × {nights} คืน{qty > 1 ? ` × ${qty} ที่` : ""}</span>
+            <span>฿ {subtotal.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between font-thai text-sm text-ink">
+            <span>ค่าบริการ (5%)</span>
+            <span>฿ {serviceFee.toLocaleString()}</span>
+          </div>
+          <div className="h-px bg-line" />
+          <div className="flex justify-between font-thai text-sm text-ink">
+            <span className="font-serif text-base">รวมทั้งหมด</span>
+            <span className="font-serif text-xl font-medium">฿ {total.toLocaleString()}</span>
+          </div>
+        </div>
+      )}
 
-      {/* Host */}
+      {/* Host placeholder */}
       <div className="flex gap-3 items-center mt-5 pt-5 border-t border-line">
         <div className="w-11 h-11 rounded-full overflow-hidden shrink-0">
           <Scene variant="dusk" className="w-full h-full" />
         </div>
         <div className="flex-1">
-          <div className="font-thai text-[13px] font-medium">คุณนพดล · เจ้าของลาน</div>
+          <div className="font-thai text-[13px] font-medium">เจ้าของลาน · {campsite.name}</div>
           <div className="font-thai text-[11px] mt-0.5 text-sage-500">ตอบภายใน 1 ชั่วโมง</div>
         </div>
-        <button className="font-thai text-xs px-3 py-1.5 rounded-full cursor-pointer bg-transparent border border-line-strong text-ink">
-          ทักแชท
-        </button>
       </div>
     </div>
   );

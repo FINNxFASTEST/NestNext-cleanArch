@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata: Metadata = {
   title: "Kangtent — Cozy Campsite Booking",
@@ -14,9 +15,11 @@ export default function RootLayout({
   return (
     <html lang="th">
       <body>
-        <div className="max-w-[1920px] mx-auto overflow-hidden">
-          {children}
-        </div>
+        <AuthProvider>
+          <div className="max-w-[1920px] mx-auto overflow-hidden">
+            {children}
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );
