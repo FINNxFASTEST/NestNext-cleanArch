@@ -6,6 +6,7 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
+import type { UserRole } from '../interfaces/user.interface';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'jane@example.com' })
@@ -28,5 +29,5 @@ export class CreateUserDto {
   @ApiPropertyOptional({ enum: ['guest', 'admin'], default: 'guest' })
   @IsOptional()
   @IsEnum(['guest', 'admin'])
-  role?: string;
+  role?: Extract<UserRole, 'guest' | 'admin'>;
 }

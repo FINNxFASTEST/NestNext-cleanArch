@@ -5,8 +5,15 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import type { UserRole } from '../users/interfaces/user.interface';
 import { CreateCampsiteDto } from './dto/create-campsite.dto';
+import { UpdateCampsiteDto } from './dto/update-campsite.dto';
 import { Campsite, CampsiteDocument } from './schemas/campsite.schema';
+
+type CampsiteFilter = {
+  status?: 'active' | 'inactive';
+  ownerId?: string;
+};
 
 @Injectable()
 export class CampsitesService {
@@ -20,7 +27,7 @@ export class CampsitesService {
   }
 
   findAll(ownerId?: string) {
-    const filter: Record<string, unknown> = { status: 'active' };
+    const filter: CampsiteFilter = { status: 'active' };
     if (ownerId) filter.ownerId = ownerId;
     return this.campsiteModel.find(filter).lean();
   }
@@ -34,8 +41,8 @@ export class CampsitesService {
   async update(
     id: string,
     callerId: string,
-    callerRole: string,
-    dto: Partial<CreateCampsiteDto>,
+    callerRole: UserRole,
+    dto: UpdateCampsiteDto,
   ) {
     const doc = await this.campsiteModel.findById(id);
     if (!doc) throw new NotFoundException('Campsite not found');
@@ -46,7 +53,7 @@ export class CampsitesService {
     return doc.save();
   }
 
-  async remove(id: string, callerId: string, callerRole: string) {
+  async remove(id: string, callerId: string, callerRole: UserRole) {
     const doc = await this.campsiteModel.findById(id);
     if (!doc) throw new NotFoundException('Campsite not found');
     if (callerRole !== 'admin' && String(doc.ownerId) !== callerId) {
@@ -54,6 +61,6 @@ export class CampsitesService {
     }
     doc.status = 'inactive';
     await doc.save();
-    return { success: true };
+    return { success: true as const };
   }
 }
