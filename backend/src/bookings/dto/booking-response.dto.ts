@@ -1,70 +1,67 @@
 import { ApiProperty } from '@nestjs/swagger';
-import type { IAddOn } from '../interfaces/add-on.interface';
-import type {
-  BookingStatus,
-  IBookingResponse,
-} from '../interfaces/booking.interface';
+import type { AddOn } from '../domain/add-on';
+import type { BookingStatus } from '../domain/booking';
 
-export class AddOnResponseDto implements IAddOn {
+export class AddOnResponseDto implements AddOn {
   @ApiProperty({ example: 'Breakfast for 2' })
-  name: string;
+  name!: string;
 
   @ApiProperty({ example: 350 })
-  price: number;
+  price!: number;
 }
 
-export class BookingResponseDto implements IBookingResponse {
+export class BookingResponseDto {
   @ApiProperty({ example: '65f1a0c8e4b0a1234567890d' })
-  _id: string;
+  _id!: string;
 
   @ApiProperty({
     example: '65f1a0c8e4b0a1234567890c',
     nullable: true,
     description: 'Null for anonymous bookings',
   })
-  userId: string | null;
+  userId!: string | null;
 
   @ApiProperty({ example: '65f1a0c8e4b0a1234567890a' })
-  campsiteId: string;
+  campsiteId!: string;
 
   @ApiProperty({ example: 'Riverside Tent A' })
-  pitchId: string;
+  pitchId!: string;
 
   @ApiProperty({ example: 'Jane Doe' })
-  guestName: string;
+  guestName!: string;
 
   @ApiProperty({ example: 'jane@example.com' })
-  guestEmail: string;
+  guestEmail!: string;
 
   @ApiProperty({ example: '+66812345678' })
-  guestPhone: string;
+  guestPhone!: string;
 
   @ApiProperty({ example: '2026-06-01T00:00:00.000Z' })
-  checkIn: Date;
+  checkIn!: Date;
 
   @ApiProperty({ example: '2026-06-05T00:00:00.000Z' })
-  checkOut: Date;
+  checkOut!: Date;
 
   @ApiProperty({ example: 2 })
-  guests: number;
+  guests!: number;
 
   @ApiProperty({ type: [AddOnResponseDto] })
-  addOns: AddOnResponseDto[];
+  addOns!: AddOnResponseDto[];
 
   @ApiProperty({ example: 4800 })
-  totalPrice: number;
+  totalPrice!: number;
 
   @ApiProperty({
     enum: ['pending', 'confirmed', 'cancelled'],
     example: 'confirmed',
   })
-  status: BookingStatus;
+  status!: BookingStatus;
 
   @ApiProperty({ example: '2026-04-23T10:15:30.000Z' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty({ example: '2026-04-23T10:15:30.000Z' })
-  updatedAt: Date;
+  updatedAt!: Date;
 }
 
 export class UnavailableDatesResponseDto {
@@ -73,5 +70,5 @@ export class UnavailableDatesResponseDto {
     example: ['2026-06-01T00:00:00.000Z', '2026-06-02T00:00:00.000Z'],
     description: 'Dates when the pitch is already booked',
   })
-  dates: Date[];
+  dates!: Date[];
 }

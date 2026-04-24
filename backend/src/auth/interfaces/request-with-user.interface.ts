@@ -1,5 +1,5 @@
 import type { Request } from 'express';
-import type { IAuthUser } from '../../auth/interfaces/auth-user.interface';
+import type { IAuthUser } from './auth-user.interface';
 
 export interface RequestWithUser extends Request {
   user: IAuthUser;

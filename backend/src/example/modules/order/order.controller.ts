@@ -9,7 +9,10 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create order — triggers stock deduction + email notification via events' })
+  @ApiOperation({
+    summary:
+      'Create order — triggers stock deduction + email notification via events',
+  })
   create(@Body() dto: CreateOrderDto) {
     return this.orderService.createOrder(dto);
   }

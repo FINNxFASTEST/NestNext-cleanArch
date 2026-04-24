@@ -9,12 +9,13 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
+import type { PitchType } from '../domain/pitch';
 
 export class PitchDto {
   @ApiProperty() @IsString() name!: string;
   @ApiProperty({ enum: ['tent', 'glamping', 'rv', 'cabin'] })
   @IsEnum(['tent', 'glamping', 'rv', 'cabin'])
-  type!: string;
+  type!: PitchType;
   @ApiProperty() @IsNumber() @Min(1) maxGuests!: number;
   @ApiProperty() @IsNumber() @Min(0) pricePerNight!: number;
 }

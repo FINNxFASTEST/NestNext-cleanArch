@@ -1,4 +1,4 @@
-import type { UserRole } from '../../users/interfaces/user.interface';
+import type { UserRole } from '../../users/domain/user';
 
 export interface IAuthUser {
   userId: string;

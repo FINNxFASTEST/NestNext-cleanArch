@@ -20,6 +20,8 @@ export class OrderCreatedListener {
   handleOrderCancelled(event: OrderCancelledEvent): void {
     const item = this.inventoryService.getItem(event.productId);
     // In a real app this would be a proper restoreStock() method
-    this.logger.log(`🔄 Restoring ${event.quantity} units of ${item.name} (order cancelled)`);
+    this.logger.log(
+      `🔄 Restoring ${event.quantity} units of ${item.name} (order cancelled)`,
+    );
   }
 }
