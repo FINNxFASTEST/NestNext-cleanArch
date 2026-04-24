@@ -3,8 +3,8 @@ import { now, HydratedDocument } from 'mongoose';
 
 import { AuthProvidersEnum } from '../../../../../auth/auth-providers.enum';
 import { EntityDocumentHelper } from '../../../../../utils/document-entity-helper';
-import { StatusSchema } from '../../../../../statuses/infrastructure/persistence/document/entities/status.schema';
-import { RoleSchema } from '../../../../../roles/infrastructure/persistence/document/entities/role.schema';
+import { StatusSchema } from '../../../../../statuses/infrastructure/persistence/status.schema';
+import { RoleSchema } from '../../../../../roles/infrastructure/persistence/role.schema';
 
 export type UserSchemaDocument = HydratedDocument<UserSchemaClass>;
 

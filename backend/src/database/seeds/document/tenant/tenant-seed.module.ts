@@ -4,15 +4,15 @@ import { TenantSeedService } from './tenant-seed.service';
 import {
   OrganizationSchemaClass,
   OrganizationSchema,
-} from '../../../../organizations/infrastructure/persistence/document/entities/organization.schema';
+} from '../../../../organizations/infrastructure/persistence/organization.schema';
 import {
   MembershipSchemaClass,
   MembershipSchema,
-} from '../../../../memberships/infrastructure/persistence/document/entities/membership.schema';
+} from '../../../../memberships/infrastructure/persistence/membership.schema';
 import {
   CampsiteSchemaClass,
   CampsiteSchema,
-} from '../../../../campsites/infrastructure/persistence/document/entities/campsite.schema';
+} from '../../../../campsites/infrastructure/persistence/campsite.schema';
 
 @Module({
   imports: [

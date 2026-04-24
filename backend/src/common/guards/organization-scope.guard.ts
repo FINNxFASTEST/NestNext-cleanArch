@@ -6,8 +6,8 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { MembershipsService } from '../../memberships/memberships.service';
-import { OrganizationsService } from '../../organizations/organizations.service';
+import { FindMembershipByUserAndOrgUseCase } from '../../memberships/application/use-cases/find-membership-by-user-and-org.use-case';
+import { FindOrganizationByIdUseCase } from '../../organizations/application/use-cases/find-organization-by-id.use-case';
 import { RoleEnum } from '../../roles/roles.enum';
 import {
   SCOPED_ORG_KEY,
@@ -27,8 +27,8 @@ type AuthenticatedRequest = {
 export class OrganizationScopeGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly membershipsService: MembershipsService,
-    private readonly organizationsService: OrganizationsService,
+    private readonly findMembershipByUserAndOrg: FindMembershipByUserAndOrgUseCase,
+    private readonly findOrganizationById: FindOrganizationByIdUseCase,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -57,13 +57,12 @@ export class OrganizationScopeGuard implements CanActivate {
       return true;
     }
 
-    const organization =
-      await this.organizationsService.findById(organizationId);
+    const organization = await this.findOrganizationById.execute(organizationId);
     if (!organization) {
       throw new ForbiddenException('organizationNotFound');
     }
 
-    const membership = await this.membershipsService.findByUserAndOrganization(
+    const membership = await this.findMembershipByUserAndOrg.execute(
       user.id,
       organizationId,
     );

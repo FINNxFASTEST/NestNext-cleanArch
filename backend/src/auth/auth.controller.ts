@@ -1,51 +1,62 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
-  Request,
-  Post,
-  UseGuards,
   Patch,
-  Delete,
+  Post,
+  Request,
   SerializeOptions,
+  UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
 import { AuthUpdateDto } from './dto/auth-update.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
+import { RefreshResponseDto } from './dto/refresh-response.dto';
 import { NullableType } from '../utils/types/nullable.type';
 import { User } from '../users/domain/user';
-import { RefreshResponseDto } from './dto/refresh-response.dto';
+import { LoginUseCase } from './application/use-cases/login.use-case';
+import { RegisterUseCase } from './application/use-cases/register.use-case';
+import { GetMeUseCase } from './application/use-cases/get-me.use-case';
+import { UpdateMeUseCase } from './application/use-cases/update-me.use-case';
+import { RefreshTokenUseCase } from './application/use-cases/refresh-token.use-case';
+import { LogoutUseCase } from './application/use-cases/logout.use-case';
+import { SoftDeleteUserUseCase } from './application/use-cases/soft-delete-user.use-case';
 
 @ApiTags('Auth')
-@Controller({
-  path: 'auth',
-  version: '1',
-})
+@Controller({ path: 'auth', version: '1' })
 export class AuthController {
-  constructor(private readonly service: AuthService) {}
+  constructor(
+    private readonly login: LoginUseCase,
+    private readonly register: RegisterUseCase,
+    private readonly getMe: GetMeUseCase,
+    private readonly updateMe: UpdateMeUseCase,
+    private readonly refreshToken: RefreshTokenUseCase,
+    private readonly logout: LogoutUseCase,
+    private readonly softDeleteUser: SoftDeleteUserUseCase,
+  ) {}
 
   @SerializeOptions({ groups: ['me'] })
   @Post('email/login')
   @ApiOkResponse({ type: LoginResponseDto })
   @HttpCode(HttpStatus.OK)
-  public login(@Body() loginDto: AuthEmailLoginDto): Promise<LoginResponseDto> {
-    return this.service.validateLogin(loginDto);
+  public doLogin(@Body() loginDto: AuthEmailLoginDto): Promise<LoginResponseDto> {
+    return this.login.execute(loginDto);
   }
 
   @SerializeOptions({ groups: ['me'] })
   @Post('email/register')
   @ApiOkResponse({ type: LoginResponseDto })
   @HttpCode(HttpStatus.OK)
-  async register(
+  async doRegister(
     @Body() createUserDto: AuthRegisterLoginDto,
   ): Promise<LoginResponseDto> {
-    return this.service.register(createUserDto);
+    return this.register.execute(createUserDto);
   }
 
   @ApiBearerAuth()
@@ -55,7 +66,7 @@ export class AuthController {
   @ApiOkResponse({ type: User })
   @HttpCode(HttpStatus.OK)
   public me(@Request() request): Promise<NullableType<User>> {
-    return this.service.me(request.user);
+    return this.getMe.execute(request.user);
   }
 
   @ApiBearerAuth()
@@ -64,8 +75,8 @@ export class AuthController {
   @Post('refresh')
   @UseGuards(AuthGuard('jwt-refresh'))
   @HttpCode(HttpStatus.OK)
-  public refresh(@Request() request): Promise<RefreshResponseDto> {
-    return this.service.refreshToken({
+  public doRefresh(@Request() request): Promise<Omit<RefreshResponseDto, 'user'>> {
+    return this.refreshToken.execute({
       sessionId: request.user.sessionId,
       hash: request.user.hash,
     });
@@ -75,8 +86,8 @@ export class AuthController {
   @Post('logout')
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.NO_CONTENT)
-  public async logout(@Request() request): Promise<void> {
-    await this.service.logout({ sessionId: request.user.sessionId });
+  public async doLogout(@Request() request): Promise<void> {
+    await this.logout.execute({ sessionId: request.user.sessionId });
   }
 
   @ApiBearerAuth()
@@ -89,7 +100,7 @@ export class AuthController {
     @Request() request,
     @Body() userDto: AuthUpdateDto,
   ): Promise<NullableType<User>> {
-    return this.service.update(request.user, userDto);
+    return this.updateMe.execute(request.user, userDto);
   }
 
   @ApiBearerAuth()
@@ -97,6 +108,6 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.NO_CONTENT)
   public async delete(@Request() request): Promise<void> {
-    return this.service.softDelete(request.user);
+    return this.softDeleteUser.execute(request.user);
   }
 }
