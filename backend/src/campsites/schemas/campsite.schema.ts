@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import type { CampsiteStatus } from '../domain/campsite';
+import type { PitchType } from '../domain/pitch';
 
 export type CampsiteDocument = Campsite & Document;
 
@@ -14,7 +16,7 @@ export class BankAccount {
 export class Pitch {
   @Prop({ required: true }) name!: string;
   @Prop({ required: true, enum: ['tent', 'glamping', 'rv', 'cabin'] })
-  type!: string;
+  type!: PitchType;
   @Prop({ required: true }) maxGuests!: number;
   @Prop({ required: true }) pricePerNight!: number;
 }
@@ -32,8 +34,9 @@ export class Campsite {
   @Prop() location!: string;
   @Prop([String]) images!: string[];
   @Prop([String]) amenities!: string[];
-  @Prop({ type: [Object] }) pitches!: Pitch[];
-  @Prop({ default: 'active', enum: ['active', 'inactive'] }) status!: string;
+  @Prop({ type: [Object] }) pitches!: (Pitch & { _id?: Types.ObjectId })[];
+  @Prop({ default: 'active', enum: ['active', 'inactive'] })
+  status!: CampsiteStatus;
 
   // ── Merchant profile (lives on the campsite, not a separate collection) ──
   @Prop() phone!: string;

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import type { UserRole } from '../users/interfaces/user.interface';
+import type { UserRole } from '../users/domain/user';
 import { CreateCampsiteDto } from './dto/create-campsite.dto';
 import { UpdateCampsiteDto } from './dto/update-campsite.dto';
 import { Campsite, CampsiteDocument } from './schemas/campsite.schema';

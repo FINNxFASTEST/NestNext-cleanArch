@@ -34,9 +34,13 @@ export class OrderService {
     };
 
     const basePrice = basePrices[dto.productId];
-    if (!basePrice) throw new NotFoundException(`Product ${dto.productId} not found`);
+    if (!basePrice)
+      throw new NotFoundException(`Product ${dto.productId} not found`);
 
-    const totalPrice = this.pricingService.calculateTotal(basePrice, dto.quantity);
+    const totalPrice = this.pricingService.calculateTotal(
+      basePrice,
+      dto.quantity,
+    );
 
     const order: Order = {
       id: randomUUID(),
@@ -55,7 +59,13 @@ export class OrderService {
     // No imports of those modules needed here — zero circular dep risk.
     this.eventEmitter.emit(
       'order.created',
-      new OrderCreatedEvent(order.id, order.productId, order.quantity, order.customerEmail, order.totalPrice),
+      new OrderCreatedEvent(
+        order.id,
+        order.productId,
+        order.quantity,
+        order.customerEmail,
+        order.totalPrice,
+      ),
     );
 
     return order;

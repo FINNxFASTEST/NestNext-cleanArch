@@ -11,15 +11,16 @@ import {
   Campsite,
   CampsiteDocument,
 } from '../campsites/schemas/campsite.schema';
-import type { IPitch } from '../campsites/interfaces/pitch.interface';
 import { isDuplicateKeyError } from '../common/utils/is-duplicate-key-error';
-import type { UserRole } from '../users/interfaces/user.interface';
+import type { UserRole } from '../users/domain/user';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import type { IBooking } from './interfaces/booking.interface';
 import { Booking, BookingDocument } from './schemas/booking.schema';
 import { PitchSlot, PitchSlotDocument } from './schemas/pitch-slot.schema';
 
-type EmbeddedPitch = IPitch & { _id?: Types.ObjectId };
+interface BookingAccessShape {
+  userId: Types.ObjectId | string | null;
+  campsiteId: Types.ObjectId | string;
+}
 
 type BookingFilter = {
   campsiteId?: Types.ObjectId | { $in: Types.ObjectId[] };
@@ -52,7 +53,7 @@ export class BookingsService {
     const campsite = await this.campsiteModel.findById(dto.campsiteId);
     if (!campsite) throw new NotFoundException('Campsite not found');
 
-    const pitches = campsite.pitches as unknown as EmbeddedPitch[];
+    const pitches = campsite.pitches;
     const pitch = pitches.find(
       (p) => (p._id && String(p._id) === dto.pitchId) || p.name === dto.pitchId,
     );
@@ -148,7 +149,11 @@ export class BookingsService {
   async findOne(id: string, callerId: string, callerRole: UserRole) {
     const doc = await this.bookingModel.findById(id).lean();
     if (!doc) throw new NotFoundException('Booking not found');
-    await this.assertAccess(doc as unknown as IBooking, callerId, callerRole);
+    await this.assertAccess(
+      { userId: doc.userId, campsiteId: doc.campsiteId },
+      callerId,
+      callerRole,
+    );
     return doc;
   }
 
@@ -159,7 +164,7 @@ export class BookingsService {
       throw new BadRequestException('Booking is already cancelled');
     }
     await this.assertAccess(
-      booking.toObject() as unknown as IBooking,
+      { userId: booking.userId, campsiteId: booking.campsiteId },
       callerId,
       callerRole,
     );
@@ -179,7 +184,7 @@ export class BookingsService {
   }
 
   private async assertAccess(
-    booking: IBooking,
+    booking: BookingAccessShape,
     callerId: string,
     callerRole: UserRole,
   ): Promise<void> {

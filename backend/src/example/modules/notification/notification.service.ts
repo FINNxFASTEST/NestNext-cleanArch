@@ -4,7 +4,11 @@ import { Injectable, Logger } from '@nestjs/common';
 export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
 
-  sendOrderConfirmation(email: string, orderId: string, totalPrice: number): void {
+  sendOrderConfirmation(
+    email: string,
+    orderId: string,
+    totalPrice: number,
+  ): void {
     // In production: integrate with SendGrid / SES here
     this.logger.log(
       `📧 Email sent to ${email} — Order #${orderId} confirmed. Total: $${totalPrice}`,

@@ -11,9 +11,23 @@ export class InventoryService {
 
   // Seed data — simulates a database
   private readonly items = new Map<string, InventoryItem>([
-    ['prod-001', { productId: 'prod-001', name: 'Camping Tent', basePrice: 150, stock: 20 }],
-    ['prod-002', { productId: 'prod-002', name: 'Sleeping Bag', basePrice: 80, stock: 50 }],
-    ['prod-003', { productId: 'prod-003', name: 'Hiking Boots', basePrice: 120, stock: 5 }],
+    [
+      'prod-001',
+      {
+        productId: 'prod-001',
+        name: 'Camping Tent',
+        basePrice: 150,
+        stock: 20,
+      },
+    ],
+    [
+      'prod-002',
+      { productId: 'prod-002', name: 'Sleeping Bag', basePrice: 80, stock: 50 },
+    ],
+    [
+      'prod-003',
+      { productId: 'prod-003', name: 'Hiking Boots', basePrice: 120, stock: 5 },
+    ],
   ]);
 
   getItem(productId: string): InventoryItem {
@@ -28,10 +42,14 @@ export class InventoryService {
       throw new Error(`Insufficient stock for ${productId}`);
     }
     item.stock -= quantity;
-    this.logger.log(`📦 Stock updated — ${item.name}: ${item.stock + quantity} → ${item.stock}`);
+    this.logger.log(
+      `📦 Stock updated — ${item.name}: ${item.stock + quantity} → ${item.stock}`,
+    );
 
     if (item.stock <= 3) {
-      this.logger.warn(`⚠️  ${item.name} is low on stock: ${item.stock} remaining`);
+      this.logger.warn(
+        `⚠️  ${item.name} is low on stock: ${item.stock} remaining`,
+      );
     }
   }
 

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Exclude } from 'class-transformer';
 import { Document } from 'mongoose';
-import type { UserRole } from '../interfaces/user.interface';
+import type { UserRole } from '../domain/user';
 
 export type UserDocument = User & Document;
 

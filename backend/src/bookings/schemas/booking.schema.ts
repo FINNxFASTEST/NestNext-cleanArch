@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import type { BookingStatus } from '../domain/booking';
 
 export type BookingDocument = Booking & Document;
 
@@ -30,7 +31,7 @@ export class Booking {
   @Prop({ required: true }) totalPrice!: number;
 
   @Prop({ default: 'pending', enum: ['pending', 'confirmed', 'cancelled'] })
-  status!: string;
+  status!: BookingStatus;
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);
