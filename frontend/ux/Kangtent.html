@@ -20,6 +20,8 @@
 <script type="text/babel" src="components/Scene.jsx"></script>
 <script type="text/babel" src="components/Shared.jsx"></script>
 <script type="text/babel" src="components/Home.jsx"></script>
+<script type="text/babel" src="components/Search.jsx"></script>
+<script type="text/babel" src="components/Activities.jsx"></script>
 <script type="text/babel" src="components/Detail.jsx"></script>
 <script type="text/babel" src="components/Booking.jsx"></script>
 <script type="text/babel" src="components/Admin.jsx"></script>
@@ -136,28 +138,37 @@ function App() {
           <DCArtboard id="home" label="01 · Home" width={1440} height={3420}>
             <Home />
           </DCArtboard>
-          <DCArtboard id="detail" label="02 · Campsite detail" width={1440} height={2680}>
+          <DCArtboard id="search" label="02 · Search & filter" width={1440} height={2400}>
+            <Search />
+          </DCArtboard>
+          <DCArtboard id="activities" label="03 · Activities feed" width={1440} height={3600}>
+            <Activities />
+          </DCArtboard>
+          <DCArtboard id="activity-detail" label="04 · Activity detail" width={1440} height={2640}>
+            <ActivityDetail />
+          </DCArtboard>
+          <DCArtboard id="detail" label="05 · Campsite detail" width={1440} height={2680}>
             <Detail />
           </DCArtboard>
-          <DCArtboard id="booking" label="03 · Booking checkout" width={1440} height={2080}>
+          <DCArtboard id="booking" label="04 · Booking checkout" width={1440} height={2080}>
             <Booking />
           </DCArtboard>
-          <DCArtboard id="admin" label="04 · Admin · Dashboard" width={1440} height={1100}>
+          <DCArtboard id="admin" label="05 · Admin · Dashboard" width={1440} height={1100}>
             <Admin initial="dashboard" />
           </DCArtboard>
-          <DCArtboard id="admin-camps" label="05 · Admin · Camps" width={1440} height={1100}>
+          <DCArtboard id="admin-camps" label="06 · Admin · Camps" width={1440} height={1100}>
             <Admin initial="camps" />
           </DCArtboard>
-          <DCArtboard id="admin-bookings" label="06 · Admin · Bookings" width={1440} height={1100}>
+          <DCArtboard id="admin-bookings" label="07 · Admin · Bookings" width={1440} height={1100}>
             <Admin initial="bookings" />
           </DCArtboard>
-          <DCArtboard id="admin-users" label="07 · Admin · Users" width={1440} height={1100}>
+          <DCArtboard id="admin-users" label="08 · Admin · Users" width={1440} height={1100}>
             <Admin initial="users" />
           </DCArtboard>
-          <DCArtboard id="admin-coupons" label="08 · Admin · Coupons" width={1440} height={1100}>
+          <DCArtboard id="admin-coupons" label="09 · Admin · Coupons" width={1440} height={1100}>
             <Admin initial="coupons" />
           </DCArtboard>
-          <DCArtboard id="admin-settings" label="09 · Admin · Settings" width={1440} height={1100}>
+          <DCArtboard id="admin-settings" label="10 · Admin · Settings" width={1440} height={1100}>
             <Admin initial="settings" />
           </DCArtboard>
         </DCSection>
