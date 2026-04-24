@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { SessionSchema, SessionSchemaClass } from './persistence/session.schema';
+import {
+  SessionSchema,
+  SessionSchemaClass,
+} from './persistence/session.schema';
 import { SessionRepository } from './persistence/session.repository';
 import { SessionDocumentRepository } from './persistence/session.document-repository';
 

@@ -78,6 +78,7 @@ export class UpdateMeUseCase {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { oldPassword: _removed, ...updatePayload } = userDto;
     await this.updateUser.execute(userJwtPayload.id, updatePayload);
 

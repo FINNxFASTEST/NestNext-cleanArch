@@ -56,7 +56,10 @@ export class MembershipsController {
   @Post('invite')
   @Roles(RoleEnum.admin, RoleEnum.host)
   @UseGuards(OrganizationScopeGuard)
-  @ScopedOrg({ body: 'organizationId', requireMemberRole: ['owner', 'manager'] })
+  @ScopedOrg({
+    body: 'organizationId',
+    requireMemberRole: ['owner', 'manager'],
+  })
   @ApiCreatedResponse({ type: Membership })
   @HttpCode(HttpStatus.CREATED)
   invite(@Body() dto: CreateMembershipDto): Promise<Membership> {

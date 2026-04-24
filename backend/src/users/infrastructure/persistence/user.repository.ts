@@ -3,7 +3,10 @@ import { NullableType } from '../../../utils/types/nullable.type';
 import { IPaginationOptions } from '../../../utils/types/pagination-options';
 import { User } from '../../domain/user';
 
-import { FilterUserDto, SortUserDto } from '../../presentation/dto/query-user.dto';
+import {
+  FilterUserDto,
+  SortUserDto,
+} from '../../presentation/dto/query-user.dto';
 
 export abstract class UserRepository {
   abstract create(

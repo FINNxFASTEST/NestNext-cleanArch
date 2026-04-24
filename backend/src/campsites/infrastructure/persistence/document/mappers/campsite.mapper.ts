@@ -39,9 +39,7 @@ export class CampsiteMapper {
     return domainEntity;
   }
 
-  public static toPersistence(
-    domainEntity: Campsite,
-  ): CampsiteSchemaClass {
+  public static toPersistence(domainEntity: Campsite): CampsiteSchemaClass {
     const persistenceSchema = new CampsiteSchemaClass();
     if (domainEntity.id) {
       persistenceSchema._id = domainEntity.id;

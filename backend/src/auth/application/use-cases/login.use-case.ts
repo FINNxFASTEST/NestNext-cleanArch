@@ -49,7 +49,10 @@ export class LoginUseCase {
       });
     }
 
-    const isValidPassword = await bcrypt.compare(loginDto.password, user.password);
+    const isValidPassword = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
     if (!isValidPassword) {
       throw new UnprocessableEntityException({
         status: HttpStatus.UNPROCESSABLE_ENTITY,

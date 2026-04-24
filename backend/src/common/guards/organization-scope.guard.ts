@@ -57,7 +57,8 @@ export class OrganizationScopeGuard implements CanActivate {
       return true;
     }
 
-    const organization = await this.findOrganizationById.execute(organizationId);
+    const organization =
+      await this.findOrganizationById.execute(organizationId);
     if (!organization) {
       throw new ForbiddenException('organizationNotFound');
     }

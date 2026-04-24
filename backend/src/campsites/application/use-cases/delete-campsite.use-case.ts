@@ -25,10 +25,11 @@ export class DeleteCampsiteUseCase {
 
     const isAdmin = String(actor.role?.id) === String(RoleEnum.admin);
     if (!isAdmin) {
-      const membership = await this.membershipRepository.findByUserAndOrganization(
-        actor.id,
-        existing.organizationId,
-      );
+      const membership =
+        await this.membershipRepository.findByUserAndOrganization(
+          actor.id,
+          existing.organizationId,
+        );
       if (!membership) {
         throw new ForbiddenException('Campsite not found');
       }

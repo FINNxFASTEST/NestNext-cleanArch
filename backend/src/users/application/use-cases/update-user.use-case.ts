@@ -1,4 +1,8 @@
-import { HttpStatus, Injectable, UnprocessableEntityException } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { UserRepository } from '../../infrastructure/persistence/user.repository';
 import { User } from '../../domain/user';
 import { UpdateUserDto } from '../../presentation/dto/update-user.dto';
@@ -12,7 +16,10 @@ import bcrypt from 'bcryptjs';
 export class UpdateUserUseCase {
   constructor(private readonly usersRepository: UserRepository) {}
 
-  async execute(id: User['id'], updateUserDto: UpdateUserDto): Promise<User | null> {
+  async execute(
+    id: User['id'],
+    updateUserDto: UpdateUserDto,
+  ): Promise<User | null> {
     let password: string | undefined = undefined;
     if (updateUserDto.password) {
       const userObject = await this.usersRepository.findById(id);
@@ -24,7 +31,9 @@ export class UpdateUserUseCase {
 
     let email: string | null | undefined = undefined;
     if (updateUserDto.email) {
-      const userObject = await this.usersRepository.findByEmail(updateUserDto.email);
+      const userObject = await this.usersRepository.findByEmail(
+        updateUserDto.email,
+      );
       if (userObject && userObject.id !== id) {
         throw new UnprocessableEntityException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -38,7 +47,9 @@ export class UpdateUserUseCase {
 
     let role: Role | undefined = undefined;
     if (updateUserDto.role?.id) {
-      const valid = Object.values(RoleEnum).map(String).includes(String(updateUserDto.role.id));
+      const valid = Object.values(RoleEnum)
+        .map(String)
+        .includes(String(updateUserDto.role.id));
       if (!valid) {
         throw new UnprocessableEntityException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -50,7 +61,9 @@ export class UpdateUserUseCase {
 
     let status: Status | undefined = undefined;
     if (updateUserDto.status?.id) {
-      const valid = Object.values(StatusEnum).map(String).includes(String(updateUserDto.status.id));
+      const valid = Object.values(StatusEnum)
+        .map(String)
+        .includes(String(updateUserDto.status.id));
       if (!valid) {
         throw new UnprocessableEntityException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,

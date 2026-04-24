@@ -44,7 +44,12 @@ export class RefreshTokenUseCase {
     const { token, refreshToken, tokenExpires } = await generateTokens(
       this.jwtService,
       this.configService,
-      { id: session.user.id, role: { id: user.role.id }, sessionId: session.id, hash },
+      {
+        id: session.user.id,
+        role: { id: user.role.id },
+        sessionId: session.id,
+        hash,
+      },
     );
 
     return { token, refreshToken, tokenExpires };

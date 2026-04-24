@@ -40,7 +40,9 @@ export class MembershipDocumentRepository implements MembershipRepository {
   }
 
   async findByIds(ids: Membership['id'][]): Promise<Membership[]> {
-    const entityObjects = await this.membershipModel.find({ _id: { $in: ids } });
+    const entityObjects = await this.membershipModel.find({
+      _id: { $in: ids },
+    });
     return entityObjects.map((e) => MembershipMapper.toDomain(e));
   }
 
@@ -48,7 +50,10 @@ export class MembershipDocumentRepository implements MembershipRepository {
     userId: string,
     organizationId: string,
   ): Promise<NullableType<Membership>> {
-    const entityObject = await this.membershipModel.findOne({ userId, organizationId });
+    const entityObject = await this.membershipModel.findOne({
+      userId,
+      organizationId,
+    });
     return entityObject ? MembershipMapper.toDomain(entityObject) : null;
   }
 
@@ -62,7 +67,10 @@ export class MembershipDocumentRepository implements MembershipRepository {
     return entityObjects.map((e) => MembershipMapper.toDomain(e));
   }
 
-  async update(id: Membership['id'], payload: Partial<Membership>): Promise<NullableType<Membership>> {
+  async update(
+    id: Membership['id'],
+    payload: Partial<Membership>,
+  ): Promise<NullableType<Membership>> {
     const clonedPayload = { ...payload };
     delete clonedPayload.id;
 
@@ -72,7 +80,10 @@ export class MembershipDocumentRepository implements MembershipRepository {
 
     const entityObject = await this.membershipModel.findOneAndUpdate(
       filter,
-      MembershipMapper.toPersistence({ ...MembershipMapper.toDomain(entity), ...clonedPayload }),
+      MembershipMapper.toPersistence({
+        ...MembershipMapper.toDomain(entity),
+        ...clonedPayload,
+      }),
       { new: true },
     );
     return entityObject ? MembershipMapper.toDomain(entityObject) : null;

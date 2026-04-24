@@ -1,4 +1,8 @@
-import { HttpStatus, Injectable, UnprocessableEntityException } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { UserRepository } from '../../infrastructure/persistence/user.repository';
 import { User } from '../../domain/user';
 import { CreateUserDto } from '../../presentation/dto/create-user.dto';
@@ -22,7 +26,9 @@ export class CreateUserUseCase {
 
     let email: string | null = null;
     if (createUserDto.email) {
-      const existing = await this.usersRepository.findByEmail(createUserDto.email);
+      const existing = await this.usersRepository.findByEmail(
+        createUserDto.email,
+      );
       if (existing) {
         throw new UnprocessableEntityException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -34,7 +40,9 @@ export class CreateUserUseCase {
 
     let role: Role | undefined = undefined;
     if (createUserDto.role?.id) {
-      const valid = Object.values(RoleEnum).map(String).includes(String(createUserDto.role.id));
+      const valid = Object.values(RoleEnum)
+        .map(String)
+        .includes(String(createUserDto.role.id));
       if (!valid) {
         throw new UnprocessableEntityException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -46,7 +54,9 @@ export class CreateUserUseCase {
 
     let status: Status | undefined = undefined;
     if (createUserDto.status?.id) {
-      const valid = Object.values(StatusEnum).map(String).includes(String(createUserDto.status.id));
+      const valid = Object.values(StatusEnum)
+        .map(String)
+        .includes(String(createUserDto.status.id));
       if (!valid) {
         throw new UnprocessableEntityException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,

@@ -31,6 +31,8 @@ export class MembershipSchemaClass extends EntityDocumentHelper {
   updatedAt: Date;
 }
 
-export const MembershipSchema = SchemaFactory.createForClass(MembershipSchemaClass);
+export const MembershipSchema = SchemaFactory.createForClass(
+  MembershipSchemaClass,
+);
 
 MembershipSchema.index({ userId: 1, organizationId: 1 }, { unique: true });

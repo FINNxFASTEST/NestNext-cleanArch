@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { NullableType } from '../../../utils/types/nullable.type';
-import { FilterUserDto, SortUserDto } from '../../presentation/dto/query-user.dto';
+import {
+  FilterUserDto,
+  SortUserDto,
+} from '../../presentation/dto/query-user.dto';
 import { User } from '../../domain/user';
 import { UserRepository } from './user.repository';
 import { UserSchemaClass } from './user.schema';

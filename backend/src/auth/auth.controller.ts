@@ -45,7 +45,9 @@ export class AuthController {
   @Post('email/login')
   @ApiOkResponse({ type: LoginResponseDto })
   @HttpCode(HttpStatus.OK)
-  public doLogin(@Body() loginDto: AuthEmailLoginDto): Promise<LoginResponseDto> {
+  public doLogin(
+    @Body() loginDto: AuthEmailLoginDto,
+  ): Promise<LoginResponseDto> {
     return this.login.execute(loginDto);
   }
 
@@ -75,7 +77,9 @@ export class AuthController {
   @Post('refresh')
   @UseGuards(AuthGuard('jwt-refresh'))
   @HttpCode(HttpStatus.OK)
-  public doRefresh(@Request() request): Promise<Omit<RefreshResponseDto, 'user'>> {
+  public doRefresh(
+    @Request() request,
+  ): Promise<Omit<RefreshResponseDto, 'user'>> {
     return this.refreshToken.execute({
       sessionId: request.user.sessionId,
       hash: request.user.hash,

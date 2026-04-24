@@ -11,10 +11,15 @@ export class CreateOrganizationUseCase {
     private readonly membershipRepository: MembershipRepository,
   ) {}
 
-  async execute(dto: CreateOrganizationDto, ownerId: string): Promise<Organization> {
+  async execute(
+    dto: CreateOrganizationDto,
+    ownerId: string,
+  ): Promise<Organization> {
     const existingSlug = await this.organizationRepository.findBySlug(dto.slug);
     if (existingSlug) {
-      throw new UnprocessableEntityException({ errors: { slug: 'slugAlreadyExists' } });
+      throw new UnprocessableEntityException({
+        errors: { slug: 'slugAlreadyExists' },
+      });
     }
 
     const organization = await this.organizationRepository.create({

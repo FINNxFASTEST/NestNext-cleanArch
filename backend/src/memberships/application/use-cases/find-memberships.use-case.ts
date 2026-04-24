@@ -8,6 +8,8 @@ export class FindMembershipsUseCase {
   constructor(private readonly membershipRepository: MembershipRepository) {}
 
   execute(paginationOptions: IPaginationOptions): Promise<Membership[]> {
-    return this.membershipRepository.findAllWithPagination({ paginationOptions });
+    return this.membershipRepository.findAllWithPagination({
+      paginationOptions,
+    });
   }
 }

@@ -5,7 +5,9 @@ import { NullableType } from '../../../utils/types/nullable.type';
 
 @Injectable()
 export class FindOrganizationByIdUseCase {
-  constructor(private readonly organizationRepository: OrganizationRepository) {}
+  constructor(
+    private readonly organizationRepository: OrganizationRepository,
+  ) {}
 
   execute(id: Organization['id']): Promise<NullableType<Organization>> {
     return this.organizationRepository.findById(id);

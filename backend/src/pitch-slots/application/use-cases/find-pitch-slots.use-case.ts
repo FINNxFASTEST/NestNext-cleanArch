@@ -8,6 +8,8 @@ export class FindPitchSlotsUseCase {
   constructor(private readonly pitchSlotRepository: PitchSlotRepository) {}
 
   execute(paginationOptions: IPaginationOptions): Promise<PitchSlot[]> {
-    return this.pitchSlotRepository.findAllWithPagination({ paginationOptions });
+    return this.pitchSlotRepository.findAllWithPagination({
+      paginationOptions,
+    });
   }
 }

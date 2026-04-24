@@ -10,11 +10,7 @@ import {
 import { MembershipRepository } from '../../../memberships/infrastructure/persistence/membership.repository';
 import { Booking } from '../../domain/booking';
 import { IPaginationOptions } from '../../../utils/types/pagination-options';
-import {
-  BookingActor,
-  isAdmin,
-  isHost,
-} from '../helpers/booking.helpers';
+import { BookingActor, isAdmin, isHost } from '../helpers/booking.helpers';
 
 @Injectable()
 export class FindAllBookingsUseCase {
@@ -47,10 +43,11 @@ export class FindAllBookingsUseCase {
           'organizationId query parameter is required for hosts',
         );
       }
-      const membership = await this.membershipRepository.findByUserAndOrganization(
-        String(actor.id),
-        scopedFilter.organizationId,
-      );
+      const membership =
+        await this.membershipRepository.findByUserAndOrganization(
+          String(actor.id),
+          scopedFilter.organizationId,
+        );
       if (!membership) {
         throw new ForbiddenException('Not a member of this organization');
       }

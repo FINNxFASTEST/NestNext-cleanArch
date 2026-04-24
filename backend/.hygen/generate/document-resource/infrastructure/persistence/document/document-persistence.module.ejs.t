@@ -1,14 +1,14 @@
 ---
-to: src/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>/infrastructure/persistence/document/document-persistence.module.ts
+to: src/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>/infrastructure/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>-persistence.module.ts
 ---
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
   <%= name %>Schema,
   <%= name %>SchemaClass,
-} from './entities/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.schema';
-import { <%= name %>Repository } from '../<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.repository';
-import { <%= name %>DocumentRepository } from './repositories/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.repository';
+} from './persistence/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.schema';
+import { <%= name %>Repository } from './persistence/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.repository';
+import { <%= name %>DocumentRepository } from './persistence/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.document-repository';
 
 @Module({
   imports: [
@@ -24,4 +24,4 @@ import { <%= name %>DocumentRepository } from './repositories/<%= h.inflection.t
   ],
   exports: [<%= name %>Repository],
 })
-export class Document<%= name %>PersistenceModule {}
+export class <%= h.inflection.transform(name, ['pluralize']) %>PersistenceModule {}
