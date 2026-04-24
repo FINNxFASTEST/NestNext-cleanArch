@@ -7,6 +7,7 @@ export type MembershipSchemaDocument = HydratedDocument<MembershipSchemaClass>;
 export type MemberRole = 'owner' | 'manager' | 'staff';
 
 @Schema({
+  collection: 'memberships',
   timestamps: true,
   toJSON: {
     virtuals: true,

@@ -15,6 +15,7 @@ export const BookingAddOnSchemaFactory = SchemaFactory.createForClass(
 );
 
 @Schema({
+  collection: 'bookings',
   timestamps: true,
   toJSON: {
     virtuals: true,

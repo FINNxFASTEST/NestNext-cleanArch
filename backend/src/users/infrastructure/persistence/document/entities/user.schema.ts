@@ -9,6 +9,7 @@ import { RoleSchema } from '../../../../../roles/infrastructure/persistence/docu
 export type UserSchemaDocument = HydratedDocument<UserSchemaClass>;
 
 @Schema({
+  collection: 'users',
   timestamps: true,
   toJSON: {
     virtuals: true,
