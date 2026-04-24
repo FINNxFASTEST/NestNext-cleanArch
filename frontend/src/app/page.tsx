@@ -11,7 +11,7 @@ import { TestimonialCard } from "@/components/home/TestimonialCard";
 import { DestinationCard } from "@/components/home/DestinationCard";
 import { LeafIcon, FlameIcon, MoonIcon, ArrowRIcon } from "@/components/common/Icons";
 import { cn } from "@/lib/utils";
-import { campsitesApi } from "@/lib/api";
+import { campsitesApi } from "@/services";
 import type { Campsite } from "@/types";
 
 const DESTINATIONS = [

@@ -6,7 +6,7 @@ import {
   mapMeResponseToUser,
   membershipsApi,
   persistAuth,
-} from "@/lib/api";
+} from "@/services";
 import type { Membership, User } from "@/types";
 import {
   createContext,

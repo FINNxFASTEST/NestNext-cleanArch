@@ -10,7 +10,7 @@ import { StepHeader } from "@/components/booking/StepHeader";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { bookingsApi, ApiError } from "@/lib/api";
+import { bookingsApi, ApiError } from "@/services";
 import {
   ChevronLIcon, CalendarIcon, UsersIcon,
   CheckIcon, TentIcon, MoonIcon, FlameIcon, CupIcon, LeafIcon,
