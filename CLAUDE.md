@@ -24,15 +24,22 @@ Workspaces:
 ### Backend
 ```bash
 cd backend
-npm run start:dev                     # Watch mode
+npm run start:dev                     # Watch mode (alias: npm run dev)
 npm run build                         # Compile TS → dist/
 npm run start:prod                    # Run dist/
 npm run lint
 npm run test                          # Jest unit tests
+npm run test:watch                    # Jest in watch mode
+npm run test:cov                      # Coverage report
 npm run test:e2e
 npm run seed:run:document             # Seed admin/host/customer + demo org + campsite
 npm run generate:resource:document -- --name Foo    # CLI scaffold
 npm run add:property:to-document                    # Add fields to an existing resource
+```
+
+Run a single test file:
+```bash
+cd backend && npx jest src/bookings/bookings.service.spec.ts
 ```
 
 ### Frontend
@@ -96,7 +103,7 @@ Services depend on the **port** (`CampsiteRepository`), never the document adapt
 | `roles` | Numeric `RoleEnum` + `RolesGuard` + `@Roles()` |
 | `statuses` | Account status (`active`, `inactive`) |
 | `session` | Refresh-token rotation |
-| `organizations` | Tenant root — a host's business |
+| `organizations` | Tenant root — a host's business (`status: pending|approved|suspended`) |
 | `memberships` | `User ↔ Organization` with `owner | manager | staff` |
 | `campsites` | Host-owned listings with embedded pitches |
 | `bookings` | Customer-facing reservations (auth optional) |
@@ -177,27 +184,28 @@ This scaffolds the hexagonal folders exactly as described above. Hand-edit the g
 ```
 frontend/src/
   app/                            # App Router pages
-    page.tsx                      # Public home — calls campsitesApi.list({status:'active'})
+    page.tsx                      # Public home
     campsites/[id]/page.tsx       # Detail + BookingSidebar
     booking/page.tsx              # Guest info + add-ons
     booking/confirmation/page.tsx
     admin/page.tsx                # Host + admin dashboard (views/*View)
     login/page.tsx  register/page.tsx
   components/
-    common/        # Nav, Footer, Scene, Icons
+    common/        # Nav, Footer, Scene, Icons, Stars, Badge, Button, StatusPill, KangtentMark
+    home/          # FeatureCard, SearchBar, TestimonialCard, DestinationCard
     detail/        # Gallery, BookingSidebar, CampPitchList
-    booking/       # FormCard, StepHeader
-    admin/         # AdminSidebar + views/*View
-    ui/            # shadcn primitives
+    booking/       # FormCard, Field, StepHeader
+    admin/         # AdminSidebar, Panel, StatCard + views/{Dashboard,Camps,Bookings,Users,Coupons,Settings}View
+    ui/            # shadcn/ui primitives (pre-generated; edit sparingly)
   contexts/AuthContext.tsx        # token + memberships + currentOrganizationId
-  lib/api.ts                      # /api/v1 fetch wrapper + domain APIs
+  services/                       # HTTP client + per-domain API modules
   middleware.ts                   # Gates /booking/* and /admin/*
   types/index.ts                  # User, Campsite, Booking, Organization, Membership
 ```
 
 ### API client
 
-`lib/api.ts` is prefixed with `/api/v1` and exposes:
+`src/services/` is the API layer (re-exported via `src/lib/api.ts`). `http-client.ts` is the base fetch wrapper (prefixed `NEXT_PUBLIC_API_URL/api/v1`, auto-attaches Bearer token from `localStorage`). Per-domain modules:
 - `authApi` — `login`, `register`, `me`, `logout`, plus `persistAuth`/`clearAuth`/`mapMeResponseToUser`.
 - `campsitesApi` — `list({ organizationId?, status? })`, `get`, `create`, `update`, `remove`. List returns `{ data, hasNextPage }`.
 - `bookingsApi` — `create`, `list`, `get`, `cancel`.
@@ -222,14 +230,22 @@ On hydrate it calls `GET /auth/me`, maps `role.id → 'admin'|'host'|'customer'`
 ### Middleware
 
 [frontend/src/middleware.ts](frontend/src/middleware.ts) decodes the JWT from the cookie and:
-- Redirects `/admin/*` to `/login` unless `role.id ∈ {1, 2}` (admin or host).
+- Redirects `/admin/*` to `/login` unless `role.id ∈ {1, 2}` (admin or host). Preserves `?next=` for post-login redirect.
 - Keeps existing `/booking/*` auth gate (allowing `/booking/confirmation`).
 
-### Admin sidebar
+### Design system
 
-[AdminSidebar](frontend/src/components/admin/AdminSidebar.tsx) uses `useAuth()` to:
-- Hide `users` and `coupons` nav items unless the user is `admin`.
-- Show the active organization's id + member role in the host info card.
+CSS variables are defined in `src/app/globals.css` and mirrored in `tailwind.config.ts`. Always use variables or tokens — never raw hex.
+
+Key tokens: `--ink` (near-black), `--paper` (warm white bg), `--ember` (primary CTA orange), `--forest-*` (dark greens), `--sage-*` (mid greens), `--cream-*` (light warm fills), `--line` / `--line-strong` (borders).
+
+**Typography**: Bai Jamjuree only, loaded via `@font-face`. Use `font-thai` for Thai text, `font-serif` for headings, `font-sans` for eyebrow labels.
+
+**Scene component** (`src/components/common/Scene.tsx`) — SVG illustrated landscape, used as `position:absolute;inset:0` backgrounds. Accepts `variant: "hero"|"dusk"|"forest"|"lake"|"meadow"|"cabin"|"night"`.
+
+**Icons** — all inline SVG in `src/components/common/Icons.tsx`. Add new ones there using the `base` spread.
+
+**UX references** — `frontend/ux/components/` contains JSX exports of the original design for each page. Cross-reference these when implementing or changing UI.
 
 ---
 
