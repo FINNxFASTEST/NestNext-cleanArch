@@ -166,6 +166,88 @@ Implemented in [src/bookings/bookings.service.ts](backend/src/bookings/bookings.
 
 Cancellation (`PATCH /bookings/:id/cancel`) is allowed for the booking's owner, an admin, or any member of the booking's organization. It releases all `PitchSlot` rows for that booking.
 
+### Global app setup (main.ts)
+
+- URI versioning enabled — all routes are `/api/v1/...`
+- **Global `ValidationPipe`** — whitelist + transform; on error returns HTTP 422 with nested error object (not array). Config lives in [src/utils/validation-options.ts](backend/src/utils/validation-options.ts).
+- **Global interceptors** (in order):
+  1. `ResolvePromisesInterceptor` — recursively awaits nested promises in responses.
+  2. `ClassSerializerInterceptor` — applies `@Expose` / `@Exclude` from `class-transformer`.
+- No custom global exception filters — NestJS defaults only.
+- Swagger served at `GET /docs`.
+- CORS enabled globally.
+
+### Config system (src/config/)
+
+Three config schemas, each validated by `class-validator` at startup:
+
+| File | Key | What it provides |
+|---|---|---|
+| `app.config.ts` | `app` | `port`, `apiPrefix`, `frontendDomain`, `fallbackLanguage` |
+| `auth.config.ts` | `auth` | `secret`, `expires`, `refreshSecret`, `refreshExpires` |
+| `database.config.ts` | `database` | `DATABASE_URL` **or** individual host/port/user/pass |
+
+Access via `configService.get('auth.secret', { infer: true })`. All three are unified into `AllConfigType` for typed injection.
+
+### Domain model shapes
+
+**Campsite** — key embedded types:
+- `location: { province, district, lat, lng }` (embedded)
+- `pitches: Pitch[]` — each pitch: `{ id (UUID), type ('tent'|'glamping'|'rv'|'cabin'), name, maxGuests, pricePerNight, size? }`
+- `images: string[]`, `amenities: string[]`
+- `status: 'active' | 'inactive'`
+
+**Booking** — key fields:
+- `userId?: string | null` (null for anonymous)
+- `guestName`, `guestEmail`, `guestPhone?`
+- `checkIn`, `checkOut: Date`, `guests: number`
+- `addOns: { name: string, price: number }[]`
+- `totalPrice: number`
+- `status: 'pending' | 'confirmed' | 'cancelled'`
+
+### Mapper pattern
+
+All mappers are **static-method only**, no DI:
+```ts
+class CampsiteMapper {
+  static toDomain(raw: CampsiteSchemaClass): Campsite { ... }
+  static toPersistence(domain: Campsite): CampsiteSchemaClass { ... }
+}
+```
+- `_id.toString()` → `id` (string) in every `toDomain`.
+- Nullish coalescing: `?? null`, `?? []` — never leave undefined where nullable is expected.
+- Nested arrays (pitches, addOns) are mapped element-by-element manually.
+
+### DTO conventions
+
+- `@Transform(lowerCaseTransformer)` on every email field.
+- Pagination query DTOs coerce `page` / `limit` from string via `@Transform(() => Number(...))`, default `page=1 limit=10`, capped at `limit=50`.
+- Nested objects use `@ValidateNested({ each: true })` + `@Type(() => NestedDto)`.
+- `@IsMongoId()` for any `*Id` field.
+- Geo fields use `@IsLatitude` / `@IsLongitude`.
+
+### Pagination
+
+`infinityPagination(results, { page, limit })` in [src/utils/infinity-pagination.ts](backend/src/utils/infinity-pagination.ts):
+- Returns `{ data: T[], hasNextPage: boolean }`.
+- `hasNextPage = results.length === limit` (fetch one extra is NOT used — caller checks exact count).
+- Swagger: `@ApiOkResponse({ type: InfinityPaginationResponse(Campsite) })`.
+- Frontend polls by incrementing page while `hasNextPage === true`.
+
+### src/utils/ reference
+
+| File | Purpose |
+|---|---|
+| `validation-options.ts` | Global ValidationPipe config (422, whitelist, transform) |
+| `serializer.interceptor.ts` | `ResolvePromisesInterceptor` |
+| `deep-resolver.ts` | Recursive promise-resolver used by above |
+| `document-entity-helper.ts` | `EntityDocumentHelper` base — `@Transform` for `_id → string` |
+| `infinity-pagination.ts` | Pagination helper |
+| `types/deep-partial.type.ts` | `DeepPartial<T>` |
+| `types/maybe.type.ts` | `MaybeType<T> = T \| undefined` |
+| `types/nullable.type.ts` | `NullableType<T> = T \| null` |
+| `transformers/lower-case.transformer.ts` | Lowercases + trims strings (email fields) |
+
 ### Code generation
 
 New resources:
