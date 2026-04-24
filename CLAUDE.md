@@ -56,18 +56,40 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 
 ```
 src/
-  auth/           # JWT strategy, guards, local strategy
+  auth/           # JWT strategy, guards, decorators, interfaces
   users/          # User CRUD, password hashing
   campsites/      # Campsite + pitch management
   bookings/       # Booking creation, availability, cancellation
+  common/         # Shared interfaces and utilities
 ```
 
-Each module follows NestJS conventions: `module.ts`, `controller.ts`, `service.ts`, `dto/`, `schemas/`.
+Each module follows NestJS conventions: `module.ts`, `controller.ts`, `service.ts`, `dto/`, `schemas/`, `interfaces/`.
 
 **Global config:**
 - `ValidationPipe` with `whitelist: true, transform: true`
 - CORS enabled for `http://localhost:3000` only
 - Swagger docs at `GET /api`
+
+### Interfaces Layer
+
+Every domain exposes TypeScript interfaces under its `interfaces/` subdirectory. These are the source of truth for types shared across services, DTOs, and controllers.
+
+| File | Key exports |
+|---|---|
+| `users/interfaces/user.interface.ts` | `UserRole`, `IUser`, `IPublicUser` |
+| `auth/interfaces/jwt-payload.interface.ts` | `IJwtPayload` |
+| `auth/interfaces/auth-user.interface.ts` | `IAuthUser` |
+| `auth/interfaces/auth-response.interface.ts` | `IAuthResponse` |
+| `campsites/interfaces/campsite.interface.ts` | `ICampsite`, `CampsiteStatus` |
+| `campsites/interfaces/pitch.interface.ts` | `IPitch`, `PitchType` |
+| `campsites/interfaces/bank-account.interface.ts` | `IBankAccount` |
+| `bookings/interfaces/booking.interface.ts` | `IBooking`, `BookingStatus` |
+| `bookings/interfaces/add-on.interface.ts` | `IAddOn` |
+| `bookings/interfaces/pitch-slot.interface.ts` | `IPitchSlot` |
+| `common/interfaces/api-response.interface.ts` | `ISuccessResponse`, `IPaginated<T>` |
+| `common/interfaces/request-with-user.interface.ts` | `RequestWithUser`, `OptionalRequestWithUser` |
+
+`UserRole` (`'guest' \| 'merchant' \| 'admin'`) is defined in the users domain and imported everywhere else — do not redefine it inline.
 
 ### Auth System
 
@@ -84,14 +106,29 @@ JWT tokens (7-day expiry) carry `{ sub: userId, email, role }`. Three roles: `gu
 @Roles('merchant', 'admin')
 ```
 
-**Extracting the current user:**
+**Extracting the current user** (type is `IAuthUser`):
 ```typescript
-@CurrentUser() user: { userId: string; email: string; role: string }
+@CurrentUser() user: IAuthUser
 ```
+
+### DTO Pattern
+
+DTOs implement their corresponding interface and decorate every property with `@ApiProperty` / `@ApiPropertyOptional`. Use `IsNotEmpty()` on all required string fields alongside `IsString()`. Use `!` (definite assignment) on required fields and `?` on optional ones.
+
+```typescript
+export class LoginDto {
+  @ApiProperty({ example: 'jane@example.com' })
+  @IsEmail()
+  @IsNotEmpty()
+  email!: string;
+}
+```
+
+Response DTOs (e.g. `AuthResponseDto`) live in `dto/` and implement the corresponding interface from `interfaces/`.
 
 ### Campsite Domain
 
-A `Campsite` document represents a merchant's property and embeds their business profile (bankAccount, taxId, phone). Each campsite contains an array of `pitches` — variants by type (`tent | glamping | rv | cabin`) with individual pricing.
+A `Campsite` document represents a merchant's property and embeds their business profile (`bankAccount`, `taxId`, `phone`). Each campsite contains an array of `pitches` — variants by type (`tent | glamping | rv | cabin`) with individual pricing.
 
 Authorization: merchants can only modify their own campsites (checked by `ownerId` match); admins bypass this.
 
@@ -111,14 +148,24 @@ nights = Math.round((checkOut - checkIn) / 86400000)
 total = (nights × pitch.pricePerNight) + sum(addOns[].price)
 ```
 
+### Schema Conventions
+
+- Use `T & Document` for document types (e.g. `UserDocument = User & Document`)
+- The `User` schema strips `password` and `__v` via `toJSON` / `toObject` transforms — do not use `select: false`. The `UsersService` explicitly calls `.select('-password')` on queries that return user documents publicly; `findByEmail` returns the full document for auth use.
+- Subdocument schemas (e.g. `BankAccount`, `Pitch`) use `@Schema({ _id: false })`
+
 ### Frontend Structure
 
 ```
 src/
-  app/                       # App Router pages
-    campsites/[id]/page.tsx  # Detail + booking sidebar
-    booking/page.tsx         # Multi-step checkout form
-    admin/page.tsx           # Admin dashboard
+  app/                             # App Router pages
+    page.tsx                       # Home
+    campsites/[id]/page.tsx        # Detail + booking sidebar
+    booking/page.tsx               # Multi-step checkout form
+    booking/confirmation/page.tsx  # Post-booking confirmation
+    admin/page.tsx                 # Admin dashboard
+    login/page.tsx                 # Login form
+    register/page.tsx              # Registration form
   components/
     common/                  # Nav, Footer, Scene (SVG backgrounds), Icons
     detail/                  # Gallery, SeasonalCalendar, BookingSidebar
@@ -128,7 +175,12 @@ src/
   lib/api.ts                 # Fetch wrapper + domain API objects
   contexts/AuthContext.tsx   # Token storage, useAuth() hook
   types/index.ts             # Shared TypeScript types
+  middleware.ts              # Route protection for /booking/*
 ```
+
+### Middleware
+
+`middleware.ts` guards `/booking/*` (except `/booking/confirmation`) by checking the `kangtent_token` cookie. On missing token it redirects to `/login?next=<pathname>`. Token is written to both `localStorage` and cookie (`SameSite=Lax`) by `AuthContext` at login/register time.
 
 ### API Client (`lib/api.ts`)
 
@@ -153,6 +205,7 @@ const { user, token, loading, login, register, logout } = useAuth()
 3. Multi-step form on `/booking/page.tsx` collects guest details + add-ons
 4. `bookingsApi.create(dto)` posts to `POST /bookings`
 5. Backend validates, checks availability via PitchSlot, returns booking
+6. On success, user is redirected to `/booking/confirmation`
 
 ### Design System
 
@@ -172,6 +225,8 @@ CSS custom properties (HSL channels) defined in `globals.css`, referenced in `ta
 **`Scene` component** — reusable SVG landscape backgrounds, variants: `hero`, `dusk`, `forest`, `lake`, `meadow`, `cabin`, `night`.
 
 **`cn()` utility** — `clsx` + `tailwind-merge` helper for conditional classes.
+
+**UX reference files** — `frontend/ux/components/` contains JSX design exports for each page. Cross-reference these when implementing new UI.
 
 ---
 
