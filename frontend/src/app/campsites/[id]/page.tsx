@@ -16,7 +16,7 @@ import {
   CarIcon, WifiIcon, CupIcon, DogIcon, MoonIcon,
   MapIcon, ArrowRIcon,
 } from "@/components/common/Icons";
-import { campsitesApi } from "@/lib/api";
+import { campsitesApi } from "@/services";
 import type { Campsite, Pitch } from "@/types";
 
 const AMENITIES = [

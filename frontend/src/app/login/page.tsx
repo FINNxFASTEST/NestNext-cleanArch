@@ -9,7 +9,7 @@ import { Nav } from "@/components/common/Nav";
 import { Footer } from "@/components/common/Footer";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { ApiError } from "@/lib/api";
+import { ApiError } from "@/services";
 
 const schema = z.object({
   email: z.string().email("อีเมลไม่ถูกต้อง"),
