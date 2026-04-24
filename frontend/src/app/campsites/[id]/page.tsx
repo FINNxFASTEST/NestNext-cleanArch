@@ -92,7 +92,14 @@ export default function CampsiteDetailPage() {
         <span className="hidden sm:inline">
           หน้าแรก <span className="mx-2">›</span>
           ค้นหาลานกางเต็นท์ <span className="mx-2">›</span>
-          {campsite.location && <><span>{campsite.location}</span><span className="mx-2 text-ink">›</span></>}
+          {campsite.location && (
+            <>
+              <span>
+                {campsite.location.district} · {campsite.location.province}
+              </span>
+              <span className="mx-2 text-ink">›</span>
+            </>
+          )}
         </span>
         <span className="text-ink">{campsite.name}</span>
       </div>
@@ -121,7 +128,8 @@ export default function CampsiteDetailPage() {
             <div className="font-thai flex flex-wrap items-center gap-x-4 gap-y-1 mt-3.5 text-sm text-forest-600">
               {campsite.location && (
                 <span className="flex items-center gap-1.5">
-                  <PinIcon style={{ width: 14, height: 14 }} /> {campsite.location}
+                  <PinIcon style={{ width: 14, height: 14 }} />{" "}
+                  {campsite.location.district} · {campsite.location.province}
                 </span>
               )}
               <span className="hidden sm:inline w-[3px] h-[3px] rounded-full bg-current opacity-50" />
@@ -211,7 +219,7 @@ export default function CampsiteDetailPage() {
             </div>
             <CampPitchList
               pitches={campsite.pitches}
-              selectedPitchId={selectedPitch?._id ?? selectedPitch?.name}
+              selectedPitchId={selectedPitch?.id ?? selectedPitch?.name}
               qty={qty}
               onSelect={handleSelectPitch}
             />

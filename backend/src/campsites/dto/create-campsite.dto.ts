@@ -1,58 +1,86 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsArray,
-  IsEnum,
+  IsIn,
+  IsLatitude,
+  IsLongitude,
+  IsMongoId,
   IsNumber,
   IsOptional,
   IsString,
   Min,
   ValidateNested,
 } from 'class-validator';
-import type { PitchType } from '../domain/pitch';
 
-export class PitchDto {
-  @ApiProperty() @IsString() name!: string;
-  @ApiProperty({ enum: ['tent', 'glamping', 'rv', 'cabin'] })
-  @IsEnum(['tent', 'glamping', 'rv', 'cabin'])
-  type!: PitchType;
-  @ApiProperty() @IsNumber() @Min(1) maxGuests!: number;
-  @ApiProperty() @IsNumber() @Min(0) pricePerNight!: number;
+export class CreateCampsiteLocationDto {
+  @ApiProperty() @IsString() province: string;
+  @ApiProperty() @IsString() district: string;
+  @ApiProperty() @IsLatitude() lat: number;
+  @ApiProperty() @IsLongitude() lng: number;
 }
 
-export class BankAccountDto {
-  @ApiProperty() @IsString() bankName!: string;
-  @ApiProperty() @IsString() accountNumber!: string;
-  @ApiProperty() @IsString() accountName!: string;
+export class CreatePitchDto {
+  @ApiProperty({ enum: ['tent', 'glamping', 'rv', 'cabin'] })
+  @IsIn(['tent', 'glamping', 'rv', 'cabin'])
+  type: 'tent' | 'glamping' | 'rv' | 'cabin';
+
+  @ApiProperty()
+  @IsString()
+  name: string;
+
+  @ApiProperty({ minimum: 1 })
+  @IsNumber()
+  @Min(1)
+  maxGuests: number;
+
+  @ApiProperty({ minimum: 0 })
+  @IsNumber()
+  @Min(0)
+  pricePerNight: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  size?: string;
 }
 
 export class CreateCampsiteDto {
-  // Listing info
-  @ApiProperty() @IsString() name!: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() description?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() location?: string;
-  @ApiPropertyOptional({ type: [String] })
-  @IsOptional()
-  @IsArray()
-  images?: string[];
-  @ApiPropertyOptional({ type: [String] })
-  @IsOptional()
-  @IsArray()
-  amenities?: string[];
-  @ApiPropertyOptional({ type: [PitchDto] })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PitchDto)
-  pitches?: PitchDto[];
+  @ApiProperty({ type: String })
+  @IsMongoId()
+  organizationId: string;
 
-  // Merchant profile fields
-  @ApiPropertyOptional() @IsOptional() @IsString() phone?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() address?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() taxId?: string;
-  @ApiPropertyOptional({ type: BankAccountDto })
+  @ApiProperty()
+  @IsString()
+  name: string;
+
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiProperty({ type: () => CreateCampsiteLocationDto })
   @ValidateNested()
-  @Type(() => BankAccountDto)
-  bankAccount?: BankAccountDto;
+  @Type(() => CreateCampsiteLocationDto)
+  location: CreateCampsiteLocationDto;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  images?: string[];
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  amenities?: string[];
+
+  @ApiProperty({ type: () => [CreatePitchDto] })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => CreatePitchDto)
+  pitches: CreatePitchDto[];
 }

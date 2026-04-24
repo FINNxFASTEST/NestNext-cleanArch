@@ -5,198 +5,217 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import {
-  Campsite,
-  CampsiteDocument,
-} from '../campsites/schemas/campsite.schema';
-import { isDuplicateKeyError } from '../common/utils/is-duplicate-key-error';
-import type { UserRole } from '../users/domain/user';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { Booking, BookingDocument } from './schemas/booking.schema';
-import { PitchSlot, PitchSlotDocument } from './schemas/pitch-slot.schema';
+import {
+  BookingFilter,
+  BookingRepository,
+} from './infrastructure/persistence/booking.repository';
+import { IPaginationOptions } from '../utils/types/pagination-options';
+import { Booking } from './domain/booking';
+import { CampsitesService } from '../campsites/campsites.service';
+import { PitchSlotsService } from '../pitch-slots/pitch-slots.service';
+import { RoleEnum } from '../roles/roles.enum';
+import { MembershipsService } from '../memberships/memberships.service';
 
-interface BookingAccessShape {
-  userId: Types.ObjectId | string | null;
-  campsiteId: Types.ObjectId | string;
+type MongoWriteError = { code?: number };
+const DUPLICATE_KEY_ERROR_CODE = 11000;
+
+const MS_IN_DAY = 24 * 60 * 60 * 1000;
+
+function dayIterator(from: Date, to: Date): Date[] {
+  const start = new Date(
+    Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate()),
+  );
+  const end = new Date(
+    Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate()),
+  );
+  const dates: Date[] = [];
+  for (let t = start.getTime(); t < end.getTime(); t += MS_IN_DAY) {
+    dates.push(new Date(t));
+  }
+  return dates;
 }
 
-type BookingFilter = {
-  campsiteId?: Types.ObjectId | { $in: Types.ObjectId[] };
-  userId?: Types.ObjectId;
-  status?: 'pending' | 'confirmed' | 'cancelled';
+export type BookingActor = {
+  id: string | number;
+  roleId?: string | number;
 };
+
+function isAdmin(actor: BookingActor): boolean {
+  return String(actor.roleId) === String(RoleEnum.admin);
+}
+
+function isHost(actor: BookingActor): boolean {
+  return String(actor.roleId) === String(RoleEnum.host);
+}
 
 @Injectable()
 export class BookingsService {
   constructor(
-    @InjectModel(Booking.name)
-    private readonly bookingModel: Model<BookingDocument>,
-    @InjectModel(PitchSlot.name)
-    private readonly pitchSlotModel: Model<PitchSlotDocument>,
-    @InjectModel(Campsite.name)
-    private readonly campsiteModel: Model<CampsiteDocument>,
+    private readonly bookingRepository: BookingRepository,
+    private readonly campsitesService: CampsitesService,
+    private readonly pitchSlotsService: PitchSlotsService,
+    private readonly membershipsService: MembershipsService,
   ) {}
 
   async create(
-    dto: CreateBookingDto,
-    userId: string | null,
-  ): Promise<BookingDocument> {
-    const checkIn = new Date(dto.checkIn);
-    const checkOut = new Date(dto.checkOut);
+    createBookingDto: CreateBookingDto,
+    actor?: BookingActor,
+  ): Promise<Booking> {
+    const { campsiteId, pitchId, checkIn, checkOut, guests } = createBookingDto;
 
-    if (checkIn >= checkOut) {
+    if (checkOut <= checkIn) {
       throw new BadRequestException('checkOut must be after checkIn');
     }
 
-    const campsite = await this.campsiteModel.findById(dto.campsiteId);
-    if (!campsite) throw new NotFoundException('Campsite not found');
+    const nights = dayIterator(checkIn, checkOut);
+    if (nights.length === 0) {
+      throw new BadRequestException('Booking must span at least one night');
+    }
 
-    const pitches = campsite.pitches;
-    const pitch = pitches.find(
-      (p) => (p._id && String(p._id) === dto.pitchId) || p.name === dto.pitchId,
-    );
-    if (!pitch) throw new NotFoundException('Pitch not found in campsite');
+    const campsite = await this.campsitesService.findById(campsiteId);
+    if (!campsite) {
+      throw new NotFoundException('Campsite not found');
+    }
+    if (campsite.status !== 'active') {
+      throw new BadRequestException('Campsite is not accepting bookings');
+    }
 
-    const nights = Math.round(
-      (checkOut.getTime() - checkIn.getTime()) / 86_400_000,
-    );
-    const addOns = dto.addOns ?? [];
-    const totalPrice =
-      nights * pitch.pricePerNight +
-      addOns.reduce((sum, a) => sum + a.price, 0);
+    const pitch = campsite.pitches.find((p) => p.id === pitchId);
+    if (!pitch) {
+      throw new NotFoundException('Pitch not found on this campsite');
+    }
+    if (guests > pitch.maxGuests) {
+      throw new BadRequestException(
+        `Pitch allows up to ${pitch.maxGuests} guests`,
+      );
+    }
 
-    const dates = Array.from({ length: nights }, (_, i) => {
-      const d = new Date(checkIn);
-      d.setUTCDate(d.getUTCDate() + i);
-      d.setUTCHours(0, 0, 0, 0);
-      return d;
+    const addOns = createBookingDto.addOns ?? [];
+    const addOnsTotal = addOns.reduce((sum, a) => sum + a.price, 0);
+    const totalPrice = nights.length * pitch.pricePerNight + addOnsTotal;
+
+    const booking = await this.bookingRepository.create({
+      campsiteId: campsite.id,
+      pitchId,
+      organizationId: campsite.organizationId,
+      userId: actor?.id ? String(actor.id) : null,
+      guestName: createBookingDto.guestName,
+      guestEmail: createBookingDto.guestEmail,
+      guestPhone: createBookingDto.guestPhone ?? null,
+      checkIn,
+      checkOut,
+      guests,
+      addOns: addOns.map((a) => ({ name: a.name, price: a.price })),
+      totalPrice,
+      status: 'pending',
     });
 
-    const [booking] = await this.bookingModel.create([
-      {
-        userId: userId ? new Types.ObjectId(userId) : null,
-        campsiteId: new Types.ObjectId(dto.campsiteId),
-        pitchId: dto.pitchId,
-        guestName: dto.guestName,
-        guestEmail: dto.guestEmail,
-        guestPhone: dto.guestPhone,
-        checkIn,
-        checkOut,
-        guests: dto.guests,
-        addOns,
-        totalPrice,
-        status: 'pending',
-      },
-    ]);
-
-    const slots = dates.map((date) => ({
-      pitchId: dto.pitchId,
-      date,
-      bookingId: booking._id,
-    }));
-
     try {
-      await this.pitchSlotModel.insertMany(slots, { ordered: true });
-    } catch (err: unknown) {
-      await this.bookingModel.findByIdAndDelete(booking._id);
-      if (isDuplicateKeyError(err)) {
-        throw new ConflictException(
-          'This pitch is already booked for one or more of the selected nights.',
-        );
+      await this.pitchSlotsService.reserve(
+        nights.map((date) => ({
+          pitchId,
+          campsiteId: campsite.id,
+          bookingId: booking.id,
+          date,
+        })),
+      );
+    } catch (err) {
+      const code = (err as MongoWriteError)?.code;
+      await this.bookingRepository.remove(booking.id);
+      await this.pitchSlotsService.releaseByBookingId(booking.id);
+      if (code === DUPLICATE_KEY_ERROR_CODE) {
+        throw new ConflictException('pitch_already_booked');
       }
       throw err;
     }
 
-    await this.bookingModel.findByIdAndUpdate(booking._id, {
+    const confirmed = await this.bookingRepository.update(booking.id, {
       status: 'confirmed',
     });
-
-    const confirmed = await this.bookingModel.findById(booking._id).lean();
-    if (!confirmed) {
-      throw new NotFoundException('Booking not found after creation');
-    }
-    return confirmed;
+    return confirmed ?? booking;
   }
 
-  async findAll(callerId: string, callerRole: UserRole, campsiteId?: string) {
-    if (callerRole === 'admin') {
-      const filter: BookingFilter = campsiteId
-        ? { campsiteId: new Types.ObjectId(campsiteId) }
-        : {};
-      return this.bookingModel.find(filter).sort({ createdAt: -1 }).lean();
+  async findAllForActor({
+    paginationOptions,
+    actor,
+    filter,
+  }: {
+    paginationOptions: IPaginationOptions;
+    actor: BookingActor;
+    filter?: BookingFilter;
+  }): Promise<Booking[]> {
+    const scopedFilter: BookingFilter = { ...(filter ?? {}) };
+
+    if (isAdmin(actor)) {
+      return this.bookingRepository.findAllWithPagination({
+        paginationOptions,
+        filter: scopedFilter,
+      });
     }
 
-    if (callerRole === 'merchant') {
-      const ownedCampsites = await this.campsiteModel
-        .find({ ownerId: callerId })
-        .select('_id')
-        .lean();
-      const ids = ownedCampsites.map((c) => c._id);
-      const filter: BookingFilter = campsiteId
-        ? { campsiteId: new Types.ObjectId(campsiteId) }
-        : { campsiteId: { $in: ids } };
-      return this.bookingModel.find(filter).sort({ createdAt: -1 }).lean();
+    if (isHost(actor)) {
+      if (!scopedFilter.organizationId) {
+        throw new BadRequestException(
+          'organizationId query parameter is required for hosts',
+        );
+      }
+      const membership = await this.membershipsService.findByUserAndOrganization(
+        String(actor.id),
+        scopedFilter.organizationId,
+      );
+      if (!membership) {
+        throw new ForbiddenException('Not a member of this organization');
+      }
+      return this.bookingRepository.findAllWithPagination({
+        paginationOptions,
+        filter: scopedFilter,
+      });
     }
 
-    return this.bookingModel
-      .find({ userId: new Types.ObjectId(callerId) })
-      .sort({ createdAt: -1 })
-      .lean();
+    return this.bookingRepository.findAllWithPagination({
+      paginationOptions,
+      filter: { ...scopedFilter, userId: String(actor.id) },
+    });
   }
 
-  async findOne(id: string, callerId: string, callerRole: UserRole) {
-    const doc = await this.bookingModel.findById(id).lean();
-    if (!doc) throw new NotFoundException('Booking not found');
-    await this.assertAccess(
-      { userId: doc.userId, campsiteId: doc.campsiteId },
-      callerId,
-      callerRole,
-    );
-    return doc;
+  findById(id: Booking['id']) {
+    return this.bookingRepository.findById(id);
   }
 
-  async cancel(id: string, callerId: string, callerRole: UserRole) {
-    const booking = await this.bookingModel.findById(id);
-    if (!booking) throw new NotFoundException('Booking not found');
+  async cancel(id: Booking['id'], actor: BookingActor): Promise<Booking> {
+    const booking = await this.bookingRepository.findById(id);
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
+    }
     if (booking.status === 'cancelled') {
-      throw new BadRequestException('Booking is already cancelled');
+      return booking;
     }
-    await this.assertAccess(
-      { userId: booking.userId, campsiteId: booking.campsiteId },
-      callerId,
-      callerRole,
-    );
 
-    await this.pitchSlotModel.deleteMany({ bookingId: booking._id });
-    booking.status = 'cancelled';
-    await booking.save();
-    return { success: true as const, bookingId: id };
+    const isOwner =
+      booking.userId && String(booking.userId) === String(actor.id);
+
+    let isOrgMember = false;
+    if (!isAdmin(actor) && !isOwner) {
+      const membership = await this.membershipsService.findByUserAndOrganization(
+        String(actor.id),
+        booking.organizationId,
+      );
+      isOrgMember = !!membership;
+    }
+
+    if (!isAdmin(actor) && !isOwner && !isOrgMember) {
+      throw new ForbiddenException('Cannot cancel this booking');
+    }
+
+    await this.pitchSlotsService.releaseByBookingId(booking.id);
+    const updated = await this.bookingRepository.update(booking.id, {
+      status: 'cancelled',
+    });
+    return updated ?? booking;
   }
 
-  async getUnavailableDates(pitchId: string): Promise<Date[]> {
-    const slots = await this.pitchSlotModel
-      .find({ pitchId })
-      .select('date')
-      .lean();
-    return slots.map((s) => s.date);
-  }
-
-  private async assertAccess(
-    booking: BookingAccessShape,
-    callerId: string,
-    callerRole: UserRole,
-  ): Promise<void> {
-    if (callerRole === 'admin') return;
-    if (booking.userId && String(booking.userId) === callerId) return;
-    if (callerRole === 'merchant') {
-      const campsite = await this.campsiteModel
-        .findById(booking.campsiteId)
-        .select('ownerId')
-        .lean();
-      if (campsite && String(campsite.ownerId) === callerId) return;
-    }
-    throw new ForbiddenException('Access denied');
+  remove(id: Booking['id']) {
+    return this.bookingRepository.remove(id);
   }
 }

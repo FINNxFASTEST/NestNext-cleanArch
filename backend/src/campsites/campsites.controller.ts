@@ -1,102 +1,143 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiForbiddenResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
-  ApiOperation,
-  ApiQuery,
+  ApiParam,
   ApiTags,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import type { IAuthUser } from '../auth/interfaces/auth-user.interface';
-import { SuccessResponseDto } from '../common/dto/cancel-response.dto';
+import { AuthGuard } from '@nestjs/passport';
 import { CampsitesService } from './campsites.service';
-import { CampsiteResponseDto } from './dto/campsite-response.dto';
 import { CreateCampsiteDto } from './dto/create-campsite.dto';
 import { UpdateCampsiteDto } from './dto/update-campsite.dto';
+import { Campsite } from './domain/campsite';
+import {
+  InfinityPaginationResponse,
+  InfinityPaginationResponseDto,
+} from '../utils/dto/infinity-pagination-response.dto';
+import { infinityPagination } from '../utils/infinity-pagination';
+import { FindAllCampsitesDto } from './dto/find-all-campsites.dto';
+import { Roles } from '../roles/roles.decorator';
+import { RoleEnum } from '../roles/roles.enum';
+import { RolesGuard } from '../roles/roles.guard';
+import { OrganizationScopeGuard } from '../common/guards/organization-scope.guard';
+import { ScopedOrg } from '../common/decorators/scoped-org.decorator';
+import { MembershipsService } from '../memberships/memberships.service';
 
-@ApiTags('campsites')
-@Controller('campsites')
+type AuthedRequest = {
+  user?: { id: string; role?: { id: string | number } };
+  scopedOrganizationId?: string;
+};
+
+@ApiTags('Campsites')
+@Controller({
+  path: 'campsites',
+  version: '1',
+})
 export class CampsitesController {
-  constructor(private readonly service: CampsitesService) {}
+  constructor(
+    private readonly campsitesService: CampsitesService,
+    private readonly membershipsService: MembershipsService,
+  ) {}
 
   @Get()
-  @ApiOperation({
-    summary: 'List active campsites. Pass ownerId to filter by merchant.',
-  })
-  @ApiQuery({ name: 'ownerId', required: false })
-  @ApiOkResponse({ type: [CampsiteResponseDto] })
-  findAll(@Query('ownerId') ownerId?: string) {
-    return this.service.findAll(ownerId);
+  @ApiOkResponse({ type: InfinityPaginationResponse(Campsite) })
+  async findAll(
+    @Query() query: FindAllCampsitesDto,
+  ): Promise<InfinityPaginationResponseDto<Campsite>> {
+    const page = query?.page ?? 1;
+    let limit = query?.limit ?? 10;
+    if (limit > 50) limit = 50;
+
+    const results = await this.campsitesService.findAllWithPagination({
+      paginationOptions: { page, limit },
+      filter: {
+        organizationId: query.organizationId,
+        status: query.status ?? 'active',
+      },
+    });
+    return infinityPagination(results, { page, limit });
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get campsite detail' })
-  @ApiOkResponse({ type: CampsiteResponseDto })
-  @ApiNotFoundResponse({ description: 'Campsite not found' })
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(id);
+  @ApiParam({ name: 'id', type: String, required: true })
+  @ApiOkResponse({ type: Campsite })
+  async findById(@Param('id') id: string) {
+    const campsite = await this.campsitesService.findById(id);
+    if (!campsite) {
+      throw new NotFoundException('Campsite not found');
+    }
+    return campsite;
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('merchant', 'admin')
-  @ApiBearerAuth('bearer')
-  @ApiOperation({ summary: 'Create a campsite (merchant/admin)' })
-  @ApiCreatedResponse({ type: CampsiteResponseDto })
-  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
-  @ApiForbiddenResponse({ description: 'Role not permitted' })
-  create(@CurrentUser() user: IAuthUser, @Body() dto: CreateCampsiteDto) {
-    return this.service.create(user.userId, dto);
+  @UseGuards(AuthGuard('jwt'), RolesGuard, OrganizationScopeGuard)
+  @ApiBearerAuth()
+  @Roles(RoleEnum.admin, RoleEnum.host)
+  @ScopedOrg({ body: 'organizationId' })
+  @ApiCreatedResponse({ type: Campsite })
+  create(@Body() dto: CreateCampsiteDto) {
+    return this.campsitesService.create(dto);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('merchant', 'admin')
-  @ApiBearerAuth('bearer')
-  @ApiOperation({
-    summary: 'Update campsite — only owner or admin can do this',
-  })
-  @ApiOkResponse({ type: CampsiteResponseDto })
-  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
-  @ApiForbiddenResponse({ description: 'Not the owner' })
-  @ApiNotFoundResponse({ description: 'Campsite not found' })
-  update(
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @ApiBearerAuth()
+  @Roles(RoleEnum.admin, RoleEnum.host)
+  @ApiParam({ name: 'id', type: String, required: true })
+  @ApiOkResponse({ type: Campsite })
+  async update(
     @Param('id') id: string,
-    @CurrentUser() user: IAuthUser,
     @Body() dto: UpdateCampsiteDto,
+    @Req() req: AuthedRequest,
   ) {
-    return this.service.update(id, user.userId, user.role, dto);
+    await this.ensureCanMutate(id, req);
+    return this.campsitesService.update(id, dto);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('merchant', 'admin')
-  @ApiBearerAuth('bearer')
-  @ApiOperation({
-    summary: 'Deactivate campsite — only owner or admin can do this',
-  })
-  @ApiOkResponse({ type: SuccessResponseDto })
-  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
-  @ApiForbiddenResponse({ description: 'Not the owner' })
-  @ApiNotFoundResponse({ description: 'Campsite not found' })
-  remove(@Param('id') id: string, @CurrentUser() user: IAuthUser) {
-    return this.service.remove(id, user.userId, user.role);
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @ApiBearerAuth()
+  @Roles(RoleEnum.admin, RoleEnum.host)
+  @ApiParam({ name: 'id', type: String, required: true })
+  async remove(@Param('id') id: string, @Req() req: AuthedRequest) {
+    await this.ensureCanMutate(id, req);
+    return this.campsitesService.remove(id);
+  }
+
+  private async ensureCanMutate(id: string, req: AuthedRequest) {
+    const campsite = await this.campsitesService.findById(id);
+    if (!campsite) {
+      throw new NotFoundException('Campsite not found');
+    }
+
+    const user = req.user;
+    if (!user) {
+      throw new BadRequestException('authenticationRequired');
+    }
+
+    const isAdmin = String(user.role?.id) === String(RoleEnum.admin);
+    if (isAdmin) return;
+
+    const membership = await this.membershipsService.findByUserAndOrganization(
+      user.id,
+      campsite.organizationId,
+    );
+    if (!membership) {
+      throw new NotFoundException('Campsite not found');
+    }
   }
 }

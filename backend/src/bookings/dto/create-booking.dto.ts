@@ -1,39 +1,72 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
-  IsDateString,
+  IsDate,
   IsEmail,
+  IsInt,
   IsMongoId,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   Min,
   ValidateNested,
 } from 'class-validator';
+import { lowerCaseTransformer } from '../../utils/transformers/lower-case.transformer';
 
-export class AddOnDto {
-  @ApiProperty() @IsString() @IsNotEmpty() name!: string;
-  @ApiProperty() @IsNumber() @Min(0) price!: number;
+export class BookingAddOnDto {
+  @ApiProperty()
+  @IsString()
+  name: string;
+
+  @ApiProperty({ minimum: 0 })
+  @IsNumber()
+  @Min(0)
+  price: number;
 }
 
 export class CreateBookingDto {
-  @ApiProperty() @IsMongoId() @IsNotEmpty() campsiteId!: string;
-  @ApiProperty() @IsString() @IsNotEmpty() pitchId!: string;
+  @ApiProperty({ type: String })
+  @IsMongoId()
+  campsiteId: string;
 
-  @ApiProperty() @IsString() @IsNotEmpty() guestName!: string;
-  @ApiProperty() @IsEmail() @IsNotEmpty() guestEmail!: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() guestPhone?: string;
+  @ApiProperty({ type: String })
+  @IsMongoId()
+  pitchId: string;
 
-  @ApiProperty({ example: '2025-06-01' }) @IsDateString() @IsNotEmpty() checkIn!: string;
-  @ApiProperty({ example: '2025-06-05' }) @IsDateString() @IsNotEmpty() checkOut!: string;
-  @ApiProperty() @IsNumber() @Min(1) guests!: number;
+  @ApiProperty()
+  @IsString()
+  guestName: string;
 
-  @ApiPropertyOptional({ type: [AddOnDto] })
+  @ApiProperty()
+  @IsEmail()
+  @Transform(lowerCaseTransformer)
+  guestEmail: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  guestPhone?: string;
+
+  @ApiProperty({ type: Date })
+  @Type(() => Date)
+  @IsDate()
+  checkIn: Date;
+
+  @ApiProperty({ type: Date })
+  @Type(() => Date)
+  @IsDate()
+  checkOut: Date;
+
+  @ApiProperty({ minimum: 1 })
+  @IsInt()
+  @Min(1)
+  guests: number;
+
+  @ApiPropertyOptional({ type: () => [BookingAddOnDto] })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => AddOnDto)
-  addOns?: AddOnDto[];
+  @Type(() => BookingAddOnDto)
+  addOns?: BookingAddOnDto[];
 }

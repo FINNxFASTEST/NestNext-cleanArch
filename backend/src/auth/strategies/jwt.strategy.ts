@@ -1,25 +1,27 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import type { IAuthUser } from '../interfaces/auth-user.interface';
-import type { IJwtPayload } from '../interfaces/jwt-payload.interface';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { ConfigService } from '@nestjs/config';
+import { OrNeverType } from '../../utils/types/or-never.type';
+import { JwtPayloadType } from './types/jwt-payload.type';
+import { AllConfigType } from '../../config/config.type';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(config: ConfigService) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+  constructor(configService: ConfigService<AllConfigType>) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
-      secretOrKey: config.get<string>('JWT_SECRET') as string,
+      secretOrKey: configService.getOrThrow('auth.secret', { infer: true }),
     });
   }
 
-  validate(payload: IJwtPayload): IAuthUser {
-    return {
-      userId: payload.sub,
-      email: payload.email,
-      role: payload.role,
-    };
+  // Why we don't check if the user exists in the database:
+  // https://github.com/brocoders/nestjs-boilerplate/blob/main/docs/auth.md#about-jwt-strategy
+  public validate(payload: JwtPayloadType): OrNeverType<JwtPayloadType> {
+    if (!payload.id) {
+      throw new UnauthorizedException();
+    }
+
+    return payload;
   }
 }

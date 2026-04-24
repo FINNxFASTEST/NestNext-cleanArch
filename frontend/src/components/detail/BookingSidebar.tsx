@@ -45,12 +45,15 @@ export function BookingSidebar({
 
   function handleBook() {
     if (!selectedPitch || !checkIn || !checkOut || nights < 1) return;
+    const locationLabel = campsite.location
+      ? `${campsite.location.district} · ${campsite.location.province}`
+      : "";
     const params = new URLSearchParams({
-      campsiteId: campsite._id,
-      pitchId: selectedPitch._id ?? selectedPitch.name,
+      campsiteId: campsite.id,
+      pitchId: selectedPitch.id ?? selectedPitch.name,
       pitchName: selectedPitch.name,
       campsiteName: campsite.name,
-      location: campsite.location ?? "",
+      location: locationLabel,
       checkIn,
       checkOut,
       guests: String(guests),

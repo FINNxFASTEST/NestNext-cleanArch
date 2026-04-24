@@ -1,48 +1,49 @@
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import 'dotenv/config';
+import {
+  ClassSerializerInterceptor,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { useContainer } from 'class-validator';
 import { AppModule } from './app.module';
+import validationOptions from './utils/validation-options';
+import { AllConfigType } from './config/config.type';
+import { ResolvePromisesInterceptor } from './utils/serializer.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: true });
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
+  const configService = app.get(ConfigService<AllConfigType>);
 
-  app.enableCors({ origin: 'http://localhost:3000' });
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      forbidNonWhitelisted: true,
-    }),
+  app.enableShutdownHooks();
+  app.setGlobalPrefix(
+    configService.getOrThrow('app.apiPrefix', { infer: true }),
+    {
+      exclude: ['/'],
+    },
   );
-
+  app.enableVersioning({
+    type: VersioningType.URI,
+  });
+  app.useGlobalPipes(new ValidationPipe(validationOptions));
   app.useGlobalInterceptors(
-    new ClassSerializerInterceptor(app.get(Reflector), {
-      excludeExtraneousValues: false,
-    }),
+    new ResolvePromisesInterceptor(),
+    new ClassSerializerInterceptor(app.get(Reflector)),
   );
 
-  const config = new DocumentBuilder()
+  const options = new DocumentBuilder()
     .setTitle('Kangtent API')
-    .setDescription('Campsite booking API — campsites, pitches, bookings')
+    .setDescription('Campsite booking platform API')
     .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Paste your JWT here (without the "Bearer " prefix).',
-      },
-      'bearer',
-    )
+    .addBearerAuth()
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup('docs', app, document);
 
-  const port = process.env.PORT ?? 3001;
-  await app.listen(port);
-  console.log(`\n🏕️  Kangtent API running on http://localhost:${port}`);
-  console.log(`📖 Swagger docs at http://localhost:${port}/api\n`);
+  await app.listen(configService.getOrThrow('app.port', { infer: true }));
 }
 void bootstrap();
