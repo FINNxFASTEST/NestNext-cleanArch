@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { OrganizationSchema, OrganizationSchemaClass } from './persistence/organization.schema';
+import {
+  OrganizationSchema,
+  OrganizationSchemaClass,
+} from './persistence/organization.schema';
 import { OrganizationRepository } from './persistence/organization.repository';
 import { OrganizationDocumentRepository } from './persistence/organization.document-repository';
 

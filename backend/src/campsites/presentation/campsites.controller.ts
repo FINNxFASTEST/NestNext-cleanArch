@@ -67,7 +67,10 @@ export class CampsitesController {
 
     const results = await this.findCampsites.execute(
       { page, limit },
-      { organizationId: query.organizationId, status: query.status ?? 'active' },
+      {
+        organizationId: query.organizationId,
+        status: query.status ?? 'active',
+      },
     );
     return infinityPagination(results, { page, limit });
   }

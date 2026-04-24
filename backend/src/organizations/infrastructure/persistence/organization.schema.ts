@@ -2,7 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { now, HydratedDocument } from 'mongoose';
 import { EntityDocumentHelper } from '../../../utils/document-entity-helper';
 
-export type OrganizationSchemaDocument = HydratedDocument<OrganizationSchemaClass>;
+export type OrganizationSchemaDocument =
+  HydratedDocument<OrganizationSchemaClass>;
 
 @Schema({ _id: false })
 export class OrganizationBankAccountSchema {
@@ -66,4 +67,6 @@ export class OrganizationSchemaClass extends EntityDocumentHelper {
   updatedAt: Date;
 }
 
-export const OrganizationSchema = SchemaFactory.createForClass(OrganizationSchemaClass);
+export const OrganizationSchema = SchemaFactory.createForClass(
+  OrganizationSchemaClass,
+);

@@ -8,7 +8,9 @@ export class UpdateSessionByHashUseCase {
 
   execute(
     conditions: { id: Session['id']; hash: Session['hash'] },
-    payload: Partial<Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>>,
+    payload: Partial<
+      Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>
+    >,
   ): Promise<Session | null> {
     return this.sessionRepository.updateByHash(conditions, payload);
   }

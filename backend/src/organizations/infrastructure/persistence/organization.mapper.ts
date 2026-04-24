@@ -1,5 +1,11 @@
-import { Organization, OrganizationBankAccount } from '../../domain/organization';
-import { OrganizationBankAccountSchema, OrganizationSchemaClass } from './organization.schema';
+import {
+  Organization,
+  OrganizationBankAccount,
+} from '../../domain/organization';
+import {
+  OrganizationBankAccountSchema,
+  OrganizationSchemaClass,
+} from './organization.schema';
 
 export class OrganizationMapper {
   public static toDomain(raw: OrganizationSchemaClass): Organization {
@@ -28,7 +34,9 @@ export class OrganizationMapper {
     return domainEntity;
   }
 
-  public static toPersistence(domainEntity: Organization): OrganizationSchemaClass {
+  public static toPersistence(
+    domainEntity: Organization,
+  ): OrganizationSchemaClass {
     const persistenceSchema = new OrganizationSchemaClass();
     if (domainEntity.id) {
       persistenceSchema._id = domainEntity.id;

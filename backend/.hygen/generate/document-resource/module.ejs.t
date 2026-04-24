@@ -1,21 +1,31 @@
 ---
 to: src/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.module.ts
 ---
-import {
-  // do not remove this comment
-  Module,
-} from '@nestjs/common';
-import { <%= h.inflection.transform(name, ['pluralize']) %>Service } from './<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.service';
-import { <%= h.inflection.transform(name, ['pluralize']) %>Controller } from './<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.controller';
-import { Document<%= name %>PersistenceModule } from './infrastructure/persistence/document/document-persistence.module';
+import { Module } from '@nestjs/common';
+import { <%= h.inflection.transform(name, ['pluralize']) %>PersistenceModule } from './infrastructure/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>-persistence.module';
+import { <%= h.inflection.transform(name, ['pluralize']) %>Controller } from './presentation/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.controller';
+import { Create<%= name %>UseCase } from './application/use-cases/create-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.use-case';
+import { Find<%= h.inflection.transform(name, ['pluralize']) %>UseCase } from './application/use-cases/find-<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.use-case';
+import { Find<%= name %>ByIdUseCase } from './application/use-cases/find-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>-by-id.use-case';
+import { Update<%= name %>UseCase } from './application/use-cases/update-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.use-case';
+import { Remove<%= name %>UseCase } from './application/use-cases/remove-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.use-case';
 
 @Module({
   imports: [
     // do not remove this comment
-    Document<%= name %>PersistenceModule,
+    <%= h.inflection.transform(name, ['pluralize']) %>PersistenceModule,
   ],
   controllers: [<%= h.inflection.transform(name, ['pluralize']) %>Controller],
-  providers: [<%= h.inflection.transform(name, ['pluralize']) %>Service],
-  exports: [<%= h.inflection.transform(name, ['pluralize']) %>Service, Document<%= name %>PersistenceModule],
+  providers: [
+    Create<%= name %>UseCase,
+    Find<%= h.inflection.transform(name, ['pluralize']) %>UseCase,
+    Find<%= name %>ByIdUseCase,
+    Update<%= name %>UseCase,
+    Remove<%= name %>UseCase,
+  ],
+  exports: [
+    Find<%= name %>ByIdUseCase,
+    <%= h.inflection.transform(name, ['pluralize']) %>PersistenceModule,
+  ],
 })
 export class <%= h.inflection.transform(name, ['pluralize']) %>Module {}

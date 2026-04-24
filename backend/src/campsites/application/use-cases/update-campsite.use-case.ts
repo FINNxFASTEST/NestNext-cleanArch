@@ -29,10 +29,11 @@ export class UpdateCampsiteUseCase {
 
     const isAdmin = String(actor.role?.id) === String(RoleEnum.admin);
     if (!isAdmin) {
-      const membership = await this.membershipRepository.findByUserAndOrganization(
-        actor.id,
-        existing.organizationId,
-      );
+      const membership =
+        await this.membershipRepository.findByUserAndOrganization(
+          actor.id,
+          existing.organizationId,
+        );
       if (!membership) {
         throw new ForbiddenException('Campsite not found');
       }
@@ -41,7 +42,8 @@ export class UpdateCampsiteUseCase {
     const payload: Partial<Campsite> = {};
 
     if (dto.name !== undefined) payload.name = dto.name;
-    if (dto.description !== undefined) payload.description = dto.description ?? null;
+    if (dto.description !== undefined)
+      payload.description = dto.description ?? null;
     if (dto.images !== undefined) payload.images = dto.images;
     if (dto.amenities !== undefined) payload.amenities = dto.amenities;
     if (dto.status !== undefined) payload.status = dto.status;

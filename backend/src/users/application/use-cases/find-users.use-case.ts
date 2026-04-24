@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../../infrastructure/persistence/user.repository';
 import { User } from '../../domain/user';
-import { FilterUserDto, SortUserDto } from '../../presentation/dto/query-user.dto';
+import {
+  FilterUserDto,
+  SortUserDto,
+} from '../../presentation/dto/query-user.dto';
 import { IPaginationOptions } from '../../../utils/types/pagination-options';
 
 @Injectable()

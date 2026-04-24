@@ -40,7 +40,9 @@ export class OrganizationDocumentRepository implements OrganizationRepository {
   }
 
   async findByIds(ids: Organization['id'][]): Promise<Organization[]> {
-    const entityObjects = await this.organizationModel.find({ _id: { $in: ids } });
+    const entityObjects = await this.organizationModel.find({
+      _id: { $in: ids },
+    });
     return entityObjects.map((e) => OrganizationMapper.toDomain(e));
   }
 
@@ -54,7 +56,10 @@ export class OrganizationDocumentRepository implements OrganizationRepository {
     return entityObjects.map((e) => OrganizationMapper.toDomain(e));
   }
 
-  async update(id: Organization['id'], payload: Partial<Organization>): Promise<NullableType<Organization>> {
+  async update(
+    id: Organization['id'],
+    payload: Partial<Organization>,
+  ): Promise<NullableType<Organization>> {
     const clonedPayload = { ...payload };
     delete clonedPayload.id;
 
@@ -64,7 +69,10 @@ export class OrganizationDocumentRepository implements OrganizationRepository {
 
     const entityObject = await this.organizationModel.findOneAndUpdate(
       filter,
-      OrganizationMapper.toPersistence({ ...OrganizationMapper.toDomain(entity), ...clonedPayload }),
+      OrganizationMapper.toPersistence({
+        ...OrganizationMapper.toDomain(entity),
+        ...clonedPayload,
+      }),
       { new: true },
     );
     return entityObject ? OrganizationMapper.toDomain(entityObject) : null;

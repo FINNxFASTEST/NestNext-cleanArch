@@ -5,9 +5,13 @@ import { IPaginationOptions } from '../../../utils/types/pagination-options';
 
 @Injectable()
 export class FindOrganizationsUseCase {
-  constructor(private readonly organizationRepository: OrganizationRepository) {}
+  constructor(
+    private readonly organizationRepository: OrganizationRepository,
+  ) {}
 
   execute(paginationOptions: IPaginationOptions): Promise<Organization[]> {
-    return this.organizationRepository.findAllWithPagination({ paginationOptions });
+    return this.organizationRepository.findAllWithPagination({
+      paginationOptions,
+    });
   }
 }

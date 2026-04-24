@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { BookingSchemaClass, BookingSchema } from './persistence/booking.schema';
+import {
+  BookingSchemaClass,
+  BookingSchema,
+} from './persistence/booking.schema';
 import { BookingRepository } from './persistence/booking.repository';
 import { BookingDocumentRepository } from './persistence/booking.document-repository';
 

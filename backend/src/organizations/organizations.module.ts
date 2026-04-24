@@ -11,10 +11,7 @@ import { UpdateOrganizationUseCase } from './application/use-cases/update-organi
 import { RemoveOrganizationUseCase } from './application/use-cases/remove-organization.use-case';
 
 @Module({
-  imports: [
-    OrganizationsPersistenceModule,
-    MembershipsPersistenceModule,
-  ],
+  imports: [OrganizationsPersistenceModule, MembershipsPersistenceModule],
   controllers: [OrganizationsController],
   providers: [
     CreateOrganizationUseCase,

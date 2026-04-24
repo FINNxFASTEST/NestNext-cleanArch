@@ -1,15 +1,15 @@
 ---
-to: src/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>/infrastructure/persistence/document/repositories/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.repository.ts
+to: src/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>/infrastructure/persistence/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.document-repository.ts
 ---
 import { Injectable } from '@nestjs/common';
-import { NullableType } from '../../../../../utils/types/nullable.type';
+import { NullableType } from '../../../../utils/types/nullable.type';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { <%= name %>SchemaClass } from '../entities/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.schema';
-import { <%= name %>Repository } from '../../<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.repository';
-import { <%= name %> } from '../../../../domain/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>';
-import { <%= name %>Mapper } from '../mappers/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.mapper';
-import { IPaginationOptions } from '../../../../../utils/types/pagination-options';
+import { <%= name %>SchemaClass } from './<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.schema';
+import { <%= name %>Repository } from './<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.repository';
+import { <%= name %> } from '../../domain/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>';
+import { <%= name %>Mapper } from './<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.mapper';
+import { IPaginationOptions } from '../../../../utils/types/pagination-options';
 
 @Injectable()
 export class <%= name %>DocumentRepository implements <%= name %>Repository {
@@ -18,8 +18,8 @@ export class <%= name %>DocumentRepository implements <%= name %>Repository {
     private readonly <%= h.inflection.camelize(name, true) %>Model: Model<<%= name %>SchemaClass>,
   ) {}
 
-  async create(data: <%= name %>): Promise<<%= name %>> {
-    const persistenceModel = <%= name %>Mapper.toPersistence(data);
+  async create(data: Omit<<%= name %>, 'id' | 'createdAt' | 'updatedAt'>): Promise<<%= name %>> {
+    const persistenceModel = <%= name %>Mapper.toPersistence(data as <%= name %>);
     const createdEntity = new this.<%= h.inflection.camelize(name, true) %>Model(persistenceModel);
     const entityObject = await createdEntity.save();
     return <%= name %>Mapper.toDomain(entityObject);

@@ -13,6 +13,8 @@ export class FindOrganizationsForUserUseCase {
   async execute(userId: string): Promise<Organization[]> {
     const memberships = await this.membershipRepository.findByUserId(userId);
     if (!memberships.length) return [];
-    return this.organizationRepository.findByIds(memberships.map((m) => m.organizationId));
+    return this.organizationRepository.findByIds(
+      memberships.map((m) => m.organizationId),
+    );
   }
 }

@@ -32,8 +32,7 @@ export class PitchSlotSchemaClass extends EntityDocumentHelper {
   updatedAt: Date;
 }
 
-export const PitchSlotSchema = SchemaFactory.createForClass(
-  PitchSlotSchemaClass,
-);
+export const PitchSlotSchema =
+  SchemaFactory.createForClass(PitchSlotSchemaClass);
 
 PitchSlotSchema.index({ pitchId: 1, date: 1 }, { unique: true });

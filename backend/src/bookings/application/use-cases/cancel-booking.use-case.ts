@@ -31,10 +31,11 @@ export class CancelBookingUseCase {
 
     let isOrgMember = false;
     if (!isAdmin(actor) && !isOwner) {
-      const membership = await this.membershipRepository.findByUserAndOrganization(
-        String(actor.id),
-        booking.organizationId,
-      );
+      const membership =
+        await this.membershipRepository.findByUserAndOrganization(
+          String(actor.id),
+          booking.organizationId,
+        );
       isOrgMember = !!membership;
     }
 

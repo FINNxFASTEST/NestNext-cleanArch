@@ -147,6 +147,48 @@ Open: `http://localhost:3000`
 3. Check API docs at `http://localhost:3001/docs`
 4. Confirm frontend can load campsites data from backend
 
+## Code generation
+
+Scaffold a new clean-architecture domain module from the project root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\new-resource.ps1 -Name Coupon
+```
+
+Or from inside `backend/`:
+
+```bash
+npm run generate:resource:document -- --name Coupon
+```
+
+This generates the full structure under `src/coupons/`:
+
+```
+application/use-cases/   ← 5 use cases (create, findAll, findById, update, remove)
+domain/                  ← domain class
+infrastructure/
+  persistence/           ← schema, mapper, document-repository, repository port
+  *-persistence.module.ts
+presentation/
+  dto/                   ← create, update, find-all, domain DTOs
+  *.controller.ts
+*.module.ts
+```
+
+After scaffolding:
+1. Add fields to `domain/<name>.ts`
+2. Add `@Prop()` fields to `infrastructure/persistence/<name>.schema.ts`
+3. Map them in `infrastructure/persistence/<name>.mapper.ts`
+4. Fill in the DTO classes in `presentation/dto/`
+5. Implement use-case bodies in `application/use-cases/`
+
+To add a field to an existing resource interactively:
+
+```bash
+cd backend
+npm run add:property:to-document
+```
+
 ## Useful commands
 
 ### Backend (`backend/`)
@@ -157,6 +199,7 @@ npm run build
 npm run start:prod
 npm run lint
 npm run test
+npm run seed:run:document
 ```
 
 ### Frontend (`frontend/`)

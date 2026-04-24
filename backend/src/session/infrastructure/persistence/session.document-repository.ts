@@ -58,7 +58,9 @@ export class SessionDocumentRepository implements SessionRepository {
 
   async updateByHash(
     conditions: { id: Session['id']; hash: Session['hash'] },
-    payload: Partial<Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>>,
+    payload: Partial<
+      Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>
+    >,
   ): Promise<Session | null> {
     const sessionObject = await this.sessionModel.findOneAndUpdate(
       { _id: conditions.id.toString(), hash: conditions.hash },

@@ -10,9 +10,8 @@ export class BookingAddOnSchema {
   @Prop({ type: Number, required: true }) price: number;
 }
 
-export const BookingAddOnSchemaFactory = SchemaFactory.createForClass(
-  BookingAddOnSchema,
-);
+export const BookingAddOnSchemaFactory =
+  SchemaFactory.createForClass(BookingAddOnSchema);
 
 @Schema({
   collection: 'bookings',

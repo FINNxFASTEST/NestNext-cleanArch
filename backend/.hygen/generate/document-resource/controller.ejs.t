@@ -1,5 +1,5 @@
 ---
-to: src/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.controller.ts
+to: src/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>/presentation/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.controller.ts
 ---
 import {
   Controller,
@@ -11,10 +11,9 @@ import {
   Delete,
   UseGuards,
   Query,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import { <%= h.inflection.transform(name, ['pluralize']) %>Service } from './<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.service';
-import { Create<%= name %>Dto } from './dto/create-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.dto';
-import { Update<%= name %>Dto } from './dto/update-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.dto';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -22,14 +21,21 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import { <%= name %> } from './domain/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>';
 import { AuthGuard } from '@nestjs/passport';
+import { <%= name %> } from '../domain/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>';
 import {
   InfinityPaginationResponse,
   InfinityPaginationResponseDto,
-} from '../utils/dto/infinity-pagination-response.dto';
-import { infinityPagination } from '../utils/infinity-pagination';
+} from '../../utils/dto/infinity-pagination-response.dto';
+import { infinityPagination } from '../../utils/infinity-pagination';
+import { Create<%= name %>Dto } from './dto/create-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.dto';
+import { Update<%= name %>Dto } from './dto/update-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.dto';
 import { FindAll<%= h.inflection.transform(name, ['pluralize']) %>Dto } from './dto/find-all-<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.dto';
+import { Create<%= name %>UseCase } from '../application/use-cases/create-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.use-case';
+import { Find<%= h.inflection.transform(name, ['pluralize']) %>UseCase } from '../application/use-cases/find-<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.use-case';
+import { Find<%= name %>ByIdUseCase } from '../application/use-cases/find-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>-by-id.use-case';
+import { Update<%= name %>UseCase } from '../application/use-cases/update-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.use-case';
+import { Remove<%= name %>UseCase } from '../application/use-cases/remove-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.use-case';
 
 @ApiTags('<%= h.inflection.transform(name, ['pluralize', 'humanize']) %>')
 @ApiBearerAuth()
@@ -39,76 +45,54 @@ import { FindAll<%= h.inflection.transform(name, ['pluralize']) %>Dto } from './
   version: '1',
 })
 export class <%= h.inflection.transform(name, ['pluralize']) %>Controller {
-  constructor(private readonly <%= h.inflection.camelize(h.inflection.pluralize(name), true) %>Service: <%= h.inflection.transform(name, ['pluralize']) %>Service) {}
+  constructor(
+    private readonly create<%= name %>: Create<%= name %>UseCase,
+    private readonly find<%= h.inflection.transform(name, ['pluralize']) %>: Find<%= h.inflection.transform(name, ['pluralize']) %>UseCase,
+    private readonly find<%= name %>ById: Find<%= name %>ByIdUseCase,
+    private readonly update<%= name %>: Update<%= name %>UseCase,
+    private readonly remove<%= name %>: Remove<%= name %>UseCase,
+  ) {}
 
   @Post()
-  @ApiCreatedResponse({
-    type: <%= name %>,
-  })
-  create(@Body() create<%= name %>Dto: Create<%= name %>Dto) {
-    return this.<%= h.inflection.camelize(h.inflection.pluralize(name), true) %>Service.create(create<%= name %>Dto);
+  @ApiCreatedResponse({ type: <%= name %> })
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() dto: Create<%= name %>Dto) {
+    return this.create<%= name %>.execute(dto);
   }
 
   @Get()
-  @ApiOkResponse({
-    type: InfinityPaginationResponse(<%= name %>),
-  })
+  @ApiOkResponse({ type: InfinityPaginationResponse(<%= name %>) })
   async findAll(
     @Query() query: FindAll<%= h.inflection.transform(name, ['pluralize']) %>Dto,
   ): Promise<InfinityPaginationResponseDto<<%= name %>>> {
     const page = query?.page ?? 1;
     let limit = query?.limit ?? 10;
-    if (limit > 50) {
-      limit = 50;
-    }
+    if (limit > 50) limit = 50;
 
     return infinityPagination(
-      await this.<%= h.inflection.camelize(h.inflection.pluralize(name), true) %>Service.findAllWithPagination({
-        paginationOptions: {
-          page,
-          limit,
-        },
-      }),
+      await this.find<%= h.inflection.transform(name, ['pluralize']) %>.execute({ page, limit }),
       { page, limit },
     );
   }
 
   @Get(':id')
-  @ApiParam({
-    name: 'id',
-    type: String,
-    required: true,
-  })
-  @ApiOkResponse({
-    type: <%= name %>,
-  })
+  @ApiParam({ name: 'id', type: String, required: true })
+  @ApiOkResponse({ type: <%= name %> })
   findById(@Param('id') id: string) {
-    return this.<%= h.inflection.camelize(h.inflection.pluralize(name), true) %>Service.findById(id);
+    return this.find<%= name %>ById.execute(id);
   }
 
   @Patch(':id')
-  @ApiParam({
-    name: 'id',
-    type: String,
-    required: true,
-  })
-  @ApiOkResponse({
-    type: <%= name %>,
-  })
-  update(
-    @Param('id') id: string,
-    @Body() update<%= name %>Dto: Update<%= name %>Dto,
-  ) {
-    return this.<%= h.inflection.camelize(h.inflection.pluralize(name), true) %>Service.update(id, update<%= name %>Dto);
+  @ApiParam({ name: 'id', type: String, required: true })
+  @ApiOkResponse({ type: <%= name %> })
+  update(@Param('id') id: string, @Body() dto: Update<%= name %>Dto) {
+    return this.update<%= name %>.execute(id, dto);
   }
 
   @Delete(':id')
-  @ApiParam({
-    name: 'id',
-    type: String,
-    required: true,
-  })
+  @ApiParam({ name: 'id', type: String, required: true })
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string) {
-    return this.<%= h.inflection.camelize(h.inflection.pluralize(name), true) %>Service.remove(id);
+    return this.remove<%= name %>.execute(id);
   }
 }

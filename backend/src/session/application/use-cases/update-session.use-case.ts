@@ -8,7 +8,9 @@ export class UpdateSessionUseCase {
 
   execute(
     id: Session['id'],
-    payload: Partial<Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>>,
+    payload: Partial<
+      Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>
+    >,
   ): Promise<Session | null> {
     return this.sessionRepository.update(id, payload);
   }

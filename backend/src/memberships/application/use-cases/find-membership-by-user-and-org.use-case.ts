@@ -7,7 +7,13 @@ import { NullableType } from '../../../utils/types/nullable.type';
 export class FindMembershipByUserAndOrgUseCase {
   constructor(private readonly membershipRepository: MembershipRepository) {}
 
-  execute(userId: string, organizationId: string): Promise<NullableType<Membership>> {
-    return this.membershipRepository.findByUserAndOrganization(userId, organizationId);
+  execute(
+    userId: string,
+    organizationId: string,
+  ): Promise<NullableType<Membership>> {
+    return this.membershipRepository.findByUserAndOrganization(
+      userId,
+      organizationId,
+    );
   }
 }

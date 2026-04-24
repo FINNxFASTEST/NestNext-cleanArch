@@ -6,7 +6,10 @@ import { Membership } from '../../domain/membership';
 export class UpdateMembershipUseCase {
   constructor(private readonly membershipRepository: MembershipRepository) {}
 
-  execute(id: Membership['id'], payload: Partial<Membership>): Promise<Membership | null> {
+  execute(
+    id: Membership['id'],
+    payload: Partial<Membership>,
+  ): Promise<Membership | null> {
     return this.membershipRepository.update(id, payload);
   }
 }

@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { PitchSlotSchemaClass, PitchSlotSchema } from './persistence/pitch-slot.schema';
+import {
+  PitchSlotSchemaClass,
+  PitchSlotSchema,
+} from './persistence/pitch-slot.schema';
 import { PitchSlotRepository } from './persistence/pitch-slot.repository';
 import { PitchSlotDocumentRepository } from './persistence/pitch-slot.document-repository';
 
