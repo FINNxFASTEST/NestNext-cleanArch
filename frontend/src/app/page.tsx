@@ -50,9 +50,12 @@ function campsiteToCardProps(c: Campsite, big = false) {
     : 0;
   const firstPitchType = c.pitches[0]?.type ?? "tent";
   const scene = PITCH_SCENES[firstPitchType] ?? "forest";
+  const sub = c.location
+    ? `${c.location.district} · ${c.location.province}`
+    : "ประเทศไทย";
   return {
     title: c.name,
-    sub: c.location ?? "ประเทศไทย",
+    sub,
     price: lowestPrice.toLocaleString(),
     scene: scene as SceneVariant,
     big,
@@ -64,7 +67,10 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
-    campsitesApi.list().then(setCampsites).catch(() => {});
+    campsitesApi
+      .list({ status: "active" })
+      .then((res) => setCampsites(res.data))
+      .catch(() => {});
   }, []);
 
   const tabs = campsites.length > 0
@@ -148,12 +154,12 @@ export default function HomePage() {
         {campsites.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr] gap-5">
             <div className="col-span-2 md:col-span-1 md:row-span-2">
-              <Link href={`/campsites/${campsites[0]._id}`} className="no-underline block h-full">
+              <Link href={`/campsites/${campsites[0].id}`} className="no-underline block h-full">
                 <FeatureCard {...campsiteToCardProps(campsites[0], true)} big />
               </Link>
             </div>
             {campsites.slice(1, 5).map((c) => (
-              <Link key={c._id} href={`/campsites/${c._id}`} className="no-underline block">
+              <Link key={c.id} href={`/campsites/${c.id}`} className="no-underline block">
                 <FeatureCard {...campsiteToCardProps(c)} />
               </Link>
             ))}

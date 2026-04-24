@@ -2,238 +2,258 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+> **Heads up:** the old single-tenant design is archived in [CLAUDE.legacy.md](CLAUDE.legacy.md).
+> The project was rebuilt on [brocoders/nestjs-boilerplate](https://github.com/brocoders/nestjs-boilerplate)
+> (MongoDB + Mongoose only) and now follows a hexagonal, multi-tenant model.
 
-Kangtent is an Agoda-style campsite booking platform targeting the Thai market. It has two workspaces:
-- `backend/` — NestJS 11 + MongoDB REST API (port 3001)
-- `frontend/` — Next.js 15 App Router (port 3000)
+## Project overview
+
+Kangtent is a campsite booking platform for the Thai market, organized like Agoda:
+- Many independent **hosts** (businesses) manage their own campsites.
+- **Customers** browse and book — logged in or anonymously.
+- **Platform admins** oversee every tenant.
+
+Workspaces:
+- `backend/` — NestJS 11 + Mongoose (port 3001), JWT sessions, hexagonal layout.
+- `frontend/` — Next.js 15 App Router (port 3000).
 
 ---
 
 ## Commands
 
 ### Backend
-
 ```bash
 cd backend
-npm run start:dev      # Watch mode (uses nodemon)
-npm run build          # Compile TypeScript
-npm run start:prod     # Run compiled output
-npm run lint           # ESLint
-npm run test           # Jest unit tests
-npm run test:e2e       # E2E tests
-npm run test -- --testPathPattern=auth  # Single test file
+npm run start:dev                     # Watch mode
+npm run build                         # Compile TS → dist/
+npm run start:prod                    # Run dist/
+npm run lint
+npm run test                          # Jest unit tests
+npm run test:e2e
+npm run seed:run:document             # Seed admin/host/customer + demo org + campsite
+npm run generate:resource:document -- --name Foo    # CLI scaffold
+npm run add:property:to-document                    # Add fields to an existing resource
 ```
 
 ### Frontend
-
 ```bash
 cd frontend
-npm run dev            # Dev server
-npm run build          # Production build
-npm run lint           # ESLint
+npm run dev
+npm run build
+npm run lint
 ```
 
-### Environment Setup
+### Environment
 
-**Backend** — create `backend/.env`:
+`backend/.env` (see [backend/.env.example](backend/.env.example)):
 ```
-PORT=3001
-MONGODB_URI=mongodb://localhost:27017/kangtent
-JWT_SECRET=your_secret_here
+APP_PORT=3001
+DATABASE_URL=mongodb://localhost:27017/kangtent
+AUTH_JWT_SECRET=change-me
+AUTH_REFRESH_SECRET=change-me-too
+AUTH_JWT_TOKEN_EXPIRES_IN=15m
+AUTH_REFRESH_TOKEN_EXPIRES_IN=3650d
+FRONTEND_DOMAIN=http://localhost:3000
 ```
 
-**Frontend** — create `frontend/.env.local`:
+`frontend/.env.local`:
 ```
 NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
 ---
 
-## Architecture
+## Backend architecture
 
-### Backend Module Structure
+### Hexagonal folders
+
+Every domain module follows this layout (scaffolded by `npm run generate:resource:document`):
 
 ```
-src/
-  auth/           # JWT strategy, guards, decorators, interfaces
-  users/          # User CRUD, password hashing
-  campsites/      # Campsite + pitch management
-  bookings/       # Booking creation, availability, cancellation
-  common/         # Shared interfaces and utilities
+src/<resource>/
+  domain/<resource>.ts              # Pure domain class, what services speak
+  dto/                              # HTTP payloads + validators
+  infrastructure/persistence/
+    <resource>.repository.ts        # Port (abstract class)
+    document/
+      document-persistence.module.ts
+      entities/<resource>.schema.ts # Mongoose schema
+      mappers/<resource>.mapper.ts  # schema ↔ domain
+      repositories/<resource>.repository.ts # Adapter
+  <resource>.controller.ts
+  <resource>.module.ts
+  <resource>.service.ts
 ```
 
-Each module follows NestJS conventions: `module.ts`, `controller.ts`, `service.ts`, `dto/`, `schemas/`, `interfaces/`.
+Services depend on the **port** (`CampsiteRepository`), never the document adapter.
 
-**Global config:**
-- `ValidationPipe` with `whitelist: true, transform: true`
-- CORS enabled for `http://localhost:3000` only
-- Swagger docs at `GET /api`
+### Modules
 
-### Interfaces Layer
-
-Every domain exposes TypeScript interfaces under its `interfaces/` subdirectory. These are the source of truth for types shared across services, DTOs, and controllers.
-
-| File | Key exports |
+| Module | Purpose |
 |---|---|
-| `users/interfaces/user.interface.ts` | `UserRole`, `IUser`, `IPublicUser` |
-| `auth/interfaces/jwt-payload.interface.ts` | `IJwtPayload` |
-| `auth/interfaces/auth-user.interface.ts` | `IAuthUser` |
-| `auth/interfaces/auth-response.interface.ts` | `IAuthResponse` |
-| `campsites/interfaces/campsite.interface.ts` | `ICampsite`, `CampsiteStatus` |
-| `campsites/interfaces/pitch.interface.ts` | `IPitch`, `PitchType` |
-| `campsites/interfaces/bank-account.interface.ts` | `IBankAccount` |
-| `bookings/interfaces/booking.interface.ts` | `IBooking`, `BookingStatus` |
-| `bookings/interfaces/add-on.interface.ts` | `IAddOn` |
-| `bookings/interfaces/pitch-slot.interface.ts` | `IPitchSlot` |
-| `common/interfaces/api-response.interface.ts` | `ISuccessResponse`, `IPaginated<T>` |
-| `common/interfaces/request-with-user.interface.ts` | `RequestWithUser`, `OptionalRequestWithUser` |
+| `auth` | Email login/register, JWT access + refresh, sessions |
+| `users` | Account owner (email, password hash, role reference) |
+| `roles` | Numeric `RoleEnum` + `RolesGuard` + `@Roles()` |
+| `statuses` | Account status (`active`, `inactive`) |
+| `session` | Refresh-token rotation |
+| `organizations` | Tenant root — a host's business |
+| `memberships` | `User ↔ Organization` with `owner | manager | staff` |
+| `campsites` | Host-owned listings with embedded pitches |
+| `bookings` | Customer-facing reservations (auth optional) |
+| `pitch-slots` | Double-booking prevention store |
+| `common` | `OrganizationScopeGuard`, `@ScopedOrg()` decorator |
 
-`UserRole` (`'guest' \| 'merchant' \| 'admin'`) is defined in the users domain and imported everywhere else — do not redefine it inline.
-
-### Auth System
-
-JWT tokens (7-day expiry) carry `{ sub: userId, email, role }`. Three roles: `guest`, `merchant`, `admin`.
-
-**Guards:**
-- `JwtAuthGuard` — requires valid token, throws 401 otherwise
-- `OptionalJwtGuard` — validates token if present but never throws (used for anonymous-friendly endpoints)
-- `RolesGuard` — checks role metadata set by `@Roles()` decorator
-
-**Pattern for protected routes:**
-```typescript
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('merchant', 'admin')
-```
-
-**Extracting the current user** (type is `IAuthUser`):
-```typescript
-@CurrentUser() user: IAuthUser
-```
-
-### DTO Pattern
-
-DTOs implement their corresponding interface and decorate every property with `@ApiProperty` / `@ApiPropertyOptional`. Use `IsNotEmpty()` on all required string fields alongside `IsString()`. Use `!` (definite assignment) on required fields and `?` on optional ones.
-
-```typescript
-export class LoginDto {
-  @ApiProperty({ example: 'jane@example.com' })
-  @IsEmail()
-  @IsNotEmpty()
-  email!: string;
-}
-```
-
-Response DTOs (e.g. `AuthResponseDto`) live in `dto/` and implement the corresponding interface from `interfaces/`.
-
-### Campsite Domain
-
-A `Campsite` document represents a merchant's property and embeds their business profile (`bankAccount`, `taxId`, `phone`). Each campsite contains an array of `pitches` — variants by type (`tent | glamping | rv | cabin`) with individual pricing.
-
-Authorization: merchants can only modify their own campsites (checked by `ownerId` match); admins bypass this.
-
-### Booking & Double-Booking Prevention
-
-The `PitchSlot` collection holds one document per `(pitchId, date)` with a unique compound index. When a booking is created:
-1. Booking doc created with `status: 'pending'`
-2. `insertMany()` attempted on PitchSlots for each night
-3. If MongoDB throws duplicate key error (code 11000), booking is deleted → `ConflictException`
-4. On success, booking updated to `status: 'confirmed'`
-
-Anonymous bookings are allowed (`userId: null`); `OptionalJwtGuard` is used on `POST /bookings`.
-
-**Total price calculation:**
-```
-nights = Math.round((checkOut - checkIn) / 86400000)
-total = (nights × pitch.pricePerNight) + sum(addOns[].price)
-```
-
-### Schema Conventions
-
-- Use `T & Document` for document types (e.g. `UserDocument = User & Document`)
-- The `User` schema strips `password` and `__v` via `toJSON` / `toObject` transforms — do not use `select: false`. The `UsersService` explicitly calls `.select('-password')` on queries that return user documents publicly; `findByEmail` returns the full document for auth use.
-- Subdocument schemas (e.g. `BankAccount`, `Pitch`) use `@Schema({ _id: false })`
-
-### Frontend Structure
+### Roles & tenancy
 
 ```
-src/
-  app/                             # App Router pages
-    page.tsx                       # Home
-    campsites/[id]/page.tsx        # Detail + booking sidebar
-    booking/page.tsx               # Multi-step checkout form
-    booking/confirmation/page.tsx  # Post-booking confirmation
-    admin/page.tsx                 # Admin dashboard
-    login/page.tsx                 # Login form
-    register/page.tsx              # Registration form
-  components/
-    common/                  # Nav, Footer, Scene (SVG backgrounds), Icons
-    detail/                  # Gallery, SeasonalCalendar, BookingSidebar
-    booking/                 # StepHeader, FormCard, Field
-    admin/                   # AdminSidebar, views/*View
-    ui/                      # shadcn/ui primitives (Radix-based)
-  lib/api.ts                 # Fetch wrapper + domain API objects
-  contexts/AuthContext.tsx   # Token storage, useAuth() hook
-  types/index.ts             # Shared TypeScript types
-  middleware.ts              # Route protection for /booking/*
+User.role   →  admin (1) | host (2) | customer (3)       # numeric RoleEnum
+User.memberships[] → Organization with owner|manager|staff  # via Membership
+Campsite.organizationId → Organization                    # tenant key
+Booking.organizationId  → denormalised from Campsite at create time
 ```
 
-### Middleware
+- **admin** — platform staff; `RolesGuard` + `OrganizationScopeGuard` both let them through.
+- **host** — can manage only the organizations they belong to. Must pass `organizationId` to scoped routes.
+- **customer** — books, can only read their own bookings, never reaches admin routes.
+- Anonymous callers — allowed on `POST /bookings` (via `OptionalJwtGuard`) and the public `GET /campsites[/:id]`.
 
-`middleware.ts` guards `/booking/*` (except `/booking/confirmation`) by checking the `kangtent_token` cookie. On missing token it redirects to `/login?next=<pathname>`. Token is written to both `localStorage` and cookie (`SameSite=Lax`) by `AuthContext` at login/register time.
+### `OrganizationScopeGuard` + `@ScopedOrg`
 
-### API Client (`lib/api.ts`)
+Declared in [src/common/guards/organization-scope.guard.ts](backend/src/common/guards/organization-scope.guard.ts) and [src/common/decorators/scoped-org.decorator.ts](backend/src/common/decorators/scoped-org.decorator.ts).
 
-Base URL: `process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'`
-
-Reads token from `localStorage('kangtent_token')` and adds `Authorization: Bearer` header automatically. Throws `ApiError(status, message, body)` on non-2xx responses.
-
-Three domain objects: `authApi`, `campsitesApi`, `bookingsApi`.
-
-### Auth Context
-
-`AuthContext` stores the JWT in both `localStorage` and `document.cookie` (SameSite=Lax). After login/register it calls `GET /users/me` to hydrate `firstName`/`lastName`. Access via `useAuth()`:
-
-```typescript
-const { user, token, loading, login, register, logout } = useAuth()
+Pattern:
+```ts
+@UseGuards(AuthGuard('jwt'), RolesGuard, OrganizationScopeGuard)
+@Roles(RoleEnum.admin, RoleEnum.host)
+@ScopedOrg({ body: 'organizationId' })          // or { param: 'id' }, { query: 'organizationId' }
 ```
 
-### Booking Flow (Frontend → Backend)
+The guard:
+1. Reads `organizationId` from the configured request location.
+2. If user is `admin`, sets `req.scopedOrganizationId` and lets it through.
+3. Otherwise loads `Membership({ userId, organizationId })` — 403 if absent.
+4. Optionally enforces `requireMemberRole: ['owner', 'manager']`.
+5. Attaches `req.scopedOrganizationId` and `req.scopedMemberRole` for downstream services.
 
-1. User selects pitch and dates on `/campsites/[id]` → BookingSidebar
-2. Query params (`campsiteId`, `pitchId`, `checkIn`, `checkOut`, `guests`, `pricePerNight`, etc.) pushed to `/booking`
-3. Multi-step form on `/booking/page.tsx` collects guest details + add-ons
-4. `bookingsApi.create(dto)` posts to `POST /bookings`
-5. Backend validates, checks availability via PitchSlot, returns booking
-6. On success, user is redirected to `/booking/confirmation`
+### Auth flow
 
-### Design System
+- `POST /api/v1/auth/email/register` — creates a user with `role = customer` + `status = active`, returns `{ token, refreshToken, tokenExpires, user }`.
+- `POST /api/v1/auth/email/login` — same shape.
+- `GET /api/v1/auth/me` — returns the current user domain object (role is `{ id }`).
+- `POST /api/v1/auth/refresh` — rotate refresh token + session hash.
+- `POST /api/v1/auth/logout` — deletes session.
 
-CSS custom properties (HSL channels) defined in `globals.css`, referenced in `tailwind.config.ts`:
+JWT payload: `{ id, role: { id }, sessionId, iat, exp }`. The frontend decodes this to gate `/admin/*` in middleware.
 
-| Token | Purpose |
-|---|---|
-| `--ink` | Primary text (near-black) |
-| `--paper` | Main background (warm white) |
-| `--ember` / `--clay` | CTA orange accents |
-| `--forest-*` | Dark greens (nav, headings) |
-| `--sage-*` | Mid greens |
-| `--cream-*` | Light warm fills |
+### Bookings & atomic slot reservation
 
-**Typography:** Bai Jamjuree (loaded via `@font-face`, weights 200–700). Use `font-thai` for Thai content, `font-serif` for headings.
+Implemented in [src/bookings/bookings.service.ts](backend/src/bookings/bookings.service.ts):
 
-**`Scene` component** — reusable SVG landscape backgrounds, variants: `hero`, `dusk`, `forest`, `lake`, `meadow`, `cabin`, `night`.
+1. Validate campsite + pitch + guest count.
+2. Compute `nights` (UTC-day iterator) and `totalPrice = nights × pricePerNight + Σ addOns.price`.
+3. Create booking `status = 'pending'`.
+4. `PitchSlotsService.reserve([...one per night])` → Mongo `insertMany({ ordered: true })`.
+   The schema has `{ pitchId: 1, date: 1 }` **unique** index.
+5. On duplicate key (`11000`): delete booking + slots, throw `ConflictException('pitch_already_booked')`.
+6. Otherwise update booking to `status = 'confirmed'` and return it.
 
-**`cn()` utility** — `clsx` + `tailwind-merge` helper for conditional classes.
+Cancellation (`PATCH /bookings/:id/cancel`) is allowed for the booking's owner, an admin, or any member of the booking's organization. It releases all `PitchSlot` rows for that booking.
 
-**UX reference files** — `frontend/ux/components/` contains JSX design exports for each page. Cross-reference these when implementing new UI.
+### Code generation
+
+New resources:
+```bash
+npm run generate:resource:document -- --name Foo
+npm run add:property:to-document          # interactive, run once per field
+```
+This scaffolds the hexagonal folders exactly as described above. Hand-edit the generated `*.schema.ts` for compound/unique indexes (e.g. `PitchSlotSchema.index({ pitchId: 1, date: 1 }, { unique: true })`).
 
 ---
 
-## Key Constraints
+## Frontend architecture
 
-- No test suite exists in the frontend
-- TypeORM is installed in the backend but unused — MongoDB/Mongoose is the only database layer
-- The `example/` module in the backend is unused scaffolding and can be ignored
-- Payment integration is absent; bookings go directly to `confirmed` after slot reservation succeeds
-- Email notifications are not implemented
+### Key directories
+
+```
+frontend/src/
+  app/                            # App Router pages
+    page.tsx                      # Public home — calls campsitesApi.list({status:'active'})
+    campsites/[id]/page.tsx       # Detail + BookingSidebar
+    booking/page.tsx              # Guest info + add-ons
+    booking/confirmation/page.tsx
+    admin/page.tsx                # Host + admin dashboard (views/*View)
+    login/page.tsx  register/page.tsx
+  components/
+    common/        # Nav, Footer, Scene, Icons
+    detail/        # Gallery, BookingSidebar, CampPitchList
+    booking/       # FormCard, StepHeader
+    admin/         # AdminSidebar + views/*View
+    ui/            # shadcn primitives
+  contexts/AuthContext.tsx        # token + memberships + currentOrganizationId
+  lib/api.ts                      # /api/v1 fetch wrapper + domain APIs
+  middleware.ts                   # Gates /booking/* and /admin/*
+  types/index.ts                  # User, Campsite, Booking, Organization, Membership
+```
+
+### API client
+
+`lib/api.ts` is prefixed with `/api/v1` and exposes:
+- `authApi` — `login`, `register`, `me`, `logout`, plus `persistAuth`/`clearAuth`/`mapMeResponseToUser`.
+- `campsitesApi` — `list({ organizationId?, status? })`, `get`, `create`, `update`, `remove`. List returns `{ data, hasNextPage }`.
+- `bookingsApi` — `create`, `list`, `get`, `cancel`.
+- `organizationsApi` — `mine`, `create`, `get`, `update`, `remove`.
+- `membershipsApi` — `listForOrg`, `myMemberships`, `invite`, `remove`.
+
+Tokens live in `localStorage('kangtent_token')` + cookie of the same name (`SameSite=Lax`). The refresh token is stored under `kangtent_refresh`.
+
+### AuthContext
+
+`useAuth()` returns:
+```ts
+{ user, token, loading,
+  memberships,                 // Membership[] the signed-in user belongs to
+  currentOrganizationId,       // active tenant in the admin UI
+  setCurrentOrganizationId,
+  login, register, logout }
+```
+
+On hydrate it calls `GET /auth/me`, maps `role.id → 'admin'|'host'|'customer'`, and — for admins/hosts — fetches `GET /memberships/me` so the sidebar can show the active org.
+
+### Middleware
+
+[frontend/src/middleware.ts](frontend/src/middleware.ts) decodes the JWT from the cookie and:
+- Redirects `/admin/*` to `/login` unless `role.id ∈ {1, 2}` (admin or host).
+- Keeps existing `/booking/*` auth gate (allowing `/booking/confirmation`).
+
+### Admin sidebar
+
+[AdminSidebar](frontend/src/components/admin/AdminSidebar.tsx) uses `useAuth()` to:
+- Hide `users` and `coupons` nav items unless the user is `admin`.
+- Show the active organization's id + member role in the host info card.
+
+---
+
+## Seeds
+
+`npm run seed:run:document` (from `backend/`) creates idempotently:
+
+| Email | Password | Role | Tenant |
+|---|---|---|---|
+| `admin@example.com` | `secret` | admin | — |
+| `host@example.com`  | `secret` | host  | Kangtent Demo Host Co. (slug `kangtent-demo`), member = `owner` |
+| `customer@example.com` | `secret` | customer | — |
+
+Plus one sample campsite (`เขาใหญ่ แคมป์วิว`) under the demo org with two pitches (`Forest A` tent, `Sky Dome` glamping).
+
+Seeds live in [backend/src/database/seeds/document/](backend/src/database/seeds/document) — add new `*-seed.service.ts` modules and wire them into `seed.module.ts` + `run-seed.ts`.
+
+---
+
+## Conventions & gotchas
+
+- **IDs are strings** — mappers convert `_id` → `id` everywhere in the domain layer. Frontend types use `id`.
+- **Roles are numeric in the DB and in the JWT** (`RoleEnum.admin = 1`, `.host = 2`, `.customer = 3`) but surfaced as `'admin' | 'host' | 'customer'` strings on the frontend.
+- **Anonymous booking** — the `POST /bookings` route uses the `OptionalJwtGuard` (`AuthGuard(['jwt','anonymous'])`). `req.user` is `undefined` for guests; when present, the booking is tagged with `userId`.
+- **Tenant scoping is explicit.** Any host-facing route must declare both `@Roles(RoleEnum.admin, RoleEnum.host)` and `@UseGuards(..., OrganizationScopeGuard)` + `@ScopedOrg(...)`. Services should never pull `organizationId` from the session — only from `req.scopedOrganizationId`.
+- **Do not re-enable relational persistence.** The TypeORM / Postgres paths from the upstream boilerplate were removed on purpose; the codebase is MongoDB-only.
+- **Swagger** is at `GET /docs` (see [main.ts](backend/src/main.ts)).

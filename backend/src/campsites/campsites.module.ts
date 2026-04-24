@@ -1,17 +1,18 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { CampsitesController } from './campsites.controller';
 import { CampsitesService } from './campsites.service';
-import { Campsite, CampsiteSchema } from './schemas/campsite.schema';
+import { CampsitesController } from './campsites.controller';
+import { DocumentCampsitePersistenceModule } from './infrastructure/persistence/document/document-persistence.module';
+import { MembershipsModule } from '../memberships/memberships.module';
+import { OrganizationsModule } from '../organizations/organizations.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Campsite.name, schema: CampsiteSchema },
-    ]),
+    DocumentCampsitePersistenceModule,
+    MembershipsModule,
+    OrganizationsModule,
   ],
   controllers: [CampsitesController],
   providers: [CampsitesService],
-  exports: [CampsitesService],
+  exports: [CampsitesService, DocumentCampsitePersistenceModule],
 })
 export class CampsitesModule {}

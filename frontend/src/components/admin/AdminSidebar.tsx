@@ -6,6 +6,7 @@ import {
   BoltIcon, TentIcon, CalendarIcon, UsersIcon,
   FlameIcon, LeafIcon,
 } from "@/components/common/Icons";
+import { useAuth } from "@/contexts/AuthContext";
 
 type SectionId = "dashboard" | "camps" | "bookings" | "users" | "coupons" | "settings";
 
@@ -19,6 +20,7 @@ interface NavItem {
   id: SectionId;
   label: string;
   icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
+  adminOnly?: boolean;
 }
 
 const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
@@ -28,14 +30,20 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     items: [
       { id: "camps", label: "จัดการพื้นที่แคมป์", icon: TentIcon },
       { id: "bookings", label: "ดูการจองทั้งหมด", icon: CalendarIcon },
-      { id: "users", label: "จัดการผู้ใช้งาน", icon: UsersIcon },
-      { id: "coupons", label: "คูปองและโปรโมชั่น", icon: FlameIcon },
+      { id: "users", label: "จัดการผู้ใช้งาน", icon: UsersIcon, adminOnly: true },
+      { id: "coupons", label: "คูปองและโปรโมชั่น", icon: FlameIcon, adminOnly: true },
     ],
   },
   { label: "อื่น ๆ", items: [{ id: "settings", label: "ตั้งค่า", icon: LeafIcon }] },
 ];
 
 export function AdminSidebar({ section, setSection, onClose }: AdminSidebarProps) {
+  const { user, memberships, currentOrganizationId } = useAuth();
+  const isAdmin = user?.role === "admin";
+  const activeMembership = memberships.find(
+    (m) => m.organizationId === currentOrganizationId,
+  );
+
   return (
     <aside className="relative h-full min-h-screen bg-forest-900 text-cream-50 px-5 py-7">
       {/* Logo */}
@@ -44,7 +52,7 @@ export function AdminSidebar({ section, setSection, onClose }: AdminSidebarProps
         <div>
           <div className="font-serif text-lg font-semibold">Kangtent</div>
           <div className="font-thai text-[10px] tracking-[0.08em] uppercase opacity-60">
-            Host studio
+            {isAdmin ? "Platform studio" : "Host studio"}
           </div>
         </div>
       </div>
@@ -56,36 +64,52 @@ export function AdminSidebar({ section, setSection, onClose }: AdminSidebarProps
             <Scene variant="forest" className="w-full h-full" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-thai text-[13px] font-medium">เขาใหญ่ แคมป์วิว</div>
-            <div className="font-thai text-[10px] mt-0.5 opacity-60">Superhost · 9.8 ★</div>
+            <div className="font-thai text-[13px] font-medium truncate">
+              {isAdmin
+                ? "ผู้ดูแลแพลตฟอร์ม"
+                : activeMembership
+                  ? `Org ${activeMembership.organizationId.slice(-6)}`
+                  : "ยังไม่มีองค์กร"}
+            </div>
+            <div className="font-thai text-[10px] mt-0.5 opacity-60">
+              {isAdmin
+                ? "Admin · ทุกองค์กร"
+                : activeMembership
+                  ? `Role · ${activeMembership.memberRole}`
+                  : "สร้างองค์กรเพื่อเริ่มต้น"}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Nav groups */}
-      {NAV_GROUPS.map((group) => (
-        <div key={group.label} className="mb-5">
-          <div className="font-thai text-[10px] tracking-[0.14em] uppercase px-2.5 mb-2 opacity-[0.45]">
-            {group.label}
+      {NAV_GROUPS.map((group) => {
+        const items = group.items.filter((i) => !i.adminOnly || isAdmin);
+        if (items.length === 0) return null;
+        return (
+          <div key={group.label} className="mb-5">
+            <div className="font-thai text-[10px] tracking-[0.14em] uppercase px-2.5 mb-2 opacity-[0.45]">
+              {group.label}
+            </div>
+            {items.map(({ id, label, icon: Icon }) => {
+              const isActive = section === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => { setSection(id); onClose?.(); }}
+                  className={cn(
+                    "flex items-center gap-3 w-full rounded-xl text-left mb-0.5 cursor-pointer border-0 font-thai text-[13px] transition-colors px-3 py-[10px] text-cream-50",
+                    isActive ? "bg-ember font-medium" : "bg-transparent font-normal"
+                  )}
+                >
+                  <Icon style={{ width: 18, height: 18, flexShrink: 0 }} />
+                  {label}
+                </button>
+              );
+            })}
           </div>
-          {group.items.map(({ id, label, icon: Icon }) => {
-            const isActive = section === id;
-            return (
-              <button
-                key={id}
-                onClick={() => { setSection(id); onClose?.(); }}
-                className={cn(
-                  "flex items-center gap-3 w-full rounded-xl text-left mb-0.5 cursor-pointer border-0 font-thai text-[13px] transition-colors px-3 py-[10px] text-cream-50",
-                  isActive ? "bg-ember font-medium" : "bg-transparent font-normal"
-                )}
-              >
-                <Icon style={{ width: 18, height: 18, flexShrink: 0 }} />
-                {label}
-              </button>
-            );
-          })}
-        </div>
-      ))}
+        );
+      })}
 
       {/* Tagline */}
       <div className="absolute bottom-5 left-5 right-5 text-[11px] italic leading-relaxed font-thai opacity-40">

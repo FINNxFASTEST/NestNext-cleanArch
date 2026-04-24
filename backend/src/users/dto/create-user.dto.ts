@@ -1,38 +1,38 @@
+import { Transform, Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MinLength,
-} from 'class-validator';
-import type { UserRole } from '../domain/user';
+import { IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
+import { RoleDto } from '../../roles/dto/role.dto';
+import { StatusDto } from '../../statuses/dto/status.dto';
+import { lowerCaseTransformer } from '../../utils/transformers/lower-case.transformer';
 
 export class CreateUserDto {
-  @ApiProperty({ example: 'jane@example.com' })
+  @ApiProperty({ example: 'test1@example.com', type: String })
+  @Transform(lowerCaseTransformer)
+  @IsNotEmpty()
   @IsEmail()
-  @IsNotEmpty()
-  email!: string;
+  email: string | null;
 
-  @ApiProperty({ example: 'StrongPass1!', minLength: 8 })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(8)
-  password!: string;
+  @ApiProperty()
+  @MinLength(6)
+  password?: string;
 
-  @ApiProperty({ example: 'Jane' })
-  @IsString()
-  @IsNotEmpty()
-  firstName!: string;
+  provider?: string;
 
-  @ApiProperty({ example: 'Doe' })
-  @IsString()
+  @ApiProperty({ example: 'John', type: String })
   @IsNotEmpty()
-  lastName!: string;
+  firstName: string | null;
 
-  @ApiPropertyOptional({ enum: ['guest', 'admin'], default: 'guest' })
+  @ApiProperty({ example: 'Doe', type: String })
+  @IsNotEmpty()
+  lastName: string | null;
+
+  @ApiPropertyOptional({ type: RoleDto })
   @IsOptional()
-  @IsEnum(['guest', 'admin'])
-  role?: Extract<UserRole, 'guest' | 'admin'>;
+  @Type(() => RoleDto)
+  role?: RoleDto | null;
+
+  @ApiPropertyOptional({ type: StatusDto })
+  @IsOptional()
+  @Type(() => StatusDto)
+  status?: StatusDto;
 }

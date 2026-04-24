@@ -6,107 +6,96 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
-  ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiConflictResponse,
   ApiCreatedResponse,
-  ApiForbiddenResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
-  ApiOperation,
-  ApiQuery,
+  ApiParam,
   ApiTags,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { OptionalJwtGuard } from '../auth/guards/optional-jwt.guard';
-import type { IAuthUser } from '../auth/interfaces/auth-user.interface';
-import { CancelBookingResponseDto } from '../common/dto/cancel-response.dto';
+import { AuthGuard } from '@nestjs/passport';
 import { BookingsService } from './bookings.service';
-import {
-  BookingResponseDto,
-  UnavailableDatesResponseDto,
-} from './dto/booking-response.dto';
+import { Booking } from './domain/booking';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { FindAllBookingsDto } from './dto/find-all-bookings.dto';
+import {
+  InfinityPaginationResponse,
+  InfinityPaginationResponseDto,
+} from '../utils/dto/infinity-pagination-response.dto';
+import { infinityPagination } from '../utils/infinity-pagination';
+import { OptionalJwtGuard } from '../auth/guards/optional-jwt.guard';
 
-@ApiTags('bookings')
-@Controller('bookings')
+type AuthedRequest = {
+  user?: { id: string; role?: { id: string | number } };
+};
+
+@ApiTags('Bookings')
+@Controller({
+  path: 'bookings',
+  version: '1',
+})
 export class BookingsController {
-  constructor(private readonly service: BookingsService) {}
+  constructor(private readonly bookingsService: BookingsService) {}
 
   @Post()
   @UseGuards(OptionalJwtGuard)
-  @ApiBearerAuth('bearer')
-  @ApiOperation({
-    summary:
-      'Create a booking. Login optional — userId attached when token present.',
-  })
-  @ApiCreatedResponse({ type: BookingResponseDto })
-  @ApiBadRequestResponse({ description: 'Invalid dates or payload' })
-  @ApiNotFoundResponse({ description: 'Campsite or pitch not found' })
-  @ApiConflictResponse({
-    description: 'Pitch already booked for one or more nights',
-  })
-  create(@Body() dto: CreateBookingDto, @CurrentUser() user: IAuthUser | null) {
-    return this.service.create(dto, user?.userId ?? null);
+  @ApiBearerAuth()
+  @ApiCreatedResponse({ type: Booking })
+  create(@Body() dto: CreateBookingDto, @Req() req: AuthedRequest) {
+    const actor = req.user
+      ? { id: req.user.id, roleId: req.user.role?.id }
+      : undefined;
+    return this.bookingsService.create(dto, actor);
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('bearer')
-  @ApiOperation({
-    summary:
-      'List bookings. Guests see own, merchants see their campsites, admin sees all.',
-  })
-  @ApiQuery({ name: 'campsiteId', required: false })
-  @ApiOkResponse({ type: [BookingResponseDto] })
-  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
-  findAll(
-    @CurrentUser() user: IAuthUser,
-    @Query('campsiteId') campsiteId?: string,
-  ) {
-    return this.service.findAll(user.userId, user.role, campsiteId);
-  }
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: InfinityPaginationResponse(Booking) })
+  async findAll(
+    @Query() query: FindAllBookingsDto,
+    @Req() req: AuthedRequest,
+  ): Promise<InfinityPaginationResponseDto<Booking>> {
+    const page = query?.page ?? 1;
+    let limit = query?.limit ?? 10;
+    if (limit > 50) limit = 50;
 
-  @Get('unavailable/:pitchId')
-  @ApiOperation({
-    summary: 'Return booked dates for a pitch (public, for calendar blocking)',
-  })
-  @ApiOkResponse({ type: UnavailableDatesResponseDto })
-  getUnavailableDates(@Param('pitchId') pitchId: string) {
-    return this.service.getUnavailableDates(pitchId);
+    const bookings = await this.bookingsService.findAllForActor({
+      paginationOptions: { page, limit },
+      actor: {
+        id: req.user!.id,
+        roleId: req.user!.role?.id,
+      },
+      filter: {
+        organizationId: query.organizationId,
+        status: query.status,
+      },
+    });
+
+    return infinityPagination(bookings, { page, limit });
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('bearer')
-  @ApiOperation({
-    summary: 'Get booking — accessible by booker, campsite owner, or admin',
-  })
-  @ApiOkResponse({ type: BookingResponseDto })
-  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
-  @ApiForbiddenResponse({ description: 'Access denied' })
-  @ApiNotFoundResponse({ description: 'Booking not found' })
-  findOne(@Param('id') id: string, @CurrentUser() user: IAuthUser) {
-    return this.service.findOne(id, user.userId, user.role);
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiParam({ name: 'id', type: String, required: true })
+  @ApiOkResponse({ type: Booking })
+  findById(@Param('id') id: string) {
+    return this.bookingsService.findById(id);
   }
 
   @Patch(':id/cancel')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('bearer')
-  @ApiOperation({
-    summary: 'Cancel booking — accessible by booker, campsite owner, or admin',
-  })
-  @ApiOkResponse({ type: CancelBookingResponseDto })
-  @ApiBadRequestResponse({ description: 'Booking is already cancelled' })
-  @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
-  @ApiForbiddenResponse({ description: 'Access denied' })
-  @ApiNotFoundResponse({ description: 'Booking not found' })
-  cancel(@Param('id') id: string, @CurrentUser() user: IAuthUser) {
-    return this.service.cancel(id, user.userId, user.role);
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiParam({ name: 'id', type: String, required: true })
+  @ApiOkResponse({ type: Booking })
+  cancel(@Param('id') id: string, @Req() req: AuthedRequest) {
+    return this.bookingsService.cancel(id, {
+      id: req.user!.id,
+      roleId: req.user!.role?.id,
+    });
   }
 }

@@ -1,72 +1,139 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get,
-  Param,
+  Post,
+  Body,
   Patch,
+  Param,
+  Delete,
   UseGuards,
+  Query,
+  HttpStatus,
+  HttpCode,
+  SerializeOptions,
 } from '@nestjs/common';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import {
   ApiBearerAuth,
-  ApiNoContentResponse,
-  ApiNotFoundResponse,
+  ApiCreatedResponse,
   ApiOkResponse,
-  ApiOperation,
+  ApiParam,
   ApiTags,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import type { IAuthUser } from '../auth/interfaces/auth-user.interface';
-import { PublicUserDto } from './dto/public-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UsersService } from './users.service';
+import { Roles } from '../roles/roles.decorator';
+import { RoleEnum } from '../roles/roles.enum';
+import { AuthGuard } from '@nestjs/passport';
 
-@ApiTags('users')
-@ApiBearerAuth('bearer')
-@ApiUnauthorizedResponse({ description: 'Missing or invalid JWT' })
-@UseGuards(JwtAuthGuard)
-@Controller('users')
+import {
+  InfinityPaginationResponse,
+  InfinityPaginationResponseDto,
+} from '../utils/dto/infinity-pagination-response.dto';
+import { NullableType } from '../utils/types/nullable.type';
+import { QueryUserDto } from './dto/query-user.dto';
+import { User } from './domain/user';
+import { UsersService } from './users.service';
+import { RolesGuard } from '../roles/roles.guard';
+import { infinityPagination } from '../utils/infinity-pagination';
+
+@ApiBearerAuth()
+@Roles(RoleEnum.admin)
+@UseGuards(AuthGuard('jwt'), RolesGuard)
+@ApiTags('Users')
+@Controller({
+  path: 'users',
+  version: '1',
+})
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @ApiCreatedResponse({
+    type: User,
+  })
+  @SerializeOptions({
+    groups: ['admin'],
+  })
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() createProfileDto: CreateUserDto): Promise<User> {
+    return this.usersService.create(createProfileDto);
+  }
+
+  @ApiOkResponse({
+    type: InfinityPaginationResponse(User),
+  })
+  @SerializeOptions({
+    groups: ['admin'],
+  })
   @Get()
-  @ApiOperation({ summary: 'List all active users' })
-  @ApiOkResponse({ type: [PublicUserDto] })
-  findAll() {
-    return this.usersService.findAll();
+  @HttpCode(HttpStatus.OK)
+  async findAll(
+    @Query() query: QueryUserDto,
+  ): Promise<InfinityPaginationResponseDto<User>> {
+    const page = query?.page ?? 1;
+    let limit = query?.limit ?? 10;
+    if (limit > 50) {
+      limit = 50;
+    }
+
+    return infinityPagination(
+      await this.usersService.findManyWithPagination({
+        filterOptions: query?.filters,
+        sortOptions: query?.sort,
+        paginationOptions: {
+          page,
+          limit,
+        },
+      }),
+      { page, limit },
+    );
   }
 
-  @Get('me')
-  @ApiOperation({ summary: 'Get current authenticated user' })
-  @ApiOkResponse({ type: PublicUserDto })
-  @ApiNotFoundResponse({ description: 'User not found' })
-  getMe(@CurrentUser() user: IAuthUser) {
-    return this.usersService.findOne(user.userId);
-  }
-
+  @ApiOkResponse({
+    type: User,
+  })
+  @SerializeOptions({
+    groups: ['admin'],
+  })
   @Get(':id')
-  @ApiOperation({ summary: 'Get user by ID' })
-  @ApiOkResponse({ type: PublicUserDto })
-  @ApiNotFoundResponse({ description: 'User not found' })
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+  @HttpCode(HttpStatus.OK)
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+  })
+  findOne(@Param('id') id: User['id']): Promise<NullableType<User>> {
+    return this.usersService.findById(id);
   }
 
+  @ApiOkResponse({
+    type: User,
+  })
+  @SerializeOptions({
+    groups: ['admin'],
+  })
   @Patch(':id')
-  @ApiOperation({ summary: 'Update user by ID' })
-  @ApiOkResponse({ type: PublicUserDto })
-  @ApiNotFoundResponse({ description: 'User not found' })
-  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-    return this.usersService.update(id, dto);
+  @HttpCode(HttpStatus.OK)
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+  })
+  update(
+    @Param('id') id: User['id'],
+    @Body() updateProfileDto: UpdateUserDto,
+  ): Promise<User | null> {
+    return this.usersService.update(id, updateProfileDto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Deactivate user by ID' })
-  @ApiNoContentResponse({ description: 'User deactivated' })
-  @ApiNotFoundResponse({ description: 'User not found' })
-  remove(@Param('id') id: string) {
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+  })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id') id: User['id']): Promise<void> {
     return this.usersService.remove(id);
   }
 }

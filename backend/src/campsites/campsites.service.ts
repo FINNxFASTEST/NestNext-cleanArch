@@ -1,66 +1,125 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import type { UserRole } from '../users/domain/user';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { CreateCampsiteDto } from './dto/create-campsite.dto';
 import { UpdateCampsiteDto } from './dto/update-campsite.dto';
-import { Campsite, CampsiteDocument } from './schemas/campsite.schema';
-
-type CampsiteFilter = {
-  status?: 'active' | 'inactive';
-  ownerId?: string;
-};
+import { CampsiteRepository } from './infrastructure/persistence/campsite.repository';
+import { IPaginationOptions } from '../utils/types/pagination-options';
+import { Campsite, CampsiteLocation, Pitch } from './domain/campsite';
 
 @Injectable()
 export class CampsitesService {
-  constructor(
-    @InjectModel(Campsite.name)
-    private readonly campsiteModel: Model<CampsiteDocument>,
-  ) {}
+  constructor(private readonly campsiteRepository: CampsiteRepository) {}
 
-  create(ownerId: string, dto: CreateCampsiteDto) {
-    return this.campsiteModel.create({ ...dto, ownerId });
+  async create(createCampsiteDto: CreateCampsiteDto): Promise<Campsite> {
+    const location = new CampsiteLocation();
+    location.province = createCampsiteDto.location.province;
+    location.district = createCampsiteDto.location.district;
+    location.lat = createCampsiteDto.location.lat;
+    location.lng = createCampsiteDto.location.lng;
+
+    const pitches: Pitch[] = createCampsiteDto.pitches.map((p) => {
+      const pitch = new Pitch();
+      pitch.id = randomUUID();
+      pitch.type = p.type;
+      pitch.name = p.name;
+      pitch.maxGuests = p.maxGuests;
+      pitch.pricePerNight = p.pricePerNight;
+      pitch.size = p.size;
+      return pitch;
+    });
+
+    return this.campsiteRepository.create({
+      organizationId: createCampsiteDto.organizationId,
+      name: createCampsiteDto.name,
+      description: createCampsiteDto.description ?? null,
+      location,
+      images: createCampsiteDto.images ?? [],
+      amenities: createCampsiteDto.amenities ?? [],
+      pitches,
+      status: 'active',
+    });
   }
 
-  findAll(ownerId?: string) {
-    const filter: CampsiteFilter = { status: 'active' };
-    if (ownerId) filter.ownerId = ownerId;
-    return this.campsiteModel.find(filter).lean();
+  findAllWithPagination({
+    paginationOptions,
+    filter,
+  }: {
+    paginationOptions: IPaginationOptions;
+    filter?: { organizationId?: string; status?: 'active' | 'inactive' };
+  }) {
+    return this.campsiteRepository.findAllWithPagination({
+      paginationOptions: {
+        page: paginationOptions.page,
+        limit: paginationOptions.limit,
+      },
+      filter,
+    });
   }
 
-  async findOne(id: string) {
-    const doc = await this.campsiteModel.findById(id).lean();
-    if (!doc) throw new NotFoundException('Campsite not found');
-    return doc;
+  findById(id: Campsite['id']) {
+    return this.campsiteRepository.findById(id);
+  }
+
+  findByIds(ids: Campsite['id'][]) {
+    return this.campsiteRepository.findByIds(ids);
+  }
+
+  findByOrganizationId(organizationId: string) {
+    return this.campsiteRepository.findByOrganizationId(organizationId);
   }
 
   async update(
-    id: string,
-    callerId: string,
-    callerRole: UserRole,
-    dto: UpdateCampsiteDto,
-  ) {
-    const doc = await this.campsiteModel.findById(id);
-    if (!doc) throw new NotFoundException('Campsite not found');
-    if (callerRole !== 'admin' && String(doc.ownerId) !== callerId) {
-      throw new ForbiddenException('You do not own this campsite');
+    id: Campsite['id'],
+    updateCampsiteDto: UpdateCampsiteDto,
+  ): Promise<Campsite> {
+    const existing = await this.campsiteRepository.findById(id);
+    if (!existing) {
+      throw new NotFoundException('Campsite not found');
     }
-    Object.assign(doc, dto);
-    return doc.save();
+
+    const payload: Partial<Campsite> = {};
+
+    if (updateCampsiteDto.name !== undefined)
+      payload.name = updateCampsiteDto.name;
+    if (updateCampsiteDto.description !== undefined)
+      payload.description = updateCampsiteDto.description ?? null;
+    if (updateCampsiteDto.images !== undefined)
+      payload.images = updateCampsiteDto.images;
+    if (updateCampsiteDto.amenities !== undefined)
+      payload.amenities = updateCampsiteDto.amenities;
+    if (updateCampsiteDto.status !== undefined)
+      payload.status = updateCampsiteDto.status;
+
+    if (updateCampsiteDto.location) {
+      const loc = new CampsiteLocation();
+      loc.province = updateCampsiteDto.location.province;
+      loc.district = updateCampsiteDto.location.district;
+      loc.lat = updateCampsiteDto.location.lat;
+      loc.lng = updateCampsiteDto.location.lng;
+      payload.location = loc;
+    }
+
+    if (updateCampsiteDto.pitches) {
+      payload.pitches = updateCampsiteDto.pitches.map((p) => {
+        const pitch = new Pitch();
+        pitch.id = randomUUID();
+        pitch.type = p.type;
+        pitch.name = p.name;
+        pitch.maxGuests = p.maxGuests;
+        pitch.pricePerNight = p.pricePerNight;
+        pitch.size = p.size;
+        return pitch;
+      });
+    }
+
+    const updated = await this.campsiteRepository.update(id, payload);
+    if (!updated) {
+      throw new NotFoundException('Campsite not found');
+    }
+    return updated;
   }
 
-  async remove(id: string, callerId: string, callerRole: UserRole) {
-    const doc = await this.campsiteModel.findById(id);
-    if (!doc) throw new NotFoundException('Campsite not found');
-    if (callerRole !== 'admin' && String(doc.ownerId) !== callerId) {
-      throw new ForbiddenException('You do not own this campsite');
-    }
-    doc.status = 'inactive';
-    await doc.save();
-    return { success: true as const };
+  remove(id: Campsite['id']) {
+    return this.campsiteRepository.remove(id);
   }
 }

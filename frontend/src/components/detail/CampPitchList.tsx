@@ -31,7 +31,7 @@ export function CampPitchList({ pitches, selectedPitchId, qty, onSelect }: CampP
     e.stopPropagation();
     const next = Math.max(1, localQty + delta);
     setLocalQty(next);
-    if (selectedPitchId === (pitch._id ?? pitch.name)) {
+    if (selectedPitchId === (pitch.id ?? pitch.name)) {
       onSelect(pitch, next);
     }
   }
@@ -43,7 +43,7 @@ export function CampPitchList({ pitches, selectedPitchId, qty, onSelect }: CampP
   return (
     <div className="grid gap-3">
       {pitches.map((p) => {
-        const id = p._id ?? p.name;
+        const id = p.id ?? p.name;
         const isActive = selectedPitchId === id;
         const scene = PITCH_SCENES[p.type] ?? "forest";
         return (

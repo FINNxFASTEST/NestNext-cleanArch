@@ -1,20 +1,20 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Campsite, CampsiteSchema } from '../campsites/schemas/campsite.schema';
-import { BookingsController } from './bookings.controller';
 import { BookingsService } from './bookings.service';
-import { Booking, BookingSchema } from './schemas/booking.schema';
-import { PitchSlot, PitchSlotSchema } from './schemas/pitch-slot.schema';
+import { BookingsController } from './bookings.controller';
+import { DocumentBookingPersistenceModule } from './infrastructure/persistence/document/document-persistence.module';
+import { CampsitesModule } from '../campsites/campsites.module';
+import { PitchSlotsModule } from '../pitch-slots/pitch-slots.module';
+import { MembershipsModule } from '../memberships/memberships.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Booking.name, schema: BookingSchema },
-      { name: PitchSlot.name, schema: PitchSlotSchema },
-      { name: Campsite.name, schema: CampsiteSchema },
-    ]),
+    DocumentBookingPersistenceModule,
+    CampsitesModule,
+    PitchSlotsModule,
+    MembershipsModule,
   ],
   controllers: [BookingsController],
   providers: [BookingsService],
+  exports: [BookingsService, DocumentBookingPersistenceModule],
 })
 export class BookingsModule {}
