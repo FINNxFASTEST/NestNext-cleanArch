@@ -5,6 +5,7 @@ import { EntityDocumentHelper } from '../../../../../utils/document-entity-helpe
 export type SessionSchemaDocument = HydratedDocument<SessionSchemaClass>;
 
 @Schema({
+  collection: 'sessions',
   timestamps: true,
   toJSON: {
     virtuals: true,

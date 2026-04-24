@@ -23,6 +23,7 @@ export const OrganizationBankAccountSchemaFactory =
 export type OrganizationStatus = 'pending' | 'approved' | 'suspended';
 
 @Schema({
+  collection: 'organizations',
   timestamps: true,
   toJSON: {
     virtuals: true,

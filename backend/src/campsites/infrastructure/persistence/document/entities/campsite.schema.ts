@@ -44,6 +44,7 @@ export class PitchSchema {
 export const PitchSchemaFactory = SchemaFactory.createForClass(PitchSchema);
 
 @Schema({
+  collection: 'campsites',
   timestamps: true,
   toJSON: {
     virtuals: true,

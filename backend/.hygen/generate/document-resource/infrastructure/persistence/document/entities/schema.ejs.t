@@ -8,6 +8,7 @@ import { EntityDocumentHelper } from '../../../../../utils/document-entity-helpe
 export type <%= name %>SchemaDocument = HydratedDocument<<%= name %>SchemaClass>;
 
 @Schema({
+  collection: '<%= h.inflection.transform(name, ["pluralize", "underscore", "dasherize"]) %>',
   timestamps: true,
   toJSON: {
     virtuals: true,

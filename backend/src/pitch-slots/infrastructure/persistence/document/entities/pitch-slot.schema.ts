@@ -5,6 +5,7 @@ import { EntityDocumentHelper } from '../../../../../utils/document-entity-helpe
 export type PitchSlotSchemaDocument = HydratedDocument<PitchSlotSchemaClass>;
 
 @Schema({
+  collection: 'pitch-slots',
   timestamps: true,
   toJSON: {
     virtuals: true,
