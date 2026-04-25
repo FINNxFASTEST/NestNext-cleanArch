@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { CampsiteRepository } from '../../infrastructure/persistence/campsite.repository';
-import { Campsite, CampsiteLocation, Pitch } from '../../domain/campsite';
+import { Campsite, CampsiteAmenity, CampsiteLocation, Pitch } from '../../domain/campsite';
 import { CreateCampsiteDto } from '../../presentation/dto/create-campsite.dto';
 
 @Injectable()
@@ -32,7 +32,12 @@ export class CreateCampsiteUseCase {
       description: dto.description ?? null,
       location,
       images: dto.images ?? [],
-      amenities: dto.amenities ?? [],
+      amenities: (dto.amenities ?? []).map((a) => {
+        const amenity = new CampsiteAmenity();
+        amenity.label = a.label;
+        amenity.iconKey = a.iconKey;
+        return amenity;
+      }),
       pitches,
       status: 'active',
     } as Campsite);

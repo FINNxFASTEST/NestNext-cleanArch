@@ -1,22 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusIcon } from "@/components/common/Icons";
 import { FormShell } from "./FormShell";
 import { FormField, FormInput, FormSelect, FormTextarea, Chip } from "./FormPrimitives";
+import { AddAmenityModal, type CustomAmenity } from "./AddAmenityModal";
+import { amenitiesApi, type AmenityDto } from "@/services/amenities.service";
+import { ICON_REGISTRY } from "@/lib/icon-registry";
 
 const SIZES = ["2 × 2 ม.", "3 × 3 ม.", "4 × 4 ม.", "5 × 5 ม.", "กำหนดเอง"];
-
-const AMENITY_OPTIONS = [
-  "ไฟฟ้า",
-  "น้ำประปา",
-  "โต๊ะ-เก้าอี้",
-  "เตาไฟ",
-  "วิวภูเขา",
-  "ใกล้ห้องน้ำ",
-  "จอดรถข้างลาน",
-];
-const DEFAULT_AMENITIES = new Set(["ไฟฟ้า", "น้ำประปา", "โต๊ะ-เก้าอี้", "วิวภูเขา"]);
 
 const INIT_STATUSES = [
   { t: "เปิดรับจองทันที", d: "แสดงในหน้าค้นหาและรับจองได้" },
@@ -38,17 +30,36 @@ const AREA_TYPE_OPTIONS = [
 
 export function AddAreaForm({ onClose }: { onClose?: () => void }) {
   const [selectedSize, setSelectedSize] = useState(1);
-  const [amenities, setAmenities] = useState<Set<string>>(new Set(DEFAULT_AMENITIES));
+  const [globalAmenities, setGlobalAmenities] = useState<AmenityDto[]>([]);
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
+  const [showAddAmenity, setShowAddAmenity] = useState(false);
   const [initStatus, setInitStatus] = useState(0);
   const [campsite, setCampsite] = useState("เขาใหญ่ แคมป์วิว");
   const [areaType, setAreaType] = useState("ลานเตนท์มาตรฐาน");
 
-  function toggleAmenity(label: string) {
-    setAmenities((prev) => {
+  useEffect(() => {
+    amenitiesApi.list().then((r) => setGlobalAmenities(r.data)).catch(() => {});
+  }, []);
+
+  function toggleAmenity(id: string) {
+    setSelectedKeys((prev) => {
       const next = new Set(prev);
-      next.has(label) ? next.delete(label) : next.add(label);
+      next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
+  }
+
+  function handleAddCustomAmenity(a: CustomAmenity) {
+    const optimistic: AmenityDto = { id: `local-${a.label}`, label: a.label, iconKey: a.iconKey };
+    setGlobalAmenities((prev) => {
+      const exists = prev.some((x) => x.label === a.label);
+      return exists ? prev : [optimistic, ...prev];
+    });
+    setSelectedKeys((prev) => new Set([...prev, optimistic.id]));
+    // Reload from API after a brief delay so the real ID comes back
+    setTimeout(() => {
+      amenitiesApi.list().then((r) => setGlobalAmenities(r.data)).catch(() => {});
+    }, 800);
   }
 
   return (
@@ -106,17 +117,37 @@ export function AddAreaForm({ onClose }: { onClose?: () => void }) {
       {/* Amenities */}
       <FormField label="สิ่งอำนวยความสะดวก">
         <div className="flex gap-2 flex-wrap mt-1">
-          {AMENITY_OPTIONS.map((label) => {
-            const on = amenities.has(label);
+          {globalAmenities.map((a) => {
+            const on = selectedKeys.has(a.id);
+            const IconComp = ICON_REGISTRY.find((e) => e.key === a.iconKey)?.Component;
             return (
-              <Chip key={label} on={on} onClick={() => toggleAmenity(label)}>
-                {on ? "✓ " : ""}
-                {label}
+              <Chip key={a.id} on={on} onClick={() => toggleAmenity(a.id)}>
+                <span className="inline-flex items-center gap-1">
+                  {IconComp && <IconComp size={12} />}
+                  {on ? "✓ " : ""}
+                  {a.label}
+                </span>
               </Chip>
             );
           })}
+          <button
+            type="button"
+            onClick={() => setShowAddAmenity(true)}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-thai transition-all border border-dashed"
+            style={{ borderColor: "var(--line-strong)", color: "var(--sage-500)" }}
+          >
+            <PlusIcon style={{ width: 11, height: 11 }} />
+            กำหนดเอง
+          </button>
         </div>
       </FormField>
+
+      {showAddAmenity && (
+        <AddAmenityModal
+          onAdd={handleAddCustomAmenity}
+          onClose={() => setShowAddAmenity(false)}
+        />
+      )}
 
       {/* Description */}
       <div className="mt-5">

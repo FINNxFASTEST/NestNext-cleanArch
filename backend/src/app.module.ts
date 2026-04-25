@@ -16,6 +16,7 @@ import { MembershipsModule } from './memberships/memberships.module';
 import { CommonModule } from './common/common.module';
 
 import { CampsitesModule } from './campsites/campsites.module';
+import { AmenitiesModule } from './amenities/amenities.module';
 
 import { BookingsModule } from './bookings/bookings.module';
 
@@ -26,6 +27,7 @@ import { PitchSlotsModule } from './pitch-slots/pitch-slots.module';
     PitchSlotsModule,
     BookingsModule,
     CampsitesModule,
+    AmenitiesModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig, authConfig, databaseConfig],

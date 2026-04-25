@@ -3,6 +3,11 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export type PitchType = 'tent' | 'glamping' | 'rv' | 'cabin';
 export type CampsiteStatus = 'active' | 'inactive';
 
+export class CampsiteAmenity {
+  @ApiProperty({ type: String }) label: string;
+  @ApiProperty({ type: String }) iconKey: string;
+}
+
 export class CampsiteLocation {
   @ApiProperty({ type: String }) province: string;
   @ApiProperty({ type: String }) district: string;
@@ -37,8 +42,8 @@ export class Campsite {
   @ApiProperty({ type: [String] })
   images: string[];
 
-  @ApiProperty({ type: [String] })
-  amenities: string[];
+  @ApiProperty({ type: () => [CampsiteAmenity] })
+  amenities: CampsiteAmenity[];
 
   @ApiProperty({ type: () => [Pitch] })
   pitches: Pitch[];

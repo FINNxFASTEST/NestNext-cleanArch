@@ -43,6 +43,15 @@ export class PitchSchema {
 
 export const PitchSchemaFactory = SchemaFactory.createForClass(PitchSchema);
 
+@Schema({ _id: false })
+export class CampsiteAmenitySchema {
+  @Prop({ type: String, required: true }) label: string;
+  @Prop({ type: String, required: true }) iconKey: string;
+}
+
+export const CampsiteAmenitySchemaFactory =
+  SchemaFactory.createForClass(CampsiteAmenitySchema);
+
 @Schema({
   collection: 'campsites',
   timestamps: true,
@@ -67,8 +76,8 @@ export class CampsiteSchemaClass extends EntityDocumentHelper {
   @Prop({ type: [String], default: [] })
   images: string[];
 
-  @Prop({ type: [String], default: [] })
-  amenities: string[];
+  @Prop({ type: [CampsiteAmenitySchemaFactory], default: [] })
+  amenities: CampsiteAmenitySchema[];
 
   @Prop({ type: [PitchSchemaFactory], default: [] })
   pitches: PitchSchema[];

@@ -61,7 +61,12 @@ export class TenantSeedService {
           lng: 101.3722,
         },
         images: [],
-        amenities: ['ไฟฟ้า', 'น้ำประปา', 'ก่อไฟได้', 'Wi-Fi'],
+        amenities: [
+          { label: 'ไฟฟ้า', iconKey: 'FiZap' },
+          { label: 'น้ำประปา', iconKey: 'FiDroplet' },
+          { label: 'ก่อไฟได้', iconKey: 'LuFlame' },
+          { label: 'Wi-Fi', iconKey: 'FiWifi' },
+        ],
         pitches: [
           {
             _id: randomUUID(),
