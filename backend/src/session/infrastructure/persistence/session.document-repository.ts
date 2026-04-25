@@ -7,88 +7,114 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { SessionMapper } from './session.mapper';
 import { User } from '../../../users/domain/user';
+import { SessionCacheService } from '../cache/session-cache.service';
 
 @Injectable()
 export class SessionDocumentRepository implements SessionRepository {
-  constructor(
-    @InjectModel(SessionSchemaClass.name)
-    private readonly sessionModel: Model<SessionSchemaClass>,
-  ) {}
+    constructor(
+        @InjectModel(SessionSchemaClass.name)
+        private readonly sessionModel: Model<SessionSchemaClass>,
+        private readonly sessionCache: SessionCacheService,
+    ) {}
 
-  async findById(id: Session['id']): Promise<NullableType<Session>> {
-    const sessionObject = await this.sessionModel.findById(id);
-    return sessionObject ? SessionMapper.toDomain(sessionObject) : null;
-  }
+    async findById(id: Session['id']): Promise<NullableType<Session>> {
+        const cachedSession = await this.sessionCache.get(id);
+        if (cachedSession) {
+            return cachedSession;
+        }
 
-  async create(data: Session): Promise<Session> {
-    const persistenceModel = SessionMapper.toPersistence(data);
-    const createdSession = new this.sessionModel(persistenceModel);
-    const sessionObject = await createdSession.save();
-    return SessionMapper.toDomain(sessionObject);
-  }
+        const sessionObject = await this.sessionModel.findById(id);
+        if (!sessionObject) {
+            return null;
+        }
 
-  async update(
-    id: Session['id'],
-    payload: Partial<Session>,
-  ): Promise<Session | null> {
-    const clonedPayload = { ...payload };
-    delete clonedPayload.id;
-    delete clonedPayload.createdAt;
-    delete clonedPayload.updatedAt;
-    delete clonedPayload.deletedAt;
-
-    const filter = { _id: id.toString() };
-    const session = await this.sessionModel.findOne(filter);
-
-    if (!session) {
-      return null;
+        const session = SessionMapper.toDomain(sessionObject);
+        await this.sessionCache.set(session);
+        return session;
     }
 
-    const sessionObject = await this.sessionModel.findOneAndUpdate(
-      filter,
-      SessionMapper.toPersistence({
-        ...SessionMapper.toDomain(session),
-        ...clonedPayload,
-      }),
-      { new: true },
-    );
+    async create(data: Session): Promise<Session> {
+        const persistenceModel = SessionMapper.toPersistence(data);
+        const createdSession = new this.sessionModel(persistenceModel);
+        const sessionObject = await createdSession.save();
+        const session = SessionMapper.toDomain(sessionObject);
+        await this.sessionCache.set(session);
+        return session;
+    }
 
-    return sessionObject ? SessionMapper.toDomain(sessionObject) : null;
-  }
+    async update(id: Session['id'], payload: Partial<Session>): Promise<Session | null> {
+        const clonedPayload = { ...payload };
+        delete clonedPayload.id;
+        delete clonedPayload.createdAt;
+        delete clonedPayload.updatedAt;
+        delete clonedPayload.deletedAt;
 
-  async updateByHash(
-    conditions: { id: Session['id']; hash: Session['hash'] },
-    payload: Partial<
-      Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>
-    >,
-  ): Promise<Session | null> {
-    const sessionObject = await this.sessionModel.findOneAndUpdate(
-      { _id: conditions.id.toString(), hash: conditions.hash },
-      { hash: payload.hash },
-      { new: true },
-    );
+        const filter = { _id: id.toString() };
+        const session = await this.sessionModel.findOne(filter);
 
-    return sessionObject ? SessionMapper.toDomain(sessionObject) : null;
-  }
+        if (!session) {
+            return null;
+        }
 
-  async deleteById(id: Session['id']): Promise<void> {
-    await this.sessionModel.deleteOne({ _id: id.toString() });
-  }
+        const sessionObject = await this.sessionModel.findOneAndUpdate(
+            filter,
+            SessionMapper.toPersistence({
+                ...SessionMapper.toDomain(session),
+                ...clonedPayload,
+            }),
+            { new: true },
+        );
 
-  async deleteByUserId({ userId }: { userId: User['id'] }): Promise<void> {
-    await this.sessionModel.deleteMany({ user: userId.toString() });
-  }
+        if (!sessionObject) {
+            return null;
+        }
 
-  async deleteByUserIdWithExclude({
-    userId,
-    excludeSessionId,
-  }: {
-    userId: User['id'];
-    excludeSessionId: Session['id'];
-  }): Promise<void> {
-    await this.sessionModel.deleteMany({
-      user: userId.toString(),
-      _id: { $not: { $eq: excludeSessionId.toString() } },
-    });
-  }
+        const updatedSession = SessionMapper.toDomain(sessionObject);
+        await this.sessionCache.set(updatedSession);
+        return updatedSession;
+    }
+
+    async updateByHash(
+        conditions: { id: Session['id']; hash: Session['hash'] },
+        payload: Partial<Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>>,
+    ): Promise<Session | null> {
+        const sessionObject = await this.sessionModel.findOneAndUpdate(
+            { _id: conditions.id.toString(), hash: conditions.hash },
+            { hash: payload.hash },
+            { new: true },
+        );
+
+        if (!sessionObject) {
+            return null;
+        }
+
+        const updatedSession = SessionMapper.toDomain(sessionObject);
+        await this.sessionCache.set(updatedSession);
+        return updatedSession;
+    }
+
+    async deleteById(id: Session['id']): Promise<void> {
+        const existing = await this.findById(id);
+        await this.sessionModel.deleteOne({ _id: id.toString() });
+        await this.sessionCache.deleteById(id, existing?.user?.id);
+    }
+
+    async deleteByUserId({ userId }: { userId: User['id'] }): Promise<void> {
+        await this.sessionModel.deleteMany({ user: userId.toString() });
+        await this.sessionCache.deleteByUserId(userId);
+    }
+
+    async deleteByUserIdWithExclude({
+        userId,
+        excludeSessionId,
+    }: {
+        userId: User['id'];
+        excludeSessionId: Session['id'];
+    }): Promise<void> {
+        await this.sessionModel.deleteMany({
+            user: userId.toString(),
+            _id: { $not: { $eq: excludeSessionId.toString() } },
+        });
+        await this.sessionCache.deleteByUserIdWithExclude(userId, excludeSessionId);
+    }
 }
