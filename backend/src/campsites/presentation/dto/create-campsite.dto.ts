@@ -14,6 +14,11 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+export class CreateCampsiteAmenityDto {
+  @ApiProperty() @IsString() label: string;
+  @ApiProperty() @IsString() iconKey: string;
+}
+
 export class CreateCampsiteLocationDto {
   @ApiProperty() @IsString() province: string;
   @ApiProperty() @IsString() district: string;
@@ -71,11 +76,12 @@ export class CreateCampsiteDto {
   @IsString({ each: true })
   images?: string[];
 
-  @ApiPropertyOptional({ type: [String] })
+  @ApiPropertyOptional({ type: () => [CreateCampsiteAmenityDto] })
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  amenities?: string[];
+  @ValidateNested({ each: true })
+  @Type(() => CreateCampsiteAmenityDto)
+  amenities?: CreateCampsiteAmenityDto[];
 
   @ApiProperty({ type: () => [CreatePitchDto] })
   @IsArray()

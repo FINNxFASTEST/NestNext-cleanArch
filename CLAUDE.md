@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > **Heads up:** the old single-tenant design is archived in [CLAUDE.legacy.md](CLAUDE.legacy.md).
 > The project was rebuilt on [brocoders/nestjs-boilerplate](https://github.com/brocoders/nestjs-boilerplate)
-> (MongoDB + Mongoose only) and now follows a hexagonal, multi-tenant model.
+> (MongoDB + Mongoose only) and now follows a clean architecture, multi-tenant model.
 
 ## Project overview
 
@@ -14,7 +14,7 @@ Kangtent is a campsite booking platform for the Thai market, organized like Agod
 - **Platform admins** oversee every tenant.
 
 Workspaces:
-- `backend/` — NestJS 11 + Mongoose (port 3001), JWT sessions, hexagonal layout.
+- `backend/` — NestJS 11 + Mongoose (port 3001), JWT sessions, clean architecture with use-cases.
 - `frontend/` — Next.js 15 App Router (port 3000).
 
 ---
@@ -72,27 +72,39 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 
 ## Backend architecture
 
-### Hexagonal folders
+### Clean architecture with use-cases
 
-Every domain module follows this layout (scaffolded by `npm run generate:resource:document`):
+Every domain module follows a **Clean Architecture** layout with explicit use-case classes. There is no god-service — each operation is its own `@Injectable()` use-case that the controller calls directly.
 
 ```
 src/<resource>/
-  domain/<resource>.ts              # Pure domain class, what services speak
-  dto/                              # HTTP payloads + validators
-  infrastructure/persistence/
-    <resource>.repository.ts        # Port (abstract class)
-    document/
-      document-persistence.module.ts
-      entities/<resource>.schema.ts # Mongoose schema
-      mappers/<resource>.mapper.ts  # schema ↔ domain
-      repositories/<resource>.repository.ts # Adapter
-  <resource>.controller.ts
+  domain/<resource>.ts                    # Pure domain class (no Mongoose deps)
+  application/
+    use-cases/
+      create-<resource>.use-case.ts       # One class per operation
+      update-<resource>.use-case.ts
+      find-<resource>.use-case.ts
+      delete-<resource>.use-case.ts
+      ...
+  presentation/
+    <resource>.controller.ts              # Thin — just validates + delegates to use-case
+    dto/                                  # HTTP request/response shapes + validators
+  infrastructure/
+    persistence/
+      <resource>.repository.ts            # Port (abstract class)
+      <resource>.mapper.ts                # schema ↔ domain (static methods only)
+      <resource>.schema.ts                # Mongoose schema class
+      document/
+        document-persistence.module.ts
+        entities/<resource>.schema.ts
+        mappers/<resource>.mapper.ts
+        repositories/<resource>.repository.ts   # Adapter (implements the port)
   <resource>.module.ts
-  <resource>.service.ts
 ```
 
-Services depend on the **port** (`CampsiteRepository`), never the document adapter.
+**Data flow:** `Controller → UseCase → Repository port → Document adapter → MongoDB`
+
+Use-cases inject the **repository port** (`CampsiteRepository`), never the document adapter. Controllers never touch the repository directly.
 
 ### Modules
 
@@ -105,7 +117,9 @@ Services depend on the **port** (`CampsiteRepository`), never the document adapt
 | `session` | Refresh-token rotation |
 | `organizations` | Tenant root — a host's business (`status: pending|approved|suspended`) |
 | `memberships` | `User ↔ Organization` with `owner | manager | staff` |
-| `campsites` | Host-owned listings with embedded pitches |
+| `campsites` | Host-owned listings with embedded pitches and amenities |
+| `amenities` | Platform-managed amenity catalogue (`{ label, iconKey }`) — uses a flat service, not use-cases |
+| `reviews` | Customer reviews per campsite (`rating 1-5`, optional `comment`) |
 | `bookings` | Customer-facing reservations (auth optional) |
 | `pitch-slots` | Double-booking prevention store |
 | `common` | `OrganizationScopeGuard`, `@ScopedOrg()` decorator |
@@ -154,7 +168,7 @@ JWT payload: `{ id, role: { id }, sessionId, iat, exp }`. The frontend decodes t
 
 ### Bookings & atomic slot reservation
 
-Implemented in [src/bookings/bookings.service.ts](backend/src/bookings/bookings.service.ts):
+Implemented across [src/bookings/application/use-cases/](backend/src/bookings/application/use-cases/) (`CreateBookingUseCase`, `CancelBookingUseCase`, etc.):
 
 1. Validate campsite + pitch + guest count.
 2. Compute `nights` (UTC-day iterator) and `totalPrice = nights × pricePerNight + Σ addOns.price`.
@@ -194,8 +208,13 @@ Access via `configService.get('auth.secret', { infer: true })`. All three are un
 **Campsite** — key embedded types:
 - `location: { province, district, lat, lng }` (embedded)
 - `pitches: Pitch[]` — each pitch: `{ id (UUID), type ('tent'|'glamping'|'rv'|'cabin'), name, maxGuests, pricePerNight, size? }`
-- `images: string[]`, `amenities: string[]`
+- `amenities: CampsiteAmenity[]` — each: `{ label: string, iconKey: string }` (references the `Amenity` catalogue by `iconKey`)
+- `images: string[]`
 - `status: 'active' | 'inactive'`
+
+**Amenity** — platform catalogue entry: `{ id, label, iconKey, createdAt }`. `iconKey` is the lookup key used in `CampsiteAmenity`.
+
+**Review** — `{ id, campsiteId, userId, rating (1-5), comment: string|null, createdAt, updatedAt }`.
 
 **Booking** — key fields:
 - `userId?: string | null` (null for anonymous)
@@ -255,7 +274,9 @@ New resources:
 npm run generate:resource:document -- --name Foo
 npm run add:property:to-document          # interactive, run once per field
 ```
-This scaffolds the hexagonal folders exactly as described above. Hand-edit the generated `*.schema.ts` for compound/unique indexes (e.g. `PitchSlotSchema.index({ pitchId: 1, date: 1 }, { unique: true })`).
+The generator scaffolds infrastructure + domain + a flat service. After generating, manually create the `application/use-cases/` and `presentation/` folders and split the service into individual use-case classes. Hand-edit `*.schema.ts` for compound/unique indexes (e.g. `PitchSlotSchema.index({ pitchId: 1, date: 1 }, { unique: true })`).
+
+> **Note:** The `amenities` module intentionally keeps the flat service pattern (no use-cases) because it is a simple CRUD catalogue with no domain logic.
 
 ---
 
@@ -293,6 +314,7 @@ frontend/src/
 - `bookingsApi` — `create`, `list`, `get`, `cancel`.
 - `organizationsApi` — `mine`, `create`, `get`, `update`, `remove`.
 - `membershipsApi` — `listForOrg`, `myMemberships`, `invite`, `remove`.
+- `amenitiesApi` — `list`, `create`, `remove`. Returns the platform amenity catalogue used when creating/editing campsites.
 
 Tokens live in `localStorage('kangtent_token')` + cookie of the same name (`SameSite=Lax`). The refresh token is stored under `kangtent_refresh`.
 

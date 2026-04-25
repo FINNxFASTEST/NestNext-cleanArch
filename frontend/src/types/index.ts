@@ -43,6 +43,11 @@ export interface CampsiteLocation {
   lng: number;
 }
 
+export interface CampsiteAmenity {
+  label: string;
+  iconKey: string;
+}
+
 export interface Campsite {
   id: string;
   organizationId: string;
@@ -50,7 +55,7 @@ export interface Campsite {
   description?: string | null;
   location: CampsiteLocation;
   images: string[];
-  amenities: string[];
+  amenities: CampsiteAmenity[];
   pitches: Pitch[];
   status: 'active' | 'inactive';
   createdAt?: string;

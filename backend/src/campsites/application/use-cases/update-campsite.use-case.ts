@@ -6,7 +6,7 @@ import {
 import { randomUUID } from 'crypto';
 import { CampsiteRepository } from '../../infrastructure/persistence/campsite.repository';
 import { MembershipRepository } from '../../../memberships/infrastructure/persistence/membership.repository';
-import { Campsite, CampsiteLocation, Pitch } from '../../domain/campsite';
+import { Campsite, CampsiteAmenity, CampsiteLocation, Pitch } from '../../domain/campsite';
 import { UpdateCampsiteDto } from '../../presentation/dto/update-campsite.dto';
 import { RoleEnum } from '../../../roles/roles.enum';
 
@@ -45,7 +45,14 @@ export class UpdateCampsiteUseCase {
     if (dto.description !== undefined)
       payload.description = dto.description ?? null;
     if (dto.images !== undefined) payload.images = dto.images;
-    if (dto.amenities !== undefined) payload.amenities = dto.amenities;
+    if (dto.amenities !== undefined) {
+      payload.amenities = dto.amenities.map((a) => {
+        const amenity = new CampsiteAmenity();
+        amenity.label = a.label;
+        amenity.iconKey = a.iconKey;
+        return amenity;
+      });
+    }
     if (dto.status !== undefined) payload.status = dto.status;
 
     if (dto.location) {

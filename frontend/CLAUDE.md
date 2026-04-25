@@ -28,7 +28,7 @@ No test suite is configured yet.
 | `/login` | `src/app/login/page.tsx` | Login form |
 | `/register` | `src/app/register/page.tsx` | Registration form |
 
-All pages are currently UI-only with hardcoded data — no backend or API layer exists yet.
+Pages are wired to the live backend via `src/services/`. The `/admin` page is the main host/admin dashboard connected to real API calls.
 
 ### Component Organization
 

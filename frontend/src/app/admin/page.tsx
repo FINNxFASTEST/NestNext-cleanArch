@@ -141,7 +141,7 @@ export default function AdminPage() {
               {/* Add button (dashboard only) */}
               {!activeForm && META[section]?.showAddBtn && (
                 <button
-                  onClick={() => showForm("new-campsite")}
+                  onClick={() => showForm("add-area")}
                   className="inline-flex items-center gap-2 font-thai text-sm px-[18px] py-2.5 rounded-full border-0 cursor-pointer bg-ember text-cream-50"
                 >
                   <PlusIcon style={{ width: 16, height: 16 }} />

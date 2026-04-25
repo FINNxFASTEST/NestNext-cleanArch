@@ -1,5 +1,6 @@
-import { Campsite, CampsiteLocation, Pitch } from '../../domain/campsite';
+import { Campsite, CampsiteAmenity, CampsiteLocation, Pitch } from '../../domain/campsite';
 import {
+  CampsiteAmenitySchema,
   CampsiteLocationSchema,
   CampsiteSchemaClass,
   PitchSchema,
@@ -13,7 +14,12 @@ export class CampsiteMapper {
     domainEntity.name = raw.name;
     domainEntity.description = raw.description ?? null;
     domainEntity.images = raw.images ?? [];
-    domainEntity.amenities = raw.amenities ?? [];
+    domainEntity.amenities = (raw.amenities ?? []).map((a) => {
+      const amenity = new CampsiteAmenity();
+      amenity.label = a.label;
+      amenity.iconKey = a.iconKey;
+      return amenity;
+    });
     domainEntity.status = raw.status;
     domainEntity.createdAt = raw.createdAt;
     domainEntity.updatedAt = raw.updatedAt;
@@ -48,7 +54,12 @@ export class CampsiteMapper {
     persistenceSchema.name = domainEntity.name;
     persistenceSchema.description = domainEntity.description ?? null;
     persistenceSchema.images = domainEntity.images ?? [];
-    persistenceSchema.amenities = domainEntity.amenities ?? [];
+    persistenceSchema.amenities = (domainEntity.amenities ?? []).map((a) => {
+      const s = new CampsiteAmenitySchema();
+      s.label = a.label;
+      s.iconKey = a.iconKey;
+      return s;
+    });
     persistenceSchema.status = domainEntity.status ?? 'active';
     persistenceSchema.createdAt = domainEntity.createdAt;
     persistenceSchema.updatedAt = domainEntity.updatedAt;
