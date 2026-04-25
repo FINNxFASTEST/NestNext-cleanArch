@@ -8,7 +8,7 @@ import { KangtentMark } from "./KangtentMark";
 import { useAuth } from "@/contexts/AuthContext";
 
 type NavVariant = "overlay" | "solid";
-type NavActive = "home" | "search" | "bookings" | "none";
+type NavActive = "home" | "search" | "activities" | "bookings" | "none";
 
 interface NavProps {
   active?: NavActive;
@@ -17,8 +17,8 @@ interface NavProps {
 
 const LINKS = [
   { id: "home", label: "หน้าแรก", href: "/" },
-  { id: "search", label: "ค้นหาลานกางเต็นท์", href: "/campsites/1" },
-  { id: "activities", label: "กิจกรรมน่าสนใจ", href: "#" },
+  { id: "search", label: "ค้นหาลานกางเต็นท์", href: "/search" },
+  { id: "activities", label: "กิจกรรมน่าสนใจ", href: "/activities" },
   { id: "services", label: "บริการ", href: "#" },
   { id: "bookings", label: "การจองของฉัน", href: "/booking" },
 ];
