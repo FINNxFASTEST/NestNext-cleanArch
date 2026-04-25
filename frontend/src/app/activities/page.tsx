@@ -102,6 +102,9 @@ const CATEGORY_CARDS: CategoryCardData[] = [
 
 export default function ActivitiesPage() {
   const [category, setCategory] = useState("ทั้งหมด");
+  const filteredPosts = category === "ทั้งหมด"
+    ? POSTS
+    : POSTS.filter((p) => p.category === category);
 
   return (
     <div className="bg-paper min-h-screen">
@@ -186,17 +189,25 @@ export default function ActivitiesPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-6">
-            {POSTS.map((p) => <PostCard key={p.id} post={p} />)}
+            {filteredPosts.length === 0 ? (
+              <div className="col-span-2 font-thai text-center text-sage-400 py-14">
+                ไม่พบบทความในหมวด &ldquo;{category}&rdquo;
+              </div>
+            ) : (
+              filteredPosts.map((p) => <PostCard key={p.id} post={p} />)
+            )}
           </div>
 
-          <div className="mt-10 flex flex-col items-center gap-[10px]">
-            <button className="font-thai flex items-center gap-1.5 py-3 px-7 rounded-full text-[14px] border border-line-strong bg-paper text-ink cursor-pointer">
-              โหลดเรื่องเล่าเพิ่ม <ChevronDIcon style={{ width: 14 }} />
-            </button>
-            <div className="font-thai text-[11px] text-sage-500">
-              แสดง {POSTS.length} จาก 124 บทความ
+          {filteredPosts.length > 0 && (
+            <div className="mt-10 flex flex-col items-center gap-[10px]">
+              <button className="font-thai flex items-center gap-1.5 py-3 px-7 rounded-full text-[14px] border border-line-strong bg-paper text-ink cursor-pointer">
+                โหลดเรื่องเล่าเพิ่ม <ChevronDIcon style={{ width: 14 }} />
+              </button>
+              <div className="font-thai text-[11px] text-sage-500">
+                แสดง {filteredPosts.length} จาก 124 บทความ
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Sidebar */}
