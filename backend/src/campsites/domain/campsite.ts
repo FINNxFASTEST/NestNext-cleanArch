@@ -2,8 +2,8 @@ export type PitchType = 'tent' | 'glamping' | 'rv' | 'cabin';
 export type CampsiteStatus = 'active' | 'inactive';
 
 export class CampsiteAmenity {
-  label!: string;
-  englishName!: string;
+  thName!: string;
+  enName!: string;
   iconKey!: string;
 }
 

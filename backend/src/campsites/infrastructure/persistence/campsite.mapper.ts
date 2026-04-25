@@ -16,8 +16,8 @@ export class CampsiteMapper {
     domainEntity.images = raw.images ?? [];
     domainEntity.amenities = (raw.amenities ?? []).map((a) => {
       const amenity = new CampsiteAmenity();
-      amenity.label = a.label;
-      amenity.englishName = a.englishName ?? '';
+      amenity.thName = a.thName;
+      amenity.enName = a.enName ?? '';
       amenity.iconKey = a.iconKey;
       return amenity;
     });
@@ -57,8 +57,8 @@ export class CampsiteMapper {
     persistenceSchema.images = domainEntity.images ?? [];
     persistenceSchema.amenities = (domainEntity.amenities ?? []).map((a) => {
       const s = new CampsiteAmenitySchema();
-      s.label = a.label;
-      s.englishName = a.englishName;
+      s.thName = a.thName;
+      s.enName = a.enName;
       s.iconKey = a.iconKey;
       return s;
     });

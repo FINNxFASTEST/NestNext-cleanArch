@@ -1,7 +1,7 @@
 export class Amenity {
   id!: string;
-  label!: string;
-  englishName!: string;
+  thName!: string;
+  enName!: string;
   iconKey!: string;
   createdAt!: Date;
 }

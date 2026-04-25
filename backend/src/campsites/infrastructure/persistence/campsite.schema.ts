@@ -7,10 +7,10 @@ export type CampsiteSchemaDocument = HydratedDocument<CampsiteSchemaClass>;
 @Schema({ _id: false })
 export class CampsiteAmenitySchema {
   @Prop({ type: String, required: true })
-  label!: string;
+  thName!: string;
 
   @Prop({ type: String, required: true })
-  englishName!: string;
+  enName!: string;
 
   @Prop({ type: String, required: true })
   iconKey!: string;

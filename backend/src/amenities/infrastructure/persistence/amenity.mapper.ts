@@ -5,8 +5,8 @@ export class AmenityMapper {
   public static toDomain(raw: AmenitySchemaClass): Amenity {
     const domain = new Amenity();
     domain.id = raw._id.toString();
-    domain.label = raw.label;
-    domain.englishName = raw.englishName;
+    domain.thName = raw.thName;
+    domain.enName = raw.enName;
     domain.iconKey = raw.iconKey;
     domain.createdAt = raw.createdAt;
     return domain;
@@ -17,8 +17,8 @@ export class AmenityMapper {
     if (domain.id) {
       schema._id = domain.id;
     }
-    schema.label = domain.label;
-    schema.englishName = domain.englishName;
+    schema.thName = domain.thName;
+    schema.enName = domain.enName;
     schema.iconKey = domain.iconKey;
     return schema;
   }

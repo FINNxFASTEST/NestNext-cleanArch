@@ -62,7 +62,7 @@ export default function CampsiteDetailPage() {
   }
 
   const amenityName = (amenity: Campsite["amenities"][number]) =>
-    amenity.label || amenity.englishName;
+    amenity.thName || amenity.enName;
 
   if (loading) {
     return (

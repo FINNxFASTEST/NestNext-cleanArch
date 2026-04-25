@@ -17,11 +17,11 @@ import {
 export class CreateCampsiteAmenityDto {
   @ApiProperty()
   @IsString()
-  label!: string;
+  thName!: string;
 
   @ApiProperty()
   @IsString()
-  englishName!: string;
+  enName!: string;
 
   @ApiProperty()
   @IsString()
