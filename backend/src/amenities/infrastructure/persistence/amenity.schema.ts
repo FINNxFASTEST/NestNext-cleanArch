@@ -13,6 +13,9 @@ export class AmenitySchemaClass extends EntityDocumentHelper {
   @Prop({ type: String, required: true, index: true })
   label!: string;
 
+  @Prop({ type: String, required: true, index: true })
+  englishName!: string;
+
   @Prop({ type: String, required: true })
   iconKey!: string;
 
@@ -21,4 +24,4 @@ export class AmenitySchemaClass extends EntityDocumentHelper {
 }
 
 export const AmenitySchema = SchemaFactory.createForClass(AmenitySchemaClass);
-AmenitySchema.index({ label: 'text' });
+AmenitySchema.index({ label: 'text', englishName: 'text' });

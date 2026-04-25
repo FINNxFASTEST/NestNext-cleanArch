@@ -17,6 +17,7 @@ export class CampsiteMapper {
     domainEntity.amenities = (raw.amenities ?? []).map((a) => {
       const amenity = new CampsiteAmenity();
       amenity.label = a.label;
+      amenity.englishName = a.englishName ?? '';
       amenity.iconKey = a.iconKey;
       return amenity;
     });
@@ -57,6 +58,7 @@ export class CampsiteMapper {
     persistenceSchema.amenities = (domainEntity.amenities ?? []).map((a) => {
       const s = new CampsiteAmenitySchema();
       s.label = a.label;
+      s.englishName = a.englishName;
       s.iconKey = a.iconKey;
       return s;
     });

@@ -10,5 +10,10 @@ export class CreateAmenityDto {
   @ApiProperty({ type: String })
   @IsString()
   @MinLength(1)
+  englishName!: string;
+
+  @ApiProperty({ type: String })
+  @IsString()
+  @MinLength(1)
   iconKey!: string;
 }

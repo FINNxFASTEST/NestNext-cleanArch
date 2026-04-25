@@ -18,6 +18,7 @@ export class AmenityDocumentRepository implements AmenityRepository {
   async create(data: Omit<Amenity, 'id' | 'createdAt'>): Promise<Amenity> {
     const doc = new this.amenityModel({
       label: data.label,
+      englishName: data.englishName,
       iconKey: data.iconKey,
     });
     const saved = await doc.save();

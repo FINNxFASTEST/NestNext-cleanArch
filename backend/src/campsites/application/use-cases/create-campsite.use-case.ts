@@ -35,6 +35,7 @@ export class CreateCampsiteUseCase {
       amenities: (dto.amenities ?? []).map((a) => {
         const amenity = new CampsiteAmenity();
         amenity.label = a.label;
+        amenity.englishName = a.englishName;
         amenity.iconKey = a.iconKey;
         return amenity;
       }),

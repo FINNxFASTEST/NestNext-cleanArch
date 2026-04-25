@@ -43,9 +43,16 @@ export function AddCampsiteForm({ onClose }: { onClose?: () => void }) {
   }
 
   function handleAddCustomAmenity(a: CustomAmenity) {
-    const optimistic: AmenityDto = { id: `local-${a.label}`, label: a.label, iconKey: a.iconKey };
+    const optimistic: AmenityDto = {
+      id: `local-${a.label}-${a.englishName}`,
+      label: a.label,
+      englishName: a.englishName,
+      iconKey: a.iconKey,
+    };
     setGlobalAmenities((prev) => {
-      const exists = prev.some((x) => x.label === a.label);
+      const exists = prev.some(
+        (x) => x.label === a.label || x.englishName === a.englishName,
+      );
       return exists ? prev : [optimistic, ...prev];
     });
     setSelectedKeys((prev) => new Set([...prev, optimistic.id]));

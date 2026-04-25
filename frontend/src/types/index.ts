@@ -45,6 +45,7 @@ export interface CampsiteLocation {
 
 export interface CampsiteAmenity {
   label: string;
+  englishName: string;
   iconKey: string;
 }
 

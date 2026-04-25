@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useMemo, type UIEvent } from "react";
 import { ICON_REGISTRY, searchIcons } from "@/lib/icon-registry";
 import { amenitiesApi } from "@/services/amenities.service";
 
-export type CustomAmenity = { label: string; iconKey: string };
+export type CustomAmenity = { label: string; englishName: string; iconKey: string };
 
 export function AddAmenityModal({
   onAdd,
@@ -15,6 +15,7 @@ export function AddAmenityModal({
 }) {
   const ICON_PAGE_SIZE = 120;
   const [name, setName] = useState("");
+  const [englishName, setEnglishName] = useState("");
   const [iconKey, setIconKey] = useState(
     () => ICON_REGISTRY.find((entry) => typeof entry.Component === "function")?.key ?? "",
   );
@@ -69,17 +70,22 @@ export function AddAmenityModal({
   }
 
   async function handleAdd() {
-    const trimmed = name.trim();
-    if (!trimmed) return;
+    const trimmedLabel = name.trim();
+    const trimmedEnglishName = englishName.trim();
+    if (!trimmedLabel || !trimmedEnglishName) return;
     setSaving(true);
     try {
-      await amenitiesApi.create({ label: trimmed, iconKey });
+      await amenitiesApi.create({
+        label: trimmedLabel,
+        englishName: trimmedEnglishName,
+        iconKey,
+      });
     } catch {
       // non-critical — parent still gets the value
     } finally {
       setSaving(false);
     }
-    onAdd({ label: trimmed, iconKey });
+    onAdd({ label: trimmedLabel, englishName: trimmedEnglishName, iconKey });
     onClose();
   }
 
@@ -217,6 +223,35 @@ export function AddAmenityModal({
           />
         </div>
 
+        <div>
+          <label
+            className="font-sans text-[10px] tracking-[0.14em] uppercase font-medium mb-1.5 block"
+            style={{ color: "var(--sage-500)" }}
+          >
+            English name
+          </label>
+          <input
+            value={englishName}
+            onChange={(e) => setEnglishName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleAdd();
+            }}
+            placeholder="e.g. Shade, Good signal"
+            className="w-full rounded-xl px-3 py-2 text-sm font-sans outline-none transition"
+            style={{
+              background: "var(--cream-50)",
+              border: "1.5px solid var(--line)",
+              color: "var(--ink)",
+            }}
+            onFocus={(e) =>
+              (e.currentTarget.style.borderColor = "var(--forest-700)")
+            }
+            onBlur={(e) =>
+              (e.currentTarget.style.borderColor = "var(--line)")
+            }
+          />
+        </div>
+
         {/* Actions */}
         <div className="flex gap-2">
           <button
@@ -234,7 +269,7 @@ export function AddAmenityModal({
           <button
             type="button"
             onClick={handleAdd}
-            disabled={!name.trim() || !iconKey || saving}
+            disabled={!name.trim() || !englishName.trim() || !iconKey || saving}
             className="flex-1 rounded-xl py-2 text-sm font-thai font-medium transition-opacity disabled:opacity-40"
             style={{ background: "var(--forest-700)", color: "#fff" }}
           >
