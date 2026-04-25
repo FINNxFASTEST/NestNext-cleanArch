@@ -31,10 +31,9 @@ function Toggle({ on }: { on: boolean }) {
   return (
     <div
       className={cn(
-        "relative cursor-pointer transition-colors rounded-full",
+        "relative cursor-pointer transition-colors rounded-full w-[38px] h-[22px]",
         on ? "bg-forest-700" : "bg-line-strong"
       )}
-      style={{ width: 38, height: 22 }}
     >
       <div
         className="absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white transition-all"
@@ -52,9 +51,13 @@ const NOTIFICATIONS = [
   { t: "ข่าวสารจาก Kangtent", d: "โปรโมชั่นและอัปเดต", on: false },
 ];
 
-export function SettingsView() {
+interface SettingsViewProps {
+  onAddPayout?: () => void;
+}
+
+export function SettingsView({ onAddPayout }: SettingsViewProps) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+    <div className="grid grid-cols-2 gap-4">
       {/* Profile */}
       <Panel title="ข้อมูลเจ้าของลาน" eyebrow="PROFILE · โปรไฟล์">
         <div className="flex items-center gap-4 mb-5">
@@ -87,7 +90,10 @@ export function SettingsView() {
             <div className="font-thai text-[13px] font-medium">ธนาคารกสิกรไทย</div>
             <div className="font-thai text-[11px] mt-0.5 text-sage-500">•••• •••• •••• 4782 · นพดล ป.</div>
           </div>
-          <button className="font-thai text-xs px-3.5 py-1.5 rounded-full cursor-pointer bg-transparent border border-line-strong text-ink">
+          <button
+            onClick={onAddPayout}
+            className="font-thai text-xs px-3.5 py-1.5 rounded-full cursor-pointer bg-transparent border border-line-strong text-ink"
+          >
             เปลี่ยน
           </button>
         </div>

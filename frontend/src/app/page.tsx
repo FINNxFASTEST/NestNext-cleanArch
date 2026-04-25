@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Nav } from "@/components/common/Nav";
 import { Footer } from "@/components/common/Footer";
 import { Scene, SceneVariant } from "@/components/common/Scene";
@@ -63,8 +64,19 @@ function campsiteToCardProps(c: Campsite, big = false) {
 }
 
 export default function HomePage() {
+  const router = useRouter();
   const [campsites, setCampsites] = useState<Campsite[]>([]);
   const [activeTab, setActiveTab] = useState(0);
+
+  function handleSearch({ location, startDate, endDate, adults, children }: import("@/components/home/SearchBar").SearchParams) {
+    const params = new URLSearchParams();
+    if (location) params.set("location", location);
+    if (startDate) params.set("checkIn", startDate.toISOString().slice(0, 10));
+    if (endDate) params.set("checkOut", endDate.toISOString().slice(0, 10));
+    if (adults !== 2) params.set("adults", String(adults));
+    if (children !== 0) params.set("children", String(children));
+    router.push(`/search?${params.toString()}`);
+  }
 
   useEffect(() => {
     campsitesApi
@@ -112,7 +124,7 @@ export default function HomePage() {
         </div>
 
         <div className="absolute left-0 right-0 flex justify-center px-4 md:px-14 bottom-4 md:-bottom-[44px]">
-          <SearchBar />
+          <SearchBar onSearch={handleSearch} />
         </div>
       </section>
 

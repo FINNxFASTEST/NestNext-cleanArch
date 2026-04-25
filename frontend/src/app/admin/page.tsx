@@ -8,10 +8,15 @@ import { BookingsView } from "@/components/admin/views/BookingsView";
 import { UsersView } from "@/components/admin/views/UsersView";
 import { CouponsView } from "@/components/admin/views/CouponsView";
 import { SettingsView } from "@/components/admin/views/SettingsView";
+import { AddAreaForm } from "@/components/admin/forms/AddAreaForm";
+import { CreateCouponForm } from "@/components/admin/forms/CreateCouponForm";
+import { AddPayoutForm } from "@/components/admin/forms/AddPayoutForm";
+import { AddCampsiteForm } from "@/components/admin/forms/AddCampsiteForm";
 import { Input } from "@/components/ui/input";
 import { SearchIcon, FlameIcon, PlusIcon } from "@/components/common/Icons";
 
 type SectionId = "dashboard" | "camps" | "bookings" | "users" | "coupons" | "settings";
+type FormId = "add-area" | "new-campsite" | "new-coupon" | "add-payout";
 
 const META: Record<SectionId, { title: string; subtitle: string; showAddBtn?: boolean }> = {
   dashboard: { title: "สวัสดีตอนเช้า, คุณนพดล ☕", subtitle: "วันพุธ · 22 เมษายน 2569", showAddBtn: true },
@@ -22,24 +27,47 @@ const META: Record<SectionId, { title: string; subtitle: string; showAddBtn?: bo
   settings:  { title: "ตั้งค่า",              subtitle: "SETTINGS · บัญชีและการชำระเงิน" },
 };
 
-const VIEWS: Record<SectionId, React.ReactNode> = {
-  dashboard: <DashboardView />,
-  camps:     <CampsView />,
-  bookings:  <BookingsView />,
-  users:     <UsersView />,
-  coupons:   <CouponsView />,
-  settings:  <SettingsView />,
+const FORM_META: Record<FormId, { title: string; subtitle: string; nav: SectionId }> = {
+  "add-area":     { title: "เพิ่มพื้นที่",        subtitle: "NEW PLOT · ลานเตนท์ย่อย",    nav: "camps" },
+  "new-campsite": { title: "เพิ่มลานกางเตนท์",    subtitle: "NEW CAMPSITE · ลานใหม่",      nav: "camps" },
+  "new-coupon":   { title: "สร้างคูปอง",           subtitle: "NEW PROMO · คูปองส่วนลด",    nav: "coupons" },
+  "add-payout":   { title: "เพิ่มข้อมูลโอนเงิน", subtitle: "NEW PAYOUT · บัญชีรับเงิน",  nav: "settings" },
 };
 
 export default function AdminPage() {
   const [section, setSection] = useState<SectionId>("dashboard");
+  const [activeForm, setActiveForm] = useState<FormId | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const meta = META[section];
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const showForm = (id: FormId) => setActiveForm(id);
+  const closeForm = () => setActiveForm(null);
 
   function handleSetSection(id: SectionId) {
     setSection(id);
+    setActiveForm(null);
     setSidebarOpen(false);
+    setSearchQuery("");
   }
+
+  const meta = activeForm ? FORM_META[activeForm] : META[section];
+  const activeSectionId = activeForm ? FORM_META[activeForm].nav : section;
+
+  const views: Record<SectionId, React.ReactNode> = {
+    dashboard: <DashboardView />,
+    camps:     <CampsView onAddArea={() => showForm("add-area")} onAddCampsite={() => showForm("new-campsite")} searchQuery={searchQuery} />,
+    bookings:  <BookingsView />,
+    users:     <UsersView />,
+    coupons:   <CouponsView onCreateCoupon={() => showForm("new-coupon")} searchQuery={searchQuery} />,
+    settings:  <SettingsView onAddPayout={() => showForm("add-payout")} />,
+  };
+
+  const forms: Record<FormId, React.ReactNode> = {
+    "add-area":     <AddAreaForm onClose={closeForm} />,
+    "new-campsite": <AddCampsiteForm onClose={closeForm} />,
+    "new-coupon":   <CreateCouponForm onClose={closeForm} />,
+    "add-payout":   <AddPayoutForm onClose={closeForm} />,
+  };
 
   return (
     <div className="min-h-screen bg-cream-50">
@@ -47,7 +75,7 @@ export default function AdminPage() {
       {sidebarOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex" onClick={() => setSidebarOpen(false)}>
           <div className="w-[280px] h-full overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <AdminSidebar section={section} setSection={handleSetSection} onClose={() => setSidebarOpen(false)} />
+            <AdminSidebar section={activeSectionId} setSection={handleSetSection} onClose={() => setSidebarOpen(false)} />
           </div>
           <div className="flex-1 bg-black/40" />
         </div>
@@ -57,7 +85,7 @@ export default function AdminPage() {
       <div className="md:grid md:min-h-screen" style={{ gridTemplateColumns: "260px 1fr" }}>
         {/* Sidebar — desktop only */}
         <div className="hidden md:block">
-          <AdminSidebar section={section} setSection={setSection} />
+          <AdminSidebar section={activeSectionId} setSection={handleSetSection} />
         </div>
 
         {/* Main content */}
@@ -93,6 +121,8 @@ export default function AdminPage() {
               <div className="relative hidden sm:block">
                 <Input
                   placeholder="ค้นหา..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="font-thai rounded-full text-[13px] pl-[38px] pr-4 py-2.5 border-line bg-paper text-ink h-auto w-[200px]"
                 />
                 <SearchIcon
@@ -109,8 +139,11 @@ export default function AdminPage() {
                 />
               </button>
               {/* Add button (dashboard only) */}
-              {meta.showAddBtn && (
-                <button className="inline-flex items-center gap-2 font-thai text-sm px-[18px] py-2.5 rounded-full border-0 cursor-pointer bg-ember text-cream-50">
+              {!activeForm && META[section]?.showAddBtn && (
+                <button
+                  onClick={() => showForm("new-campsite")}
+                  className="inline-flex items-center gap-2 font-thai text-sm px-[18px] py-2.5 rounded-full border-0 cursor-pointer bg-ember text-cream-50"
+                >
                   <PlusIcon style={{ width: 16, height: 16 }} />
                   <span className="hidden sm:inline">เพิ่มพื้นที่</span>
                 </button>
@@ -118,8 +151,8 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* View content */}
-          {VIEWS[section]}
+          {/* View or form content */}
+          {activeForm ? forms[activeForm] : views[section]}
         </main>
       </div>
     </div>

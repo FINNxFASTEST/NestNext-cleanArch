@@ -13,10 +13,20 @@ const COUPONS = [
   { code: "EARLYBIRD", desc: "จองล่วงหน้า 30 วัน ลด 10%", pct: 10, flat: null, free: false, used: 89, cap: 300, s: "Active", scene: "dusk" },
 ] as const;
 
-export function CouponsView() {
+interface CouponsViewProps {
+  onCreateCoupon?: () => void;
+  searchQuery?: string;
+}
+
+export function CouponsView({ onCreateCoupon, searchQuery = "" }: CouponsViewProps) {
+  const filtered = COUPONS.filter((c) =>
+    c.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.s.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   return (
     <>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <StatCard label="คูปองใช้งานอยู่" value="6" sub="จาก 12 ทั้งหมด" icon={FlameIcon} accent="#C97B4A" />
         <StatCard label="โค้ดถูกใช้" value="342" sub="เดือนนี้" icon={CheckIcon} accent="#7C8F6F" />
         <StatCard label="ส่วนลดที่มอบ" value="฿ 28,400" sub="ROI 4.8x" icon={HeartIcon} accent="#8B9A56" />
@@ -26,13 +36,21 @@ export function CouponsView() {
         title="โปรโมชั่นปัจจุบัน"
         eyebrow="ACTIVE PROMOS · โปรที่กำลังเปิด"
         right={
-          <button className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full border-0 cursor-pointer bg-ember text-cream-50">
+          <button
+            onClick={onCreateCoupon}
+            className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full border-0 cursor-pointer bg-ember text-cream-50"
+          >
             <PlusIcon style={{ width: 16, height: 16 }} /> สร้างคูปอง
           </button>
         }
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
-          {COUPONS.map((c, i) => {
+        <div className="grid grid-cols-3 gap-3.5">
+          {filtered.length === 0 && (
+            <div className="col-span-3 font-thai text-center text-sage-400 py-10">
+              ไม่พบคูปองที่ค้นหา
+            </div>
+          )}
+          {filtered.map((c, i) => {
             const usedPct = Math.min(100, Math.round((c.used / c.cap) * 100));
             const discountLabel = c.pct ? `-${c.pct}%` : c.flat ? `-฿${c.flat}` : "FREE";
             return (

@@ -15,7 +15,17 @@ const ROWS = ["ลานริมเขา", "ลานใต้ต้นสน"
 const DAYS = ["พ","พฤ","ศ","ส","อา","จ","อ","พ","พฤ","ศ","ส","อา","จ","อ"];
 const CAL_COLORS = ["#C7D1B8", "#C7D1B8", "#F3DCB2", "#F3C5A8", "#2F4034"];
 
-export function CampsView() {
+interface CampsViewProps {
+  onAddArea?: () => void;
+  onAddCampsite?: () => void;
+  searchQuery?: string;
+}
+
+export function CampsView({ onAddArea, onAddCampsite, searchQuery = "" }: CampsViewProps) {
+  const filtered = CAMPS.filter((c) =>
+    c.n.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.s.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   return (
     <>
       <Panel
@@ -23,17 +33,28 @@ export function CampsView() {
         eyebrow="CAMP SITES · 4 ลาน"
         right={
           <div className="flex gap-2">
-            <button className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full cursor-pointer bg-transparent border border-line-strong text-ink">
+            <button
+              onClick={onAddCampsite}
+              className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full cursor-pointer bg-transparent border border-line-strong text-ink"
+            >
               <MapIcon style={{ width: 16, height: 16 }} /> แผนผังลาน
             </button>
-            <button className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full border-0 cursor-pointer bg-ember text-cream-50">
+            <button
+              onClick={onAddArea}
+              className="inline-flex items-center gap-2 font-thai text-sm px-[22px] py-3 rounded-full border-0 cursor-pointer bg-ember text-cream-50"
+            >
               <PlusIcon style={{ width: 16, height: 16 }} /> เพิ่มพื้นที่
             </button>
           </div>
         }
       >
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
-          {CAMPS.map((c, i) => (
+          {filtered.length === 0 && (
+            <div className="col-span-4 font-thai text-center text-sage-400 py-10">
+              ไม่พบพื้นที่ที่ค้นหา
+            </div>
+          )}
+          {filtered.map((c, i) => (
             <div key={i} className="rounded-xl overflow-hidden border border-line">
               <div className="relative h-[140px]">
                 <Scene variant={c.scene as SceneVariant} className="absolute inset-0" />
