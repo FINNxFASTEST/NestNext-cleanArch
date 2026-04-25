@@ -118,7 +118,7 @@ Use-cases inject the **repository port** (`CampsiteRepository`), never the docum
 | `organizations` | Tenant root — a host's business (`status: pending|approved|suspended`) |
 | `memberships` | `User ↔ Organization` with `owner | manager | staff` |
 | `campsites` | Host-owned listings with embedded pitches and amenities |
-| `amenities` | Platform-managed amenity catalogue (`{ label, iconKey }`) — uses a flat service, not use-cases |
+| `amenities` | Platform-managed amenity catalogue (`{ label, iconKey }`) — `CreateAmenityUseCase`, `FindAmenitiesUseCase` |
 | `reviews` | Customer reviews per campsite (`rating 1-5`, optional `comment`) |
 | `bookings` | Customer-facing reservations (auth optional) |
 | `pitch-slots` | Double-booking prevention store |
@@ -276,7 +276,6 @@ npm run add:property:to-document          # interactive, run once per field
 ```
 The generator scaffolds infrastructure + domain + a flat service. After generating, manually create the `application/use-cases/` and `presentation/` folders and split the service into individual use-case classes. Hand-edit `*.schema.ts` for compound/unique indexes (e.g. `PitchSlotSchema.index({ pitchId: 1, date: 1 }, { unique: true })`).
 
-> **Note:** The `amenities` module intentionally keeps the flat service pattern (no use-cases) because it is a simple CRUD catalogue with no domain logic.
 
 ---
 
