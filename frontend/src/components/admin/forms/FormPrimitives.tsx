@@ -8,13 +8,13 @@ interface FormFieldProps {
 
 export function FormField({ label, hint, children }: FormFieldProps) {
   return (
-    <label className="block">
+    <div className="block">
       <div className="font-sans text-[10px] tracking-[0.18em] uppercase font-medium mb-1.5 text-sage-500">
         {label}
       </div>
       {children}
       {hint && <div className="font-thai text-[11px] mt-1.5 text-sage-500">{hint}</div>}
-    </label>
+    </div>
   );
 }
 
