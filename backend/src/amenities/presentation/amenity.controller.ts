@@ -15,23 +15,27 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { Roles } from '../roles/roles.decorator';
-import { RoleEnum } from '../roles/roles.enum';
-import { RolesGuard } from '../roles/roles.guard';
+import { Roles } from '../../roles/roles.decorator';
+import { RoleEnum } from '../../roles/roles.enum';
+import { RolesGuard } from '../../roles/roles.guard';
 import {
   InfinityPaginationResponse,
   InfinityPaginationResponseDto,
-} from '../utils/dto/infinity-pagination-response.dto';
-import { infinityPagination } from '../utils/infinity-pagination';
-import { Amenity } from './domain/amenity';
-import { AmenitiesService } from './amenities.service';
+} from '../../utils/dto/infinity-pagination-response.dto';
+import { infinityPagination } from '../../utils/infinity-pagination';
+import { Amenity } from '../domain/amenity';
+import { CreateAmenityUseCase } from '../application/use-cases/create-amenity.use-case';
+import { FindAmenitiesUseCase } from '../application/use-cases/find-amenities.use-case';
 import { CreateAmenityDto } from './dto/create-amenity.dto';
 import { FindAllAmenitiesDto } from './dto/find-all-amenities.dto';
 
 @ApiTags('Amenities')
 @Controller({ path: 'amenities', version: '1' })
 export class AmenitiesController {
-  constructor(private readonly amenitiesService: AmenitiesService) {}
+  constructor(
+    private readonly createAmenityUseCase: CreateAmenityUseCase,
+    private readonly findAmenitiesUseCase: FindAmenitiesUseCase,
+  ) {}
 
   @Get()
   @ApiOkResponse({ type: InfinityPaginationResponse(Amenity) })
@@ -42,7 +46,7 @@ export class AmenitiesController {
     let limit = query?.limit ?? 20;
     if (limit > 100) limit = 100;
 
-    const results = await this.amenitiesService.findAllWithPagination(
+    const results = await this.findAmenitiesUseCase.execute(
       { page, limit },
       query.search,
     );
@@ -56,6 +60,6 @@ export class AmenitiesController {
   @ApiCreatedResponse({ type: Amenity })
   @HttpCode(HttpStatus.CREATED)
   create(@Body() dto: CreateAmenityDto): Promise<Amenity> {
-    return this.amenitiesService.create(dto);
+    return this.createAmenityUseCase.execute(dto);
   }
 }
