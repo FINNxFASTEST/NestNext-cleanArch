@@ -267,12 +267,36 @@ function Divider() {
 
 /* ─── Main SearchBar ─────────────────────────────────────────────────────────── */
 
-export function SearchBar() {
-  const [location, setLocation] = useState<string | null>(null);
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(0);
+export interface SearchParams {
+  location: string | null;
+  startDate: Date | null;
+  endDate: Date | null;
+  adults: number;
+  children: number;
+}
+
+export function SearchBar({
+  className,
+  defaultLocation = null,
+  defaultStartDate = null,
+  defaultEndDate = null,
+  defaultAdults = 2,
+  defaultChildren = 0,
+  onSearch,
+}: {
+  className?: string;
+  defaultLocation?: string | null;
+  defaultStartDate?: Date | null;
+  defaultEndDate?: Date | null;
+  defaultAdults?: number;
+  defaultChildren?: number;
+  onSearch?: (params: SearchParams) => void;
+}) {
+  const [location, setLocation] = useState<string | null>(defaultLocation);
+  const [startDate, setStartDate] = useState<Date | null>(defaultStartDate);
+  const [endDate, setEndDate] = useState<Date | null>(defaultEndDate);
+  const [adults, setAdults] = useState(defaultAdults);
+  const [children, setChildren] = useState(defaultChildren);
 
   const [locOpen, setLocOpen] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
@@ -366,7 +390,7 @@ export function SearchBar() {
   ];
 
   return (
-    <div className="w-full max-w-[1100px] mx-auto rounded-[18px] md:rounded-[22px] overflow-hidden flex flex-col md:flex-row md:items-stretch bg-paper border border-line shadow-[0_30px_60px_rgba(20,30,25,.25)]">
+    <div className={cn("w-full max-w-[1100px] mx-auto rounded-[18px] md:rounded-[22px] overflow-hidden flex flex-col md:flex-row md:items-stretch bg-paper border border-line shadow-[0_30px_60px_rgba(20,30,25,.25)]", className)}>
       {fields.map(({ label, hint, Icon, open, setOpen, panel, active, popoverWidth }, i) => (
         <>
           {/* Divider — horizontal on mobile between fields, vertical on desktop */}
@@ -414,7 +438,10 @@ export function SearchBar() {
 
       {/* Search button */}
       <div className="flex items-center px-3 py-3 md:py-0">
-        <button className="inline-flex items-center justify-center gap-2 font-thai font-medium text-[15px] w-full md:w-auto px-7 py-3 rounded-full border-0 cursor-pointer transition-all hover:opacity-90 active:scale-[0.97] bg-ember text-cream-50">
+        <button
+          onClick={() => onSearch?.({ location, startDate, endDate, adults, children })}
+          className="inline-flex items-center justify-center gap-2 font-thai font-medium text-[15px] w-full md:w-auto px-7 py-3 rounded-full border-0 cursor-pointer transition-all hover:opacity-90 active:scale-[0.97] bg-ember text-cream-50"
+        >
           <SearchIcon style={{ width: 18, height: 18 }} />
           ค้นหาแคมป์
         </button>
