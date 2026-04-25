@@ -5,12 +5,12 @@ export class CreateAmenityDto {
   @ApiProperty({ type: String })
   @IsString()
   @MinLength(1)
-  label!: string;
+  thName!: string;
 
   @ApiProperty({ type: String })
   @IsString()
   @MinLength(1)
-  englishName!: string;
+  enName!: string;
 
   @ApiProperty({ type: String })
   @IsString()

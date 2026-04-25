@@ -3,8 +3,8 @@ import type { PaginatedResponse } from "@/types";
 
 export interface AmenityDto {
   id: string;
-  label: string;
-  englishName: string;
+  thName: string;
+  enName: string;
   iconKey: string;
   createdAt?: string;
 }
@@ -18,8 +18,8 @@ export const amenitiesApi = {
   },
 
   create: (data: {
-    label: string;
-    englishName: string;
+    thName: string;
+    enName: string;
     iconKey: string;
   }): Promise<AmenityDto> =>
     request<AmenityDto>("/amenities", {

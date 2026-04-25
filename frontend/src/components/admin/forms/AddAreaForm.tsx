@@ -51,14 +51,14 @@ export function AddAreaForm({ onClose }: { onClose?: () => void }) {
 
   function handleAddCustomAmenity(a: CustomAmenity) {
     const optimistic: AmenityDto = {
-      id: `local-${a.label}-${a.englishName}`,
-      label: a.label,
-      englishName: a.englishName,
+      id: `local-${a.thName}-${a.enName}`,
+      thName: a.thName,
+      enName: a.enName,
       iconKey: a.iconKey,
     };
     setGlobalAmenities((prev) => {
       const exists = prev.some(
-        (x) => x.label === a.label || x.englishName === a.englishName,
+        (x) => x.thName === a.thName || x.enName === a.enName,
       );
       return exists ? prev : [optimistic, ...prev];
     });
@@ -138,7 +138,7 @@ export function AddAreaForm({ onClose }: { onClose?: () => void }) {
                 <span className="inline-flex items-center gap-1">
                   {IconComp && <IconComp size={12} />}
                   {on ? "✓ " : ""}
-                  {a.label}
+                  {a.thName}
                 </span>
               </Chip>
             );

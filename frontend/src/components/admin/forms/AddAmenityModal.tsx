@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useMemo, type UIEvent } from "react";
 import { ICON_REGISTRY, searchIcons } from "@/lib/icon-registry";
 import { amenitiesApi } from "@/services/amenities.service";
 
-export type CustomAmenity = { label: string; englishName: string; iconKey: string };
+export type CustomAmenity = { thName: string; enName: string; iconKey: string };
 
 export function AddAmenityModal({
   onAdd,
@@ -14,15 +14,15 @@ export function AddAmenityModal({
   onClose: () => void;
 }) {
   const ICON_PAGE_SIZE = 120;
-  const [name, setName] = useState("");
-  const [englishName, setEnglishName] = useState("");
+  const [thName, setThName] = useState("");
+  const [enName, setEnName] = useState("");
   const [iconKey, setIconKey] = useState(
     () => ICON_REGISTRY.find((entry) => typeof entry.Component === "function")?.key ?? "",
   );
   const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [visibleCount, setVisibleCount] = useState(ICON_PAGE_SIZE);
-  const nameRef = useRef<HTMLInputElement>(null);
+  const thNameRef = useRef<HTMLInputElement>(null);
   const iconListRef = useRef<HTMLDivElement>(null);
 
   const filtered = useMemo(
@@ -43,7 +43,7 @@ export function AddAmenityModal({
   }, [filtered, selected]);
 
   useEffect(() => {
-    nameRef.current?.focus();
+    thNameRef.current?.focus();
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
@@ -70,14 +70,14 @@ export function AddAmenityModal({
   }
 
   async function handleAdd() {
-    const trimmedLabel = name.trim();
-    const trimmedEnglishName = englishName.trim();
-    if (!trimmedLabel || !trimmedEnglishName) return;
+    const trimmedThName = thName.trim();
+    const trimmedEnName = enName.trim();
+    if (!trimmedThName || !trimmedEnName) return;
     setSaving(true);
     try {
       await amenitiesApi.create({
-        label: trimmedLabel,
-        englishName: trimmedEnglishName,
+        thName: trimmedThName,
+        enName: trimmedEnName,
         iconKey,
       });
     } catch {
@@ -85,7 +85,7 @@ export function AddAmenityModal({
     } finally {
       setSaving(false);
     }
-    onAdd({ label: trimmedLabel, englishName: trimmedEnglishName, iconKey });
+    onAdd({ thName: trimmedThName, enName: trimmedEnName, iconKey });
     onClose();
   }
 
@@ -201,9 +201,9 @@ export function AddAmenityModal({
             ชื่อ
           </label>
           <input
-            ref={nameRef}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            ref={thNameRef}
+            value={thName}
+            onChange={(e) => setThName(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") handleAdd();
             }}
@@ -231,8 +231,8 @@ export function AddAmenityModal({
             English name
           </label>
           <input
-            value={englishName}
-            onChange={(e) => setEnglishName(e.target.value)}
+            value={enName}
+            onChange={(e) => setEnName(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") handleAdd();
             }}
@@ -269,7 +269,7 @@ export function AddAmenityModal({
           <button
             type="button"
             onClick={handleAdd}
-            disabled={!name.trim() || !englishName.trim() || !iconKey || saving}
+            disabled={!thName.trim() || !enName.trim() || !iconKey || saving}
             className="flex-1 rounded-xl py-2 text-sm font-thai font-medium transition-opacity disabled:opacity-40"
             style={{ background: "var(--forest-700)", color: "#fff" }}
           >

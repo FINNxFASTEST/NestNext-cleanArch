@@ -9,8 +9,8 @@ export class CreateAmenityUseCase {
 
   execute(dto: CreateAmenityDto): Promise<Amenity> {
     return this.amenityRepository.create({
-      label: dto.label,
-      englishName: dto.englishName,
+      thName: dto.thName,
+      enName: dto.enName,
       iconKey: dto.iconKey,
     });
   }
