@@ -11,13 +11,13 @@ export type AmenitySchemaDocument = HydratedDocument<AmenitySchemaClass>;
 })
 export class AmenitySchemaClass extends EntityDocumentHelper {
   @Prop({ type: String, required: true, index: true })
-  label: string;
+  label!: string;
 
   @Prop({ type: String, required: true })
-  iconKey: string;
+  iconKey!: string;
 
   @Prop({ default: now })
-  createdAt: Date;
+  createdAt!: Date;
 }
 
 export const AmenitySchema = SchemaFactory.createForClass(AmenitySchemaClass);
