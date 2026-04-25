@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, type UIEvent } from "react";
 import { ICON_REGISTRY, searchIcons } from "@/lib/icon-registry";
 import { amenitiesApi } from "@/services/amenities.service";
 
@@ -13,14 +13,33 @@ export function AddAmenityModal({
   onAdd: (a: CustomAmenity) => void;
   onClose: () => void;
 }) {
+  const ICON_PAGE_SIZE = 120;
   const [name, setName] = useState("");
-  const [iconKey, setIconKey] = useState("FiStar");
+  const [iconKey, setIconKey] = useState(
+    () => ICON_REGISTRY.find((entry) => typeof entry.Component === "function")?.key ?? "",
+  );
   const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(ICON_PAGE_SIZE);
   const nameRef = useRef<HTMLInputElement>(null);
+  const iconListRef = useRef<HTMLDivElement>(null);
 
-  const filtered = useMemo(() => searchIcons(search), [search]);
-  const selected = ICON_REGISTRY.find((e) => e.key === iconKey);
+  const filtered = useMemo(
+    () => searchIcons(search).filter((entry) => typeof entry.Component === "function"),
+    [search],
+  );
+  const visibleIcons = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount],
+  );
+  const hasMoreIcons = visibleCount < filtered.length;
+  const selected = filtered.find((e) => e.key === iconKey);
+
+  useEffect(() => {
+    if (!selected && filtered.length > 0) {
+      setIconKey(filtered[0].key);
+    }
+  }, [filtered, selected]);
 
   useEffect(() => {
     nameRef.current?.focus();
@@ -30,6 +49,24 @@ export function AddAmenityModal({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  useEffect(() => {
+    setVisibleCount(ICON_PAGE_SIZE);
+    if (iconListRef.current) {
+      iconListRef.current.scrollTop = 0;
+    }
+  }, [search]);
+
+  function handleIconScroll(e: UIEvent<HTMLDivElement>) {
+    if (!hasMoreIcons) return;
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const nearBottom = scrollTop + clientHeight >= scrollHeight - 48;
+    if (nearBottom) {
+      setVisibleCount((current) =>
+        Math.min(current + ICON_PAGE_SIZE, filtered.length),
+      );
+    }
+  }
 
   async function handleAdd() {
     const trimmed = name.trim();
@@ -48,14 +85,14 @@ export function AddAmenityModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5"
       style={{ background: "rgba(0,0,0,0.35)" }}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="rounded-2xl shadow-xl w-[360px] p-5 flex flex-col gap-4"
+        className="rounded-2xl shadow-xl w-full max-w-[600px] p-4 sm:p-5 md:p-6 flex flex-col gap-4 sm:gap-5 max-h-[calc(100vh-24px)] sm:max-h-[calc(100vh-40px)] overflow-y-auto"
         style={{ background: "var(--paper)", border: "1px solid var(--line)" }}
       >
         {/* Header */}
@@ -97,9 +134,11 @@ export function AddAmenityModal({
 
           {/* Scrollable icon grid */}
           <div
+            ref={iconListRef}
+            onScroll={handleIconScroll}
             className="overflow-y-auto rounded-xl p-2"
             style={{
-              maxHeight: 188,
+              maxHeight: "min(280px, 38vh)",
               background: "var(--cream-50)",
               border: "1.5px solid var(--line)",
             }}
@@ -112,8 +151,8 @@ export function AddAmenityModal({
                 ไม่พบไอคอน
               </p>
             ) : (
-              <div className="grid grid-cols-8 gap-1">
-                {filtered.map(({ key, label, Component }) => {
+              <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-1">
+                {visibleIcons.map(({ key, label, Component }) => {
                   const on = iconKey === key;
                   return (
                     <button
@@ -136,22 +175,15 @@ export function AddAmenityModal({
                 })}
               </div>
             )}
+            {hasMoreIcons && (
+              <div
+                className="pt-2 text-center text-[11px] font-thai"
+                style={{ color: "var(--sage-500)" }}
+              >
+                เลื่อนเพื่อโหลดเพิ่ม ({visibleIcons.length}/{filtered.length})
+              </div>
+            )}
           </div>
-
-          {/* Selected preview */}
-          {selected && (
-            <div
-              className="mt-2 flex items-center gap-2 rounded-xl px-3 py-1.5 w-fit"
-              style={{
-                background: "#EEF1E6",
-                border: "1.5px solid var(--forest-700)",
-                color: "var(--forest-700)",
-              }}
-            >
-              <selected.Component size={14} />
-              <span className="font-thai text-xs">{selected.label}</span>
-            </div>
-          )}
         </div>
 
         {/* Name input */}
@@ -202,7 +234,7 @@ export function AddAmenityModal({
           <button
             type="button"
             onClick={handleAdd}
-            disabled={!name.trim() || saving}
+            disabled={!name.trim() || !iconKey || saving}
             className="flex-1 rounded-xl py-2 text-sm font-thai font-medium transition-opacity disabled:opacity-40"
             style={{ background: "var(--forest-700)", color: "#fff" }}
           >
