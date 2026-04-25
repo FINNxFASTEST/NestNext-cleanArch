@@ -15,35 +15,55 @@ import {
 } from 'class-validator';
 
 export class CreateCampsiteAmenityDto {
-  @ApiProperty() @IsString() label: string;
-  @ApiProperty() @IsString() iconKey: string;
+  @ApiProperty()
+  @IsString()
+  label!: string;
+
+  @ApiProperty()
+  @IsString()
+  englishName!: string;
+
+  @ApiProperty()
+  @IsString()
+  iconKey!: string;
 }
 
 export class CreateCampsiteLocationDto {
-  @ApiProperty() @IsString() province: string;
-  @ApiProperty() @IsString() district: string;
-  @ApiProperty() @IsLatitude() lat: number;
-  @ApiProperty() @IsLongitude() lng: number;
+  @ApiProperty()
+  @IsString()
+  province!: string;
+
+  @ApiProperty()
+  @IsString()
+  district!: string;
+
+  @ApiProperty()
+  @IsLatitude()
+  lat!: number;
+
+  @ApiProperty()
+  @IsLongitude()
+  lng!: number;
 }
 
 export class CreatePitchDto {
   @ApiProperty({ enum: ['tent', 'glamping', 'rv', 'cabin'] })
   @IsIn(['tent', 'glamping', 'rv', 'cabin'])
-  type: 'tent' | 'glamping' | 'rv' | 'cabin';
+  type!: 'tent' | 'glamping' | 'rv' | 'cabin';
 
   @ApiProperty()
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiProperty({ minimum: 1 })
   @IsNumber()
   @Min(1)
-  maxGuests: number;
+  maxGuests!: number;
 
   @ApiProperty({ minimum: 0 })
   @IsNumber()
   @Min(0)
-  pricePerNight: number;
+  pricePerNight!: number;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -54,11 +74,11 @@ export class CreatePitchDto {
 export class CreateCampsiteDto {
   @ApiProperty({ type: String })
   @IsMongoId()
-  organizationId: string;
+  organizationId!: string;
 
   @ApiProperty()
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -68,7 +88,7 @@ export class CreateCampsiteDto {
   @ApiProperty({ type: () => CreateCampsiteLocationDto })
   @ValidateNested()
   @Type(() => CreateCampsiteLocationDto)
-  location: CreateCampsiteLocationDto;
+  location!: CreateCampsiteLocationDto;
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
@@ -88,5 +108,5 @@ export class CreateCampsiteDto {
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => CreatePitchDto)
-  pitches: CreatePitchDto[];
+  pitches!: CreatePitchDto[];
 }

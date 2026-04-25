@@ -45,8 +45,14 @@ export const PitchSchemaFactory = SchemaFactory.createForClass(PitchSchema);
 
 @Schema({ _id: false })
 export class CampsiteAmenitySchema {
-  @Prop({ type: String, required: true }) label: string;
-  @Prop({ type: String, required: true }) iconKey: string;
+  @Prop({ type: String, required: true })
+  label!: string;
+
+  @Prop({ type: String, required: true })
+  englishName!: string;
+
+  @Prop({ type: String, required: true })
+  iconKey!: string;
 }
 
 export const CampsiteAmenitySchemaFactory =

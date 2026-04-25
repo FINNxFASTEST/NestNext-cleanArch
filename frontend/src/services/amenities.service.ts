@@ -4,6 +4,7 @@ import type { PaginatedResponse } from "@/types";
 export interface AmenityDto {
   id: string;
   label: string;
+  englishName: string;
   iconKey: string;
   createdAt?: string;
 }
@@ -16,7 +17,11 @@ export const amenitiesApi = {
     return request<PaginatedResponse<AmenityDto>>(`/amenities${qs}`);
   },
 
-  create: (data: { label: string; iconKey: string }): Promise<AmenityDto> =>
+  create: (data: {
+    label: string;
+    englishName: string;
+    iconKey: string;
+  }): Promise<AmenityDto> =>
     request<AmenityDto>("/amenities", {
       method: "POST",
       body: JSON.stringify(data),

@@ -3,6 +3,7 @@ export type CampsiteStatus = 'active' | 'inactive';
 
 export class CampsiteAmenity {
   label!: string;
+  englishName!: string;
   iconKey!: string;
 }
 

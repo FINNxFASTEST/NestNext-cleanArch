@@ -61,6 +61,9 @@ export default function CampsiteDetailPage() {
     setQty(newQty);
   }
 
+  const amenityName = (amenity: Campsite["amenities"][number]) =>
+    amenity.label || amenity.englishName;
+
   if (loading) {
     return (
       <main className="bg-paper text-ink min-h-screen">
@@ -114,7 +117,10 @@ export default function CampsiteDetailPage() {
               </span>
               {campsite.amenities && campsite.amenities.length > 0 && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-full text-xs font-thai bg-cream-100 text-ink">
-                  {campsite.amenities.slice(0, 2).join(" · ")}
+                  {campsite.amenities
+                    .slice(0, 2)
+                    .map(amenityName)
+                    .join(" · ")}
                 </span>
               )}
             </div>
@@ -179,7 +185,10 @@ export default function CampsiteDetailPage() {
             <h3 className="font-serif m-0 mb-6 text-[24px] font-medium">ทุกอย่างที่คุณต้องการ</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {(campsite.amenities && campsite.amenities.length > 0
-                ? campsite.amenities.map((a) => ({ title: a, sub: "" }))
+                ? campsite.amenities.map((a) => ({
+                    title: amenityName(a),
+                    sub: "",
+                  }))
                 : AMENITIES
               ).map(({ Icon, title, sub }: { Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>; title: string; sub: string }) => (
                 <div key={title} className="flex gap-3 items-start py-2">

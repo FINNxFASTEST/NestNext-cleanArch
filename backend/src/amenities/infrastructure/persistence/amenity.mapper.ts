@@ -6,6 +6,7 @@ export class AmenityMapper {
     const domain = new Amenity();
     domain.id = raw._id.toString();
     domain.label = raw.label;
+    domain.englishName = raw.englishName;
     domain.iconKey = raw.iconKey;
     domain.createdAt = raw.createdAt;
     return domain;
@@ -17,6 +18,7 @@ export class AmenityMapper {
       schema._id = domain.id;
     }
     schema.label = domain.label;
+    schema.englishName = domain.englishName;
     schema.iconKey = domain.iconKey;
     return schema;
   }
