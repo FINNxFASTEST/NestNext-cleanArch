@@ -62,6 +62,12 @@ export function AddAreaForm({ onClose }: { onClose?: () => void }) {
     }, 800);
   }
 
+  function openAddAmenityModal(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowAddAmenity(true);
+  }
+
   return (
     <FormShell
       eyebrow="NEW PLOT · เพิ่มพื้นที่"
@@ -132,7 +138,7 @@ export function AddAreaForm({ onClose }: { onClose?: () => void }) {
           })}
           <button
             type="button"
-            onClick={() => setShowAddAmenity(true)}
+            onClick={openAddAmenityModal}
             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-thai transition-all border border-dashed"
             style={{ borderColor: "var(--line-strong)", color: "var(--sage-500)" }}
           >
