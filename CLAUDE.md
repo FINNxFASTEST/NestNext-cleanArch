@@ -6,6 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > The project was rebuilt on [brocoders/nestjs-boilerplate](https://github.com/brocoders/nestjs-boilerplate)
 > (MongoDB + Mongoose only) and now follows a clean architecture, multi-tenant model.
 
+## AI continuity and handoff
+
+Assistants should stay aligned across chats and tools (Cursor, Claude Code, others) without re-deriving context:
+
+1. **[AI_HANDOFF.md](AI_HANDOFF.md)** — Living task state: what was completed, what is in flight (files, branch, PR), what remains, blockers, and one-line decisions. **Update it before ending a substantive session** so the next assistant can continue without guesswork.
+2. **Starting work** — When continuing someone else’s task, read `AI_HANDOFF.md` first, then reconcile with `git status` / open PRs / failing CI; treat the handoff as hints, not ground truth if the repo disagrees.
+3. **Division of labor** — **`CLAUDE.md`** = stable architecture, conventions, and commands. **`AI_HANDOFF.md`** = ephemeral “where we left off.” Do not duplicate long running task lists into `CLAUDE.md`; extend the handoff file instead.
+
+If `AI_HANDOFF.md` is missing or stale for a real continuation, refresh it when handing off to another AI.
+
 ## Project overview
 
 Kangtent is a campsite booking platform for the Thai market, organized like Agoda:
