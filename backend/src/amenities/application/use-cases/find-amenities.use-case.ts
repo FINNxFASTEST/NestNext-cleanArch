@@ -7,7 +7,10 @@ import { IPaginationOptions } from '../../../utils/types/pagination-options';
 export class FindAmenitiesUseCase {
   constructor(private readonly amenityRepository: AmenityRepository) {}
 
-  execute(paginationOptions: IPaginationOptions, search?: string): Promise<Amenity[]> {
+  execute(
+    paginationOptions: IPaginationOptions,
+    search?: string,
+  ): Promise<Amenity[]> {
     return this.amenityRepository.findAllWithPagination({
       paginationOptions,
       search,

@@ -244,6 +244,31 @@ class CampsiteMapper {
 - Nested objects use `@ValidateNested({ each: true })` + `@Type(() => NestedDto)`.
 - `@IsMongoId()` for any `*Id` field.
 - Geo fields use `@IsLatitude` / `@IsLongitude`.
+- All DTO properties must use `!` (definite assignment assertion) — e.g. `label!: string` — because `ValidationPipe` populates them at runtime, not in a constructor.
+- `@ApiProperty` belongs **only** in DTOs and response classes (presentation layer), never in domain classes.
+
+### Schema class conventions
+
+- Mongoose schema classes (`*SchemaClass`) must use `!` on all `@Prop()` properties — Mongoose populates them at runtime, not via constructor.
+- Example:
+  ```ts
+  @Prop({ type: String, required: true })
+  label!: string;
+  ```
+
+### Domain class conventions
+
+- Domain classes in `domain/<resource>.ts` must be **pure TypeScript** — no NestJS, no Swagger, no class-validator decorators.
+- All properties use `!` (definite assignment): `id!: string`, `createdAt!: Date`, etc.
+- Example clean domain class:
+  ```ts
+  export class Amenity {
+    id!: string;
+    label!: string;
+    iconKey!: string;
+    createdAt!: Date;
+  }
+  ```
 
 ### Pagination
 

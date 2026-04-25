@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AmenitySchemaClass, AmenitySchema } from './persistence/amenity.schema';
+import {
+  AmenitySchemaClass,
+  AmenitySchema,
+} from './persistence/amenity.schema';
 import { AmenityRepository } from './persistence/amenity.repository';
 import { AmenityDocumentRepository } from './persistence/amenity.document-repository';
 
