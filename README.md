@@ -1,223 +1,202 @@
-# Kangtent
+# NestJS + Next.js Boilerplate
 
-Kangtent is a campsite booking platform with:
+A production-ready full-stack starter with:
 
-- `backend/`: NestJS + MongoDB API
-- `frontend/`: Next.js web app
+- **Backend** — NestJS 11, MongoDB + Mongoose, JWT auth (access + refresh tokens), clean architecture with use-case classes
+- **Frontend** — Next.js 15 App Router, TypeScript, Tailwind CSS, shadcn/ui
+- **Infra** — Docker Compose (MongoDB + Redis + backend + frontend in one command)
 
-## Quick first run (Windows PowerShell)
+---
 
-You can run one setup script that prepares env files, installs dependencies, and seeds demo data:
+## Start with Docker (recommended)
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\first-run.ps1
-```
-
-Options:
-
-- Skip seed data:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\first-run.ps1 -SkipSeed
-```
-
-- Setup + start backend immediately:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\first-run.ps1; cd .\backend; npm run start:dev
-```
-
-- Setup + start frontend immediately (run in another terminal):
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\first-run.ps1 -SkipSeed; cd .\frontend; npm run dev
-```
-
-## Prerequisites
-
-Install these first:
-
-- Node.js `>= 20`
-- npm `>= 10`
-- MongoDB (local instance on `mongodb://localhost:27017`)
-
-## 1) Clone and open project
+> **Requires:** [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
 ```bash
-git clone <your-repo-url>
-cd Kangtent-new
+# 1. Clone
+git clone <repo-url>
+cd <repo>
+
+# 2. Start everything
+docker compose up --build
 ```
 
-## 2) Configure environment variables
+That's it. All four services start automatically.
 
-### Backend env
+| Service  | URL |
+|---|---|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:3001/api/v1 |
+| Swagger docs | http://localhost:3001/docs |
 
-Create `backend/.env` from `backend/.env.example`.
+**Seed demo accounts** (first time only — wait until backend is healthy):
 
-Example:
-
-```env
-NODE_ENV=development
-APP_PORT=3001
-API_PREFIX=api
-FRONTEND_DOMAIN=http://localhost:3000
-BACKEND_DOMAIN=http://localhost:3001
-
-DATABASE_URL=mongodb://localhost:27017/kangtent
-DATABASE_NAME=kangtent
-
-AUTH_JWT_SECRET=change_me_jwt_secret
-AUTH_JWT_TOKEN_EXPIRES_IN=15m
-AUTH_REFRESH_SECRET=change_me_refresh_secret
-AUTH_REFRESH_TOKEN_EXPIRES_IN=3650d
+```bash
+docker compose exec backend node \
+  -e "require('child_process').execSync('npm run seed:run:document', {stdio:'inherit'})"
 ```
 
-### Frontend env
+**Stop:** `docker compose down`  
+**Wipe data volumes too:** `docker compose down -v`
+
+> Change the placeholder JWT secrets in `docker-compose.yml` before any production use.
+
+---
+
+## Start without Docker
+
+### Prerequisites
+
+- Node.js ≥ 20
+- MongoDB running on `localhost:27017`
+- Redis is optional — set `REDIS_ENABLED=false` to skip it
+
+### 1. Configure environment
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Edit `backend/.env` — at minimum set real values for `AUTH_JWT_SECRET` and `AUTH_REFRESH_SECRET`.
 
 Create `frontend/.env.local`:
 
-```env
+```
 NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
-## 3) Install dependencies
+### 2. Install dependencies
 
-Run in two terminals (or one-by-one):
+```bash
+cd backend && npm install
+cd ../frontend && npm install
+```
+
+### 3. Start the backend
 
 ```bash
 cd backend
-npm install
+npm run start:dev   # watch mode, port 3001
 ```
 
-```bash
-cd frontend
-npm install
-```
-
-## 4) Start MongoDB
-
-Make sure MongoDB is running locally before starting the backend.
-
-Quick check:
-
-```bash
-mongosh "mongodb://localhost:27017"
-```
-
-## 5) Run backend
-
-```bash
-cd backend
-npm run start:dev
-```
-
-Backend URLs:
-
-- API base: `http://localhost:3001/api/v1`
-- Swagger docs: `http://localhost:3001/docs`
-
-## 6) Seed demo data (optional but recommended)
-
-In another terminal:
+### 4. Seed demo accounts (optional)
 
 ```bash
 cd backend
 npm run seed:run:document
 ```
 
-Seeded demo accounts:
-
-- `admin@example.com` / `secret`
-- `host@example.com` / `secret`
-- `customer@example.com` / `secret`
-
-## 7) Run frontend
+### 5. Start the frontend
 
 ```bash
 cd frontend
-npm run dev
+npm run dev         # port 3000
 ```
 
-Open: `http://localhost:3000`
+Open http://localhost:3000 and sign in with a seeded account.
 
-## 8) Verify app is working
+---
 
-1. Open `http://localhost:3000`
-2. Try login with one seeded account
-3. Check API docs at `http://localhost:3001/docs`
-4. Confirm frontend can load campsites data from backend
+## Demo accounts
 
-## Code generation
+| Email | Password | Role |
+|---|---|---|
+| `admin@example.com` | `secret` | admin |
+| `host@example.com` | `secret` | host |
+| `customer@example.com` | `secret` | customer |
 
-Scaffold a new clean-architecture domain module from the project root:
+---
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\new-resource.ps1 -Name Coupon
+## Project layout
+
+```
+.
+├── backend/          # NestJS 11 API
+│   └── src/
+│       ├── auth/     # Login, register, JWT, session rotation
+│       ├── users/    # User accounts + roles
+│       ├── session/  # Refresh-token sessions (MongoDB or Redis)
+│       └── ...
+├── frontend/         # Next.js 15 App Router
+│   └── src/
+│       ├── app/      # Pages: home, login, register
+│       └── components/
+├── docker-compose.yml
+├── CLAUDE.md         # AI assistant guidance + full architecture reference
+└── ARCHITECTURE.md   # Clean architecture guide + step-by-step for adding features
 ```
 
-Or from inside `backend/`:
+---
+
+## Add your first feature
+
+### Scaffold a new module
 
 ```bash
-npm run generate:resource:document -- --name Coupon
+cd backend
+npm run generate:resource:document -- --name Post
 ```
 
-This generates the full structure under `src/coupons/`:
+This generates the full clean-architecture structure under `src/posts/`:
 
 ```
-application/use-cases/   ← 5 use cases (create, findAll, findById, update, remove)
-domain/                  ← domain class
-infrastructure/
-  persistence/           ← schema, mapper, document-repository, repository port
-  *-persistence.module.ts
-presentation/
-  dto/                   ← create, update, find-all, domain DTOs
-  *.controller.ts
-*.module.ts
+domain/post.ts
+infrastructure/persistence/   (schema, mapper, repository port, document adapter)
+application/use-cases/        (create, findAll, findById, update, remove)
+presentation/                 (controller, DTOs)
+posts.module.ts
 ```
 
 After scaffolding:
-1. Add fields to `domain/<name>.ts`
-2. Add `@Prop()` fields to `infrastructure/persistence/<name>.schema.ts`
-3. Map them in `infrastructure/persistence/<name>.mapper.ts`
-4. Fill in the DTO classes in `presentation/dto/`
-5. Implement use-case bodies in `application/use-cases/`
 
-To add a field to an existing resource interactively:
+1. Define your fields in `domain/post.ts`
+2. Add `@Prop()` fields to `infrastructure/persistence/post.schema.ts`
+3. Map them in `infrastructure/persistence/post.mapper.ts`
+4. Fill in DTOs in `presentation/dto/`
+5. Implement use-case bodies in `application/use-cases/`
+6. Register `PostsModule` in `src/app.module.ts`
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the full guide and a worked example.
+
+### Add a field to an existing resource
 
 ```bash
 cd backend
 npm run add:property:to-document
 ```
 
-## Useful commands
+---
 
-### Backend (`backend/`)
+## Key commands
+
+### Backend
 
 ```bash
-npm run start:dev
-npm run build
-npm run start:prod
+npm run start:dev          # Watch mode
+npm run build              # Compile TS → dist/
+npm run start:prod         # Run compiled output
 npm run lint
-npm run test
-npm run seed:run:document
+npm run test               # Jest unit tests
+npm run test:cov           # Coverage report
+npm run seed:run:document  # Seed demo accounts
 ```
 
-### Frontend (`frontend/`)
+### Frontend
 
 ```bash
 npm run dev
 npm run build
-npm run start
 npm run lint
+npm run typecheck
 ```
+
+---
 
 ## Troubleshooting
 
-- `ECONNREFUSED` from frontend:
-  - Ensure backend is running on port `3001`
-  - Confirm `frontend/.env.local` has `NEXT_PUBLIC_API_URL=http://localhost:3001`
-- MongoDB connection errors:
-  - Ensure MongoDB is running
-  - Check `DATABASE_URL` in `backend/.env`
-- Port already in use:
-  - Stop the process using `3000` or `3001`, or change the port in env files
+| Symptom | Fix |
+|---|---|
+| Frontend shows network error | Confirm backend is on port 3001. Check `frontend/.env.local` has `NEXT_PUBLIC_API_URL=http://localhost:3001` |
+| MongoDB connection refused | Start MongoDB locally or use `docker compose up mongo` |
+| Port already in use | Kill the process on 3000/3001, or change `APP_PORT` in `backend/.env` |
+| JWT errors after restart | Secrets in `.env` must stay consistent between restarts; changing them invalidates all tokens |

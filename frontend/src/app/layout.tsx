@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Kangtent — Cozy Campsite Booking",
-  description: "จองลานกางเต็นท์ทั่วไทยง่ายๆ ในไม่กี่คลิก",
+  title: "Boilerplate",
+  description: "NestJS + Next.js starter with JWT auth, roles, and MongoDB.",
 };
 
 export default function RootLayout({
@@ -13,13 +20,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th">
+    <html lang="en" className={inter.variable}>
       <body>
-        <AuthProvider>
-          <div className="max-w-[1920px] mx-auto overflow-hidden">
-            {children}
-          </div>
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
