@@ -1,103 +1,76 @@
 # NestJS + Next.js Boilerplate
 
-A production-ready full-stack starter with:
+A full-stack developer boilerplate with clean architecture — clone it, extend it, ship it.
 
-- **Backend** — NestJS 11, MongoDB + Mongoose, JWT auth (access + refresh tokens), clean architecture with use-case classes
+- **Backend** — NestJS 11, MongoDB + Mongoose, JWT auth (access + refresh tokens), clean architecture
 - **Frontend** — Next.js 15 App Router, TypeScript, Tailwind CSS, shadcn/ui
-- **Infra** — Docker Compose (MongoDB + Redis + backend + frontend in one command)
+- **Infra** — Docker Compose for MongoDB + Redis (dev infrastructure only)
+
+> **Docker note:** `docker compose up --build` runs the app in **production mode** (compiled, no hot-reload). For development, use the local setup below.
 
 ---
 
-## Start with Docker (recommended)
+## Prerequisites
 
-> **Requires:** [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-
-```bash
-# 1. Clone
-git clone https://github.com/FINNxFASTEST/CleanArchitectureNestNext-boilerplate
-cd CleanArchitectureNestNext-boilerplate
-
-# 2. Start everything
-docker compose up --build
-```
-
-That's it. All four services start automatically.
-
-| Service  | URL |
+| Tool | Version |
 |---|---|
-| Frontend | http://localhost:3000 |
-| Backend API | http://localhost:3001/api/v1 |
-| Swagger docs | http://localhost:3001/docs |
-
-**Seed demo accounts** (first time only — wait until backend is healthy):
-
-```bash
-docker compose exec backend node \
-  -e "require('child_process').execSync('npm run seed:run:document', {stdio:'inherit'})"
-```
-
-**Stop:** `docker compose down`
-**Wipe data volumes too:** `docker compose down -v`
-
-> Change the placeholder JWT secrets in `docker-compose.yml` before any production use.
+| Node.js | ≥ 20 |
+| MongoDB | 7 (via Docker or local) |
+| Redis | 7 (optional — can be disabled) |
 
 ---
 
-## Start without Docker
+## Setup
 
-### Prerequisites
+### 1. Start infrastructure
 
-- Node.js ≥ 20
-- MongoDB running on `localhost:27017`
-- Redis is optional — set `REDIS_ENABLED=false` to skip it
-
-### 1. Configure environment
+Spin up only MongoDB and Redis via Docker:
 
 ```bash
-cp backend/.env.example backend/.env
+docker compose up mongo redis
 ```
 
-Edit `backend/.env` — at minimum set real values for `AUTH_JWT_SECRET` and `AUTH_REFRESH_SECRET`.
+Or run MongoDB/Redis locally if you prefer.
 
-Create `frontend/.env.local`:
-
-```
-NEXT_PUBLIC_API_URL=http://localhost:3001
-```
-
-### 2. Install dependencies
-
-```bash
-cd backend && npm install
-cd ../frontend && npm install
-```
-
-### 3. Start the backend
+### 2. Backend
 
 ```bash
 cd backend
-npm run start:dev   # watch mode, port 3001
+cp .env.example .env
+npm install
+npm run start:dev    # watch mode — port 3001
 ```
 
-### 4. Seed demo accounts (optional)
+Minimum `.env` values to set:
+
+```env
+NODE_ENV=development
+DATABASE_URL=mongodb://localhost:27017/kangtent
+AUTH_JWT_SECRET=dev-secret-change-me
+AUTH_REFRESH_SECRET=dev-refresh-secret-change-me
+REDIS_ENABLED=false
+```
+
+### 3. Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev          # port 3000
+```
+
+Create `frontend/.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
+
+### 4. Seed demo accounts
 
 ```bash
 cd backend
 npm run seed:run:document
 ```
-
-### 5. Start the frontend
-
-```bash
-cd frontend
-npm run dev         # port 3000
-```
-
-Open http://localhost:3000 and sign in with a seeded account.
-
----
-
-## Demo accounts
 
 | Email | Password | Role |
 |---|---|---|
@@ -105,60 +78,46 @@ Open http://localhost:3000 and sign in with a seeded account.
 | `host@example.com` | `secret` | host |
 | `customer@example.com` | `secret` | customer |
 
----
-
-## Project layout
-
-```
-.
-├── backend/          # NestJS 11 API
-│   └── src/
-│       ├── auth/     # Login, register, JWT, session rotation
-│       ├── users/    # User accounts + roles
-│       ├── session/  # Refresh-token sessions (MongoDB or Redis)
-│       └── ...
-├── frontend/         # Next.js 15 App Router
-│   └── src/
-│       ├── app/      # Pages: home, login, register
-│       └── components/
-├── docker-compose.yml
-├── CLAUDE.md         # AI assistant guidance + full architecture reference
-└── ARCHITECTURE.md   # Clean architecture guide + step-by-step for adding features
-```
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:3001/api/v1 |
+| Swagger docs | http://localhost:3001/docs |
 
 ---
 
-## Add your first feature
+## Adding a feature module
 
-### Scaffold a new module
+### Scaffold
 
 ```bash
 cd backend
-npm run generate:resource:document -- --name Post
+npm run generate:resource:document -- --name YourResource
 ```
 
-This generates the full clean-architecture structure under `src/posts/`:
+Generates the full structure under `src/your-resource/`:
 
 ```
-domain/post.ts
-infrastructure/persistence/   (schema, mapper, repository port, document adapter)
-application/use-cases/        (create, findAll, findById, update, remove)
-presentation/                 (controller, DTOs)
-posts.module.ts
+domain/your-resource.ts              # Pure TS domain class
+application/use-cases/               # One class per operation
+presentation/your-resource.controller.ts
+presentation/dto/
+infrastructure/persistence/          # Schema, mapper, repository
+your-resource.module.ts
 ```
 
 After scaffolding:
 
-1. Define your fields in `domain/post.ts`
-2. Add `@Prop()` fields to `infrastructure/persistence/post.schema.ts`
-3. Map them in `infrastructure/persistence/post.mapper.ts`
-4. Fill in DTOs in `presentation/dto/`
-5. Implement use-case bodies in `application/use-cases/`
-6. Register `PostsModule` in `src/app.module.ts`
+1. Define fields in `domain/your-resource.ts`
+2. Add `@Prop()` fields to the schema class
+3. Map fields in `mapper.ts` (`toDomain` / `toPersistence`)
+4. Fill in DTOs (`create-*.dto.ts`, `update-*.dto.ts`)
+5. Implement use-case bodies
+6. Register `YourResourceModule` in `src/app.module.ts`
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the full guide and a worked example.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the full walkthrough.
 
-### Add a field to an existing resource
+### Add a field to an existing module
 
 ```bash
 cd backend
@@ -167,18 +126,47 @@ npm run add:property:to-document
 
 ---
 
-## Key commands
+## Project structure
+
+```
+.
+├── backend/
+│   ├── src/
+│   │   ├── auth/          # JWT login/register/refresh/logout
+│   │   ├── users/         # User accounts + roles
+│   │   ├── session/       # Refresh-token sessions (MongoDB or Redis)
+│   │   ├── roles/         # RoleEnum + RolesGuard + @Roles()
+│   │   ├── redis/         # Optional Redis client
+│   │   ├── database/      # Mongoose config + seeds
+│   │   ├── config/        # App/auth/DB config schemas
+│   │   └── utils/         # Shared helpers
+│   └── .env.example
+├── frontend/
+│   └── src/
+│       ├── app/           # Pages: home, login, register
+│       └── components/    # common/ + ui/ (shadcn)
+├── docker-compose.yml
+├── ARCHITECTURE.md        # Clean architecture deep-dive + worked example
+└── CLAUDE.md              # AI assistant guidance
+```
+
+---
+
+## Commands
 
 ### Backend
 
 ```bash
-npm run start:dev          # Watch mode
-npm run build              # Compile TS → dist/
-npm run start:prod         # Run compiled output
+npm run start:dev                              # Watch mode
+npm run start:debug                            # Watch + debugger (port 9229)
+npm run build                                  # Compile TS → dist/
+npm run start:prod                             # Run compiled output
 npm run lint
-npm run test               # Jest unit tests
-npm run test:cov           # Coverage report
-npm run seed:run:document  # Seed demo accounts
+npm run test                                   # Jest unit tests
+npm run test:cov                               # Coverage report
+npm run seed:run:document                      # Seed demo accounts
+npm run generate:resource:document -- --name Foo
+npm run add:property:to-document
 ```
 
 ### Frontend
@@ -192,11 +180,25 @@ npm run typecheck
 
 ---
 
+## Auth API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/v1/auth/email/register` | Create account |
+| `POST` | `/api/v1/auth/email/login` | Login |
+| `GET` | `/api/v1/auth/me` | Current user (Bearer token) |
+| `POST` | `/api/v1/auth/refresh` | Rotate refresh token |
+| `POST` | `/api/v1/auth/logout` | Delete session |
+
+---
+
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| Frontend shows network error | Confirm backend is on port 3001. Check `frontend/.env.local` has `NEXT_PUBLIC_API_URL=http://localhost:3001` |
-| MongoDB connection refused | Start MongoDB locally or use `docker compose up mongo` |
-| Port already in use | Kill the process on 3000/3001, or change `APP_PORT` in `backend/.env` |
-| JWT errors after restart | Secrets in `.env` must stay consistent between restarts; changing them invalidates all tokens |
+| Backend won't start — `Cannot find module` | Run `npm install` in `backend/` |
+| Frontend shows network error | Check `NEXT_PUBLIC_API_URL` in `frontend/.env.local` |
+| MongoDB connection refused | Run `docker compose up mongo` |
+| JWT errors after restart | `AUTH_JWT_SECRET` must stay the same between restarts |
+| Port already in use | Change `APP_PORT` in `backend/.env` |
+| Redis errors | Set `REDIS_ENABLED=false` to fall back to MongoDB sessions |
