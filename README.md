@@ -14,8 +14,8 @@ A production-ready full-stack starter with:
 
 ```bash
 # 1. Clone
-git clone <repo-url>
-cd <repo>
+git clone https://github.com/FINNxFASTEST/CleanArchitectureNestNext-boilerplate
+cd CleanArchitectureNestNext-boilerplate
 
 # 2. Start everything
 docker compose up --build
@@ -36,7 +36,7 @@ docker compose exec backend node \
   -e "require('child_process').execSync('npm run seed:run:document', {stdio:'inherit'})"
 ```
 
-**Stop:** `docker compose down`  
+**Stop:** `docker compose down`
 **Wipe data volumes too:** `docker compose down -v`
 
 > Change the placeholder JWT secrets in `docker-compose.yml` before any production use.
