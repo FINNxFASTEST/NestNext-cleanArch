@@ -5,15 +5,13 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Nav } from "@/components/common/Nav";
-import { Footer } from "@/components/common/Footer";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/services";
 
 const schema = z.object({
-  email: z.string().email("อีเมลไม่ถูกต้อง"),
-  password: z.string().min(1, "กรุณากรอกรหัสผ่าน"),
+  email: z.string().email("Enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -33,60 +31,70 @@ export default function LoginPage() {
       await login(data.email, data.password);
       router.push("/");
     } catch (err) {
-      const msg = err instanceof ApiError ? err.message : "เกิดข้อผิดพลาด กรุณาลองใหม่";
-      setError("root", { message: typeof msg === "string" ? msg : "เกิดข้อผิดพลาด" });
+      const msg = err instanceof ApiError ? err.message : "Something went wrong. Please try again.";
+      setError("root", { message: typeof msg === "string" ? msg : "Something went wrong." });
     }
   }
 
   return (
-    <main className="bg-paper text-ink min-h-screen">
-      <Nav active="none" variant="solid" />
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Top bar */}
+      <div className="flex h-14 items-center px-6 border-b border-border">
+        <Link href="/" className="flex items-center gap-2 text-sm font-semibold text-foreground no-underline">
+          <span className="flex h-6 w-6 items-center justify-center rounded bg-foreground text-background text-xs font-bold">
+            B
+          </span>
+          Boilerplate
+        </Link>
+      </div>
 
-      <section className="px-4 md:px-14 py-10 md:py-14">
-        <div className="mx-auto max-w-[520px] rounded-3xl border border-line p-6 md:p-8 bg-paper shadow-soft">
-          <div className="font-sans text-[11px] tracking-[0.18em] uppercase font-medium mb-2 text-sage-500">
-            WELCOME BACK
+      {/* Form */}
+      <div className="flex flex-1 items-center justify-center px-4 py-12">
+        <div className="w-full max-w-sm">
+          <div className="mb-8">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              Sign in
+            </h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Enter your credentials to access your account
+            </p>
           </div>
-          <h1 className="font-serif m-0" style={{ fontSize: "clamp(30px, 5vw, 42px)", lineHeight: 1.1 }}>
-            เข้าสู่ระบบ
-          </h1>
-          <p className="font-thai mt-3 mb-7 text-sm text-forest-600">
-            เข้าสู่ระบบเพื่อดูการจอง จัดการโปรไฟล์ และรับข้อเสนอพิเศษจาก Kangtent
-          </p>
 
           <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
-            <label className="block">
-              <div className="font-sans text-[10px] tracking-[0.18em] uppercase font-medium mb-1.5 text-sage-500">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="email" className="text-sm font-medium text-foreground">
                 Email
-              </div>
+              </label>
               <Input
+                id="email"
                 type="email"
                 placeholder="you@example.com"
-                className="rounded-xl border-line-strong bg-paper text-ink h-auto py-3 px-3.5 font-thai"
+                autoComplete="email"
                 {...register("email")}
               />
               {errors.email && (
-                <p className="font-thai text-xs mt-1 text-ember-dark">{errors.email.message}</p>
+                <p className="text-xs text-destructive">{errors.email.message}</p>
               )}
-            </label>
+            </div>
 
-            <label className="block">
-              <div className="font-sans text-[10px] tracking-[0.18em] uppercase font-medium mb-1.5 text-sage-500">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="password" className="text-sm font-medium text-foreground">
                 Password
-              </div>
+              </label>
               <Input
+                id="password"
                 type="password"
-                placeholder="********"
-                className="rounded-xl border-line-strong bg-paper text-ink h-auto py-3 px-3.5 font-thai"
+                placeholder="••••••••"
+                autoComplete="current-password"
                 {...register("password")}
               />
               {errors.password && (
-                <p className="font-thai text-xs mt-1 text-ember-dark">{errors.password.message}</p>
+                <p className="text-xs text-destructive">{errors.password.message}</p>
               )}
-            </label>
+            </div>
 
             {errors.root && (
-              <div className="rounded-xl bg-ember/10 border border-ember/30 px-4 py-3 font-thai text-sm text-ember-dark">
+              <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">
                 {errors.root.message}
               </div>
             )}
@@ -94,22 +102,20 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="mt-2 w-full font-thai font-medium text-[15px] py-3.5 rounded-full border-0 cursor-pointer bg-ember text-cream-50 disabled:opacity-60"
+              className="mt-1 h-9 w-full rounded-md bg-foreground px-4 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50 cursor-pointer border-0"
             >
-              {isSubmitting ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}
+              {isSubmitting ? "Signing in…" : "Sign in"}
             </button>
           </form>
 
-          <div className="font-thai text-sm mt-5 text-center text-forest-600">
-            ยังไม่มีบัญชี?{" "}
-            <Link href="/register" className="text-ember-dark underline">
-              สมัครสมาชิก
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className="font-medium text-foreground underline-offset-4 hover:underline">
+              Sign up
             </Link>
-          </div>
+          </p>
         </div>
-      </section>
-
-      <Footer />
-    </main>
+      </div>
+    </div>
   );
 }

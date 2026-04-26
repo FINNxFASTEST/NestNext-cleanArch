@@ -2,150 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: "Bai Jamjuree";
-  font-weight: 200;
-  font-style: normal;
-  src: url("/fonts/BaiJamjuree-ExtraLight.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Bai Jamjuree";
-  font-weight: 200;
-  font-style: italic;
-  src: url("/fonts/BaiJamjuree-ExtraLightItalic.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Bai Jamjuree";
-  font-weight: 300;
-  font-style: normal;
-  src: url("/fonts/BaiJamjuree-Light.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Bai Jamjuree";
-  font-weight: 300;
-  font-style: italic;
-  src: url("/fonts/BaiJamjuree-LightItalic.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Bai Jamjuree";
-  font-weight: 400;
-  font-style: normal;
-  src: url("/fonts/BaiJamjuree-Regular.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Bai Jamjuree";
-  font-weight: 400;
-  font-style: italic;
-  src: url("/fonts/BaiJamjuree-Italic.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Bai Jamjuree";
-  font-weight: 500;
-  font-style: normal;
-  src: url("/fonts/BaiJamjuree-Medium.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Bai Jamjuree";
-  font-weight: 500;
-  font-style: italic;
-  src: url("/fonts/BaiJamjuree-MediumItalic.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Bai Jamjuree";
-  font-weight: 600;
-  font-style: normal;
-  src: url("/fonts/BaiJamjuree-SemiBold.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Bai Jamjuree";
-  font-weight: 600;
-  font-style: italic;
-  src: url("/fonts/BaiJamjuree-SemiBoldItalic.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Bai Jamjuree";
-  font-weight: 700;
-  font-style: normal;
-  src: url("/fonts/BaiJamjuree-Bold.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: "Bai Jamjuree";
-  font-weight: 700;
-  font-style: italic;
-  src: url("/fonts/BaiJamjuree-BoldItalic.ttf") format("truetype");
-  font-display: swap;
-}
-
 :root {
-  /* Brand HSL channels — single source of truth for all color usage */
-  --ink-hsl: 120 7% 9%;
-  --forest-900-hsl: 147 17% 13%;
-  --forest-800-hsl: 129 15% 18%;
-  --forest-700-hsl: 138 15% 22%;
-  --forest-600-hsl: 123 15% 29%;
-  --sage-500-hsl: 96 13% 50%;
-  --sage-300-hsl: 91 15% 66%;
-  --moss-200-hsl: 84 21% 77%;
-  --cream-50-hsl: 41 50% 94%;
-  --cream-100-hsl: 43 44% 89%;
-  --paper-hsl: 44 65% 96%;
-  --ember-hsl: 23 54% 54%;
-  --ember-dark-hsl: 23 50% 44%;
-  --clay-hsl: 28 57% 65%;
-  --mist-hsl: 48 24% 88%;
-
-  /* Brand tokens — usable CSS color values (var(--ember), var(--paper), etc.) */
-  --ink: hsl(var(--ink-hsl));
-  --forest-900: hsl(var(--forest-900-hsl));
-  --forest-800: hsl(var(--forest-800-hsl));
-  --forest-700: hsl(var(--forest-700-hsl));
-  --forest-600: hsl(var(--forest-600-hsl));
-  --sage-500: hsl(var(--sage-500-hsl));
-  --sage-300: hsl(var(--sage-300-hsl));
-  --moss-200: hsl(var(--moss-200-hsl));
-  --cream-50: hsl(var(--cream-50-hsl));
-  --cream-100: hsl(var(--cream-100-hsl));
-  --paper: hsl(var(--paper-hsl));
-  --ember: hsl(var(--ember-hsl));
-  --ember-dark: hsl(var(--ember-dark-hsl));
-  --clay: hsl(var(--clay-hsl));
-  --mist: hsl(var(--mist-hsl));
-  --line: rgba(27, 38, 32, 0.12);
-  --line-strong: rgba(27, 38, 32, 0.22);
-  --shadow-soft: 0 1px 2px rgba(27, 38, 32, 0.04), 0 8px 24px rgba(27, 38, 32, 0.06);
-  --shadow-card: 0 2px 4px rgba(27, 38, 32, 0.05), 0 16px 40px rgba(27, 38, 32, 0.1);
-
-  /* shadcn/ui semantic tokens — sourced from brand HSL channels above */
-  --background: var(--paper-hsl);
-  --foreground: var(--ink-hsl);
-  --card: var(--paper-hsl);
-  --card-foreground: var(--ink-hsl);
-  --popover: var(--paper-hsl);
-  --popover-foreground: var(--ink-hsl);
-  --primary: var(--ember-hsl);
-  --primary-foreground: var(--paper-hsl);
-  --secondary: var(--cream-100-hsl);
-  --secondary-foreground: var(--ink-hsl);
-  --muted: var(--cream-50-hsl);
-  --muted-foreground: var(--sage-500-hsl);
-  --accent: var(--cream-100-hsl);
-  --accent-foreground: var(--ink-hsl);
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 43 20% 85%;
-  --input: 43 20% 85%;
-  --ring: var(--ember-hsl);
+  --background: 0 0% 100%;
+  --foreground: 224 71.4% 4.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 224 71.4% 4.1%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 224 71.4% 4.1%;
+  --primary: 220.9 39.3% 11%;
+  --primary-foreground: 210 20% 98%;
+  --secondary: 220 14.3% 95.9%;
+  --secondary-foreground: 220.9 39.3% 11%;
+  --muted: 220 14.3% 95.9%;
+  --muted-foreground: 220 8.9% 46.1%;
+  --accent: 220 14.3% 95.9%;
+  --accent-foreground: 220.9 39.3% 11%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 20% 98%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 224 71.4% 4.1%;
   --radius: 0.5rem;
 }
 
@@ -162,14 +38,14 @@ body {
 }
 
 body {
-  font-family: "Bai Jamjuree", system-ui, sans-serif;
-  color: var(--ink);
-  background: var(--paper);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
-  font-feature-settings: "ss01", "ss02";
 }
 
 input:focus,
-button:focus {
-  outline: none;
+button:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }

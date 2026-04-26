@@ -1,4 +1,4 @@
-import type { AuthResponse, Membership, User, UserRole } from '@/types';
+import type { AuthResponse, User, UserRole } from '@/types';
 import { request } from './http-client';
 
 const TOKEN_KEY = 'kangtent_token';
@@ -34,20 +34,13 @@ export function mapAuthResponseToUser(res: AuthResponse): User {
   };
 }
 
-export function mapMeResponseToUser(
-  me: MeResponse,
-  memberships: Membership[] = [],
-): User {
+export function mapMeResponseToUser(me: MeResponse): User {
   return {
     id: String(me.id),
     email: me.email,
     firstName: me.firstName ?? undefined,
     lastName: me.lastName ?? undefined,
     role: roleIdToName(me.role?.id),
-    memberships: memberships.map((m) => ({
-      organizationId: m.organizationId,
-      memberRole: m.memberRole,
-    })),
   };
 }
 

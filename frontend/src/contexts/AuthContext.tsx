@@ -4,10 +4,9 @@ import {
   authApi,
   clearAuth,
   mapMeResponseToUser,
-  membershipsApi,
   persistAuth,
 } from "@/services";
-import type { Membership, User } from "@/types";
+import type { User } from "@/types";
 import {
   createContext,
   useCallback,
@@ -21,9 +20,6 @@ interface AuthContextValue {
   user: User | null;
   token: string | null;
   loading: boolean;
-  memberships: Membership[];
-  currentOrganizationId: string | null;
-  setCurrentOrganizationId: (id: string | null) => void;
   login: (email: string, password: string) => Promise<void>;
   register: (data: {
     email: string;
@@ -41,36 +37,16 @@ const TOKEN_KEY = "kangtent_token";
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [memberships, setMemberships] = useState<Membership[]>([]);
-  const [currentOrganizationId, setCurrentOrganizationId] = useState<
-    string | null
-  >(null);
   const [loading, setLoading] = useState(true);
 
   const hydrate = useCallback(async () => {
     try {
       const me = await authApi.me();
-      const roleId = me.role?.id;
-      const isHostOrAdmin = roleId === 1 || roleId === 2;
-
-      let mems: Membership[] = [];
-      if (isHostOrAdmin) {
-        try {
-          mems = await membershipsApi.myMemberships();
-        } catch {
-          mems = [];
-        }
-      }
-      setMemberships(mems);
-      const mapped = mapMeResponseToUser(me, mems);
-      setUser(mapped);
-      setCurrentOrganizationId((cur) => cur ?? mems[0]?.organizationId ?? null);
+      setUser(mapMeResponseToUser(me));
     } catch {
       clearAuth();
       setToken(null);
       setUser(null);
-      setMemberships([]);
-      setCurrentOrganizationId(null);
     }
   }, []);
 
@@ -116,32 +92,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearAuth();
     setToken(null);
     setUser(null);
-    setMemberships([]);
-    setCurrentOrganizationId(null);
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({
-      user,
-      token,
-      loading,
-      memberships,
-      currentOrganizationId,
-      setCurrentOrganizationId,
-      login,
-      register,
-      logout,
-    }),
-    [
-      user,
-      token,
-      loading,
-      memberships,
-      currentOrganizationId,
-      login,
-      register,
-      logout,
-    ],
+    () => ({ user, token, loading, login, register, logout }),
+    [user, token, loading, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
