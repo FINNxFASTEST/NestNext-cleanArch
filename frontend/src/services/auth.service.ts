@@ -1,8 +1,8 @@
 import type { AuthResponse, User, UserRole } from '@/types';
 import { request } from './http-client';
 
-const TOKEN_KEY = 'kangtent_token';
-const REFRESH_KEY = 'kangtent_refresh';
+const TOKEN_KEY = 'app_token';
+const REFRESH_KEY = 'app_refresh';
 
 function roleIdToName(id?: number | string | null): UserRole {
   switch (String(id)) {

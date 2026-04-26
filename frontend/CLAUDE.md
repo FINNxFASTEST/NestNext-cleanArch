@@ -15,7 +15,7 @@ No test suite is configured yet.
 
 ## Architecture
 
-**Kangtent** is a Thai-language campsite booking app built with Next.js 15 App Router, TypeScript, and Tailwind CSS.
+**CleanArchitectureNestNext** is a boilerplate app built with Next.js 15 App Router, TypeScript, and Tailwind CSS.
 
 ### Pages (App Router)
 
@@ -34,7 +34,7 @@ Pages are wired to the live backend via `src/services/`. The `/admin` page is th
 
 ```
 src/components/
-  common/     # Shared: Nav, Footer, Scene, Icons, Stars, Badge, Button, StatusPill, KangtentMark
+  common/     # Shared: Nav, Footer, Scene, Icons, Stars, Badge, Button, StatusPill
   home/       # FeatureCard, SearchBar, TestimonialCard, DestinationCard
   detail/     # Gallery, SeasonalCalendar, CampPitchList, BookingSidebar
   booking/    # FormCard, Field, StepHeader

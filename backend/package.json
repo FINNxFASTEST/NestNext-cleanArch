@@ -1,7 +1,7 @@
 {
-  "name": "kangtent-backend",
+  "name": "clean-architecture-nest-next-backend",
   "version": "0.1.0",
-  "description": "Kangtent campsite booking platform API (NestJS + MongoDB)",
+  "description": "CleanArchitectureNestNext boilerplate API (NestJS + MongoDB)",
   "private": true,
   "license": "MIT",
   "scripts": {
