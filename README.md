@@ -8,6 +8,37 @@ A full-stack developer boilerplate with clean architecture — clone it, extend 
 
 ---
 
+## Using this as a starting point for your own project
+
+### Option A — GitHub Template (recommended)
+
+Click **"Use this template"** on GitHub. This creates a fresh repo under your account with no connection to this one.
+
+### Option B — Clone then detach
+
+```bash
+git clone https://github.com/FINNxFASTEST/boilerplate my-project
+cd my-project
+
+# Remove the connection to this repo
+git remote remove origin
+
+# Point to your own repo
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+git push -u origin main
+```
+
+### Option C — degit (no git history at all)
+
+```bash
+npx degit FINNxFASTEST/boilerplate my-project
+cd my-project
+git init
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+```
+
+---
+
 ## Prerequisites
 
 | Tool | Version |
