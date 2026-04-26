@@ -4,9 +4,7 @@ A full-stack developer boilerplate with clean architecture — clone it, extend 
 
 - **Backend** — NestJS 11, MongoDB + Mongoose, JWT auth (access + refresh tokens), clean architecture
 - **Frontend** — Next.js 15 App Router, TypeScript, Tailwind CSS, shadcn/ui
-- **Infra** — Docker Compose for MongoDB + Redis (dev infrastructure only)
-
-> **Docker note:** `docker compose up --build` runs the app in **production mode** (compiled, no hot-reload). For development, use the local setup below.
+- **Infra** — Docker Compose for MongoDB + Redis (dev) and full-stack (prod)
 
 ---
 
@@ -15,22 +13,19 @@ A full-stack developer boilerplate with clean architecture — clone it, extend 
 | Tool | Version |
 |---|---|
 | Node.js | ≥ 20 |
-| MongoDB | 7 (via Docker or local) |
-| Redis | 7 (optional — can be disabled) |
+| Docker | any recent version |
 
 ---
 
-## Setup
+## Local development
 
 ### 1. Start infrastructure
 
-Spin up only MongoDB and Redis via Docker:
-
 ```bash
-docker compose up mongo redis
+docker compose up
 ```
 
-Or run MongoDB/Redis locally if you prefer.
+Starts MongoDB on `localhost:27017` and Redis on `localhost:6379`.
 
 ### 2. Backend
 
@@ -41,14 +36,14 @@ npm install
 npm run start:dev    # watch mode — port 3001
 ```
 
-Minimum `.env` values to set:
+Key `.env` values:
 
 ```env
 NODE_ENV=development
 DATABASE_URL=mongodb://localhost:27017/kangtent
 AUTH_JWT_SECRET=dev-secret-change-me
 AUTH_REFRESH_SECRET=dev-refresh-secret-change-me
-REDIS_ENABLED=false
+REDIS_ENABLED=false   # set true if you want Redis sessions
 ```
 
 ### 3. Frontend
@@ -86,6 +81,26 @@ npm run seed:run:document
 
 ---
 
+## Production (Docker)
+
+```bash
+docker compose -f docker-compose.prod.yml up --build
+```
+
+> Change `AUTH_JWT_SECRET` and `AUTH_REFRESH_SECRET` in `docker-compose.prod.yml` before deploying.
+
+**Seed accounts** (first run only):
+
+```bash
+docker compose -f docker-compose.prod.yml exec backend node \
+  -e "require('child_process').execSync('npm run seed:run:document', {stdio:'inherit'})"
+```
+
+**Stop:** `docker compose -f docker-compose.prod.yml down`
+**Wipe data:** `docker compose -f docker-compose.prod.yml down -v`
+
+---
+
 ## Adding a feature module
 
 ### Scaffold
@@ -98,11 +113,11 @@ npm run generate:resource:document -- --name YourResource
 Generates the full structure under `src/your-resource/`:
 
 ```
-domain/your-resource.ts              # Pure TS domain class
-application/use-cases/               # One class per operation
+domain/your-resource.ts
+application/use-cases/
 presentation/your-resource.controller.ts
 presentation/dto/
-infrastructure/persistence/          # Schema, mapper, repository
+infrastructure/persistence/
 your-resource.module.ts
 ```
 
@@ -145,9 +160,9 @@ npm run add:property:to-document
 │   └── src/
 │       ├── app/           # Pages: home, login, register
 │       └── components/    # common/ + ui/ (shadcn)
-├── docker-compose.yml
-├── ARCHITECTURE.md        # Clean architecture deep-dive + worked example
-└── CLAUDE.md              # AI assistant guidance
+├── docker-compose.yml       # Dev — infra only (MongoDB + Redis)
+├── docker-compose.prod.yml  # Prod — full stack
+└── ARCHITECTURE.md          # Clean architecture deep-dive
 ```
 
 ---
@@ -198,7 +213,7 @@ npm run typecheck
 |---|---|
 | Backend won't start — `Cannot find module` | Run `npm install` in `backend/` |
 | Frontend shows network error | Check `NEXT_PUBLIC_API_URL` in `frontend/.env.local` |
-| MongoDB connection refused | Run `docker compose up mongo` |
+| MongoDB connection refused | Run `docker compose up` |
 | JWT errors after restart | `AUTH_JWT_SECRET` must stay the same between restarts |
 | Port already in use | Change `APP_PORT` in `backend/.env` |
 | Redis errors | Set `REDIS_ENABLED=false` to fall back to MongoDB sessions |
