@@ -37,7 +37,7 @@ services:
     environment:
       NODE_ENV: production
       APP_PORT: 3001
-      APP_NAME: "CleanArchitectureNestNext API"
+      APP_NAME: "NestNext-cleanArch API"
       API_PREFIX: api
       APP_FALLBACK_LANGUAGE: en
       APP_HEADER_LANGUAGE: x-custom-lang
