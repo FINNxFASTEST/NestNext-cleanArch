@@ -2,7 +2,7 @@ const RAW_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const BASE = RAW_BASE.replace(/\/$/, '');
 const API_PREFIX = '/api/v1';
 
-const TOKEN_KEY = 'kangtent_token';
+const TOKEN_KEY = 'app_token';
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null;

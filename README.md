@@ -40,7 +40,7 @@ Key `.env` values:
 
 ```env
 NODE_ENV=development
-DATABASE_URL=mongodb://localhost:27017/kangtent
+DATABASE_URL=mongodb://localhost:27017/your_app_db
 AUTH_JWT_SECRET=dev-secret-change-me
 AUTH_REFRESH_SECRET=dev-refresh-secret-change-me
 REDIS_ENABLED=false   # set true if you want Redis sessions

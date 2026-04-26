@@ -25,7 +25,7 @@ docker compose exec backend node -e \
 | Frontend | http://localhost:3000 |
 | Backend  | http://localhost:3001 |
 | Swagger  | http://localhost:3001/docs |
-| MongoDB  | mongodb://localhost:27017/kangtent |
+| MongoDB  | mongodb://localhost:27017/your_app_db |
 | Redis    | redis://localhost:6379 |
 
 Stop: `docker compose down`. Wipe data too: `docker compose down -v`.
@@ -109,7 +109,7 @@ npm run add:property:to-document             # Add a field interactively
 ```
 NODE_ENV=development
 APP_PORT=3001
-DATABASE_URL=mongodb://localhost:27017/kangtent
+DATABASE_URL=mongodb://localhost:27017/your_app_db
 AUTH_JWT_SECRET=change-me
 AUTH_REFRESH_SECRET=change-me-too
 AUTH_JWT_TOKEN_EXPIRES_IN=15m
