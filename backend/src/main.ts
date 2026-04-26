@@ -35,7 +35,7 @@ async function bootstrap() {
   );
 
   const options = new DocumentBuilder()
-    .setTitle('CleanArchitectureNestNext API')
+    .setTitle('NestNext-cleanArch API')
     .setDescription('Campsite booking platform API')
     .setVersion('1.0')
     .addBearerAuth()

@@ -1,7 +1,7 @@
 {
-  "name": "clean-architecture-nest-next-backend",
+  "name": "nestnext-cleanarch-backend",
   "version": "0.1.0",
-  "description": "CleanArchitectureNestNext boilerplate API (NestJS + MongoDB)",
+  "description": "NestNext-cleanArch boilerplate API (NestJS + MongoDB)",
   "private": true,
   "license": "MIT",
   "scripts": {

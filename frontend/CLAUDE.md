@@ -15,7 +15,7 @@ No test suite is configured yet.
 
 ## Architecture
 
-**CleanArchitectureNestNext** is a boilerplate app built with Next.js 15 App Router, TypeScript, and Tailwind CSS.
+**NestNext-cleanArch** is a boilerplate app built with Next.js 15 App Router, TypeScript, and Tailwind CSS.
 
 ### Pages (App Router)
 
