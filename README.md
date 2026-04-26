@@ -22,7 +22,7 @@ A full-stack developer boilerplate with clean architecture — clone it, extend 
 ### 1. Start infrastructure
 
 ```bash
-docker compose up
+docker compose up -d
 ```
 
 Starts MongoDB on `localhost:27017` and Redis on `localhost:6379`.
