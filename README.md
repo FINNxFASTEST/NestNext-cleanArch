@@ -177,23 +177,234 @@ npm run add:property:to-document
 ```
 .
 ├── backend/
-│   ├── src/
-│   │   ├── auth/          # JWT login/register/refresh/logout
-│   │   ├── users/         # User accounts + roles
-│   │   ├── session/       # Refresh-token sessions (MongoDB or Redis)
-│   │   ├── roles/         # RoleEnum + RolesGuard + @Roles()
-│   │   ├── redis/         # Optional Redis client
-│   │   ├── database/      # Mongoose config + seeds
-│   │   ├── config/        # App/auth/DB config schemas
-│   │   └── utils/         # Shared helpers
-│   └── .env.example
 ├── frontend/
-│   └── src/
-│       ├── app/           # Pages: home, login, register
-│       └── components/    # common/ + ui/ (shadcn)
-├── docker-compose.yml       # Dev — infra only (MongoDB + Redis)
-├── docker-compose.prod.yml  # Prod — full stack
-└── ARCHITECTURE.md          # Clean architecture deep-dive
+├── docker-compose.yml        # Dev — infra only (MongoDB + Redis)
+├── docker-compose.prod.yml   # Prod — full stack
+└── ARCHITECTURE.md           # Clean architecture deep-dive
+```
+
+### Backend — `backend/src/`
+
+```
+backend/src/
+├── main.ts                        # Bootstrap (versioning, pipes, swagger, cors)
+├── app.module.ts                  # Root module
+│
+├── auth/                          # JWT register / login / refresh / logout
+│   ├── auth.controller.ts
+│   ├── auth.module.ts
+│   ├── auth-providers.enum.ts
+│   ├── application/
+│   │   ├── helpers/
+│   │   │   └── generate-tokens.helper.ts
+│   │   └── use-cases/
+│   │       ├── get-me.use-case.ts
+│   │       ├── login.use-case.ts
+│   │       ├── logout.use-case.ts
+│   │       ├── refresh-token.use-case.ts
+│   │       ├── register.use-case.ts
+│   │       ├── soft-delete-user.use-case.ts
+│   │       └── update-me.use-case.ts
+│   ├── config/
+│   │   ├── auth.config.ts
+│   │   └── auth-config.type.ts
+│   ├── dto/
+│   │   ├── auth-email-login.dto.ts
+│   │   ├── auth-register-login.dto.ts
+│   │   ├── auth-update.dto.ts
+│   │   ├── login-response.dto.ts
+│   │   └── refresh-response.dto.ts
+│   ├── guards/
+│   │   └── optional-jwt.guard.ts
+│   └── strategies/
+│       ├── anonymous.strategy.ts
+│       ├── jwt.strategy.ts
+│       ├── jwt-refresh.strategy.ts
+│       └── types/
+│           ├── jwt-payload.type.ts
+│           └── jwt-refresh-payload.type.ts
+│
+├── users/                         # User domain module
+│   ├── users.module.ts
+│   ├── domain/
+│   │   └── user.ts                # Pure domain class
+│   ├── application/
+│   │   └── use-cases/
+│   │       ├── create-user.use-case.ts
+│   │       ├── find-user-by-email.use-case.ts
+│   │       ├── find-user-by-id.use-case.ts
+│   │       ├── find-users-by-ids.use-case.ts
+│   │       ├── find-users.use-case.ts
+│   │       ├── update-user.use-case.ts
+│   │       └── remove-user.use-case.ts
+│   ├── presentation/
+│   │   ├── users.controller.ts
+│   │   └── dto/
+│   │       ├── create-user.dto.ts
+│   │       ├── update-user.dto.ts
+│   │       ├── query-user.dto.ts
+│   │       └── user.dto.ts
+│   └── infrastructure/
+│       ├── users-persistence.module.ts
+│       └── persistence/
+│           ├── user.repository.ts      # Abstract port
+│           ├── user.mapper.ts
+│           ├── user.schema.ts
+│           ├── user.document-repository.ts
+│           └── document/
+│               ├── document-persistence.module.ts
+│               ├── entities/user.schema.ts
+│               ├── mappers/user.mapper.ts
+│               └── repositories/user.repository.ts
+│
+├── session/                       # Refresh-token sessions (MongoDB or Redis)
+│   ├── session.module.ts
+│   ├── domain/
+│   │   └── session.ts
+│   ├── application/
+│   │   └── use-cases/
+│   │       ├── create-session.use-case.ts
+│   │       ├── find-session-by-id.use-case.ts
+│   │       ├── update-session.use-case.ts
+│   │       ├── update-session-by-hash.use-case.ts
+│   │       ├── delete-session-by-id.use-case.ts
+│   │       ├── delete-sessions-by-user-id.use-case.ts
+│   │       └── delete-sessions-by-user-id-excluding.use-case.ts
+│   └── infrastructure/
+│       ├── session-persistence.module.ts
+│       ├── cache/
+│       │   └── session-cache.service.ts   # Redis path
+│       └── persistence/
+│           ├── session.repository.ts      # Abstract port
+│           ├── session.mapper.ts
+│           ├── session.schema.ts
+│           ├── session.document-repository.ts
+│           └── document/
+│               ├── document-persistence.module.ts
+│               ├── entities/session.schema.ts
+│               ├── mappers/session.mapper.ts
+│               └── repositories/session.repository.ts
+│
+├── roles/                         # RoleEnum (admin=1, host=2, customer=3)
+│   ├── roles.enum.ts
+│   ├── roles.guard.ts
+│   ├── roles.decorator.ts
+│   ├── domain/role.ts
+│   ├── dto/role.dto.ts
+│   └── infrastructure/persistence/
+│       ├── role.schema.ts
+│       └── document/entities/role.schema.ts
+│
+├── statuses/                      # Account status enum (active / inactive)
+│   ├── statuses.enum.ts
+│   ├── domain/status.ts
+│   ├── dto/status.dto.ts
+│   └── infrastructure/persistence/
+│       ├── status.schema.ts
+│       └── document/entities/status.schema.ts
+│
+├── database/                      # Mongoose config + seeds
+│   ├── mongoose-config.service.ts
+│   ├── config/
+│   │   ├── database.config.ts
+│   │   └── database-config.type.ts
+│   └── seeds/document/
+│       ├── run-seed.ts
+│       ├── seed.module.ts
+│       └── user/
+│           ├── user-seed.module.ts
+│           └── user-seed.service.ts
+│
+├── redis/                         # Optional Redis client
+│   └── config/
+│       ├── redis.config.ts
+│       └── redis-config.type.ts
+│
+├── config/                        # App-level config schemas
+│   ├── app.config.ts
+│   ├── app-config.type.ts
+│   └── config.type.ts
+│
+└── utils/                         # Shared helpers
+    ├── validation-options.ts       # Global ValidationPipe (HTTP 422)
+    ├── serializer.interceptor.ts   # ResolvePromisesInterceptor
+    ├── infinity-pagination.ts      # { data, hasNextPage }
+    ├── document-entity-helper.ts   # _id → id transform
+    ├── deep-resolver.ts
+    ├── validate-config.ts
+    ├── dto/
+    │   └── infinity-pagination-response.dto.ts
+    ├── transformers/
+    │   └── lower-case.transformer.ts
+    └── types/
+        ├── deep-partial.type.ts
+        ├── maybe.type.ts
+        ├── nullable.type.ts
+        ├── or-never.type.ts
+        └── pagination-options.ts
+```
+
+### Frontend — `frontend/src/`
+
+```
+frontend/src/
+├── middleware.ts                  # Next.js edge middleware (auth guards)
+│
+├── app/                           # Next.js App Router pages
+│   ├── layout.tsx                 # Root layout (fonts, providers)
+│   ├── globals.css                # CSS variables + Tailwind base
+│   ├── page.tsx                   # Landing page  /
+│   ├── login/
+│   │   └── page.tsx               # Login page  /login
+│   └── register/
+│       └── page.tsx               # Register page  /register
+│
+├── components/
+│   ├── common/                    # App-level reusable components
+│   │   ├── Nav.tsx
+│   │   ├── Footer.tsx
+│   │   ├── Button.tsx
+│   │   ├── Badge.tsx
+│   │   ├── StatusPill.tsx
+│   │   └── Icons.tsx
+│   └── ui/                        # shadcn/ui primitives (edit sparingly)
+│       ├── avatar.tsx
+│       ├── badge.tsx
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── checkbox.tsx
+│       ├── dialog.tsx
+│       ├── dropdown-menu.tsx
+│       ├── form.tsx
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── popover.tsx
+│       ├── scroll-area.tsx
+│       ├── select.tsx
+│       ├── separator.tsx
+│       ├── sheet.tsx
+│       ├── skeleton.tsx
+│       ├── switch.tsx
+│       ├── table.tsx
+│       ├── tabs.tsx
+│       ├── textarea.tsx
+│       └── tooltip.tsx
+│
+├── contexts/
+│   └── AuthContext.tsx             # Auth state (user, token, login/logout)
+│
+├── services/                      # API layer — add new service files here
+│   ├── index.ts
+│   ├── auth.service.ts            # register / login / me / logout
+│   └── http-client.ts             # Axios wrapper (attaches Bearer token)
+│
+├── lib/
+│   ├── api.ts                     # Base URL config (NEXT_PUBLIC_API_URL)
+│   ├── utils.ts                   # cn() and other helpers
+│   └── icon-registry.ts
+│
+└── types/
+    └── index.ts                   # Shared TypeScript types
 ```
 
 ---
