@@ -6,17 +6,17 @@ import { ConfigService } from '@nestjs/config';
 import { AllConfigType } from '../../../config/config.type';
 import { JwtRefreshPayloadType } from '../../strategies/types/jwt-refresh-payload.type';
 import { RefreshResponseDto } from '../../dto/refresh-response.dto';
-import { FindUserByIdUseCase } from '../../../users/application/use-cases/find-user-by-id.use-case';
-import { UpdateSessionByHashUseCase } from '../../../session/application/use-cases/update-session-by-hash.use-case';
+import { GetUserByIdQuery } from '../../../users/application/queries/get-user-by-id.query';
+import { UpdateSessionByHashCommand } from '../../../session/application/commands/update-session-by-hash.command';
 import { generateTokens } from '../helpers/generate-tokens.helper';
 
 @Injectable()
-export class RefreshTokenUseCase {
+export class RefreshTokenCommand {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService<AllConfigType>,
-    private readonly findUserById: FindUserByIdUseCase,
-    private readonly updateSessionByHash: UpdateSessionByHashUseCase,
+    private readonly findUserById: GetUserByIdQuery,
+    private readonly updateSessionByHash: UpdateSessionByHashCommand,
   ) {}
 
   async execute(

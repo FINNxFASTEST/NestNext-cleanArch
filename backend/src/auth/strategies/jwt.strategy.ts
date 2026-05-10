@@ -5,13 +5,13 @@ import { ConfigService } from '@nestjs/config';
 import { OrNeverType } from '../../utils/types/or-never.type';
 import { JwtPayloadType } from './types/jwt-payload.type';
 import { AllConfigType } from '../../config/config.type';
-import { FindSessionByIdUseCase } from '../../session/application/use-cases/find-session-by-id.use-case';
+import { GetSessionByIdQuery } from '../../session/application/queries/get-session-by-id.query';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     constructor(
         configService: ConfigService<AllConfigType>,
-        private readonly findSessionById: FindSessionByIdUseCase,
+        private readonly findSessionById: GetSessionByIdQuery,
     ) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

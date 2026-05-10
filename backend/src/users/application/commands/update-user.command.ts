@@ -3,22 +3,24 @@ import {
   Injectable,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { UserRepository } from '../../infrastructure/persistence/user.repository';
+import { UserRepository } from '../ports/user.repository';
 import { User } from '../../domain/user';
 import { UpdateUserDto } from '../../presentation/dto/update-user.dto';
 import { Role } from '../../../roles/domain/role';
 import { Status } from '../../../statuses/domain/status';
 import { RoleEnum } from '../../../roles/roles.enum';
 import { StatusEnum } from '../../../statuses/statuses.enum';
+import { RepositoryOptions } from '../../../utils/types/repository-options.type';
 import bcrypt from 'bcryptjs';
 
 @Injectable()
-export class UpdateUserUseCase {
+export class UpdateUserCommand {
   constructor(private readonly usersRepository: UserRepository) {}
 
   async execute(
     id: User['id'],
     updateUserDto: UpdateUserDto,
+    options?: RepositoryOptions,
   ): Promise<User | null> {
     let password: string | undefined = undefined;
     if (updateUserDto.password) {
@@ -73,14 +75,18 @@ export class UpdateUserUseCase {
       status = { id: updateUserDto.status.id };
     }
 
-    return this.usersRepository.update(id, {
-      firstName: updateUserDto.firstName,
-      lastName: updateUserDto.lastName,
-      email,
-      password,
-      role,
-      status,
-      provider: updateUserDto.provider,
-    });
+    return this.usersRepository.update(
+      id,
+      {
+        firstName: updateUserDto.firstName,
+        lastName: updateUserDto.lastName,
+        email,
+        password,
+        role,
+        status,
+        provider: updateUserDto.provider,
+      },
+      options,
+    );
   }
 }

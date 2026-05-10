@@ -3,7 +3,7 @@ import {
   Injectable,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { UserRepository } from '../../infrastructure/persistence/user.repository';
+import { UserRepository } from '../ports/user.repository';
 import { User } from '../../domain/user';
 import { CreateUserDto } from '../../presentation/dto/create-user.dto';
 import { Role } from '../../../roles/domain/role';
@@ -11,13 +11,14 @@ import { Status } from '../../../statuses/domain/status';
 import { RoleEnum } from '../../../roles/roles.enum';
 import { StatusEnum } from '../../../statuses/statuses.enum';
 import { AuthProvidersEnum } from '../../../auth/auth-providers.enum';
+import { RepositoryOptions } from '../../../utils/types/repository-options.type';
 import bcrypt from 'bcryptjs';
 
 @Injectable()
-export class CreateUserUseCase {
+export class CreateUserCommand {
   constructor(private readonly usersRepository: UserRepository) {}
 
-  async execute(createUserDto: CreateUserDto): Promise<User> {
+  async execute(createUserDto: CreateUserDto, options?: RepositoryOptions): Promise<User> {
     let password: string | undefined = undefined;
     if (createUserDto.password) {
       const salt = await bcrypt.genSalt();
@@ -66,14 +67,17 @@ export class CreateUserUseCase {
       status = { id: createUserDto.status.id };
     }
 
-    return this.usersRepository.create({
-      firstName: createUserDto.firstName,
-      lastName: createUserDto.lastName,
-      email,
-      password,
-      role,
-      status,
-      provider: createUserDto.provider ?? AuthProvidersEnum.email,
-    });
+    return this.usersRepository.create(
+      {
+        firstName: createUserDto.firstName,
+        lastName: createUserDto.lastName,
+        email,
+        password,
+        role,
+        status,
+        provider: createUserDto.provider ?? AuthProvidersEnum.email,
+      },
+      options,
+    );
   }
 }

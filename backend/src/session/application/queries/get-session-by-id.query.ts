@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { SessionRepository } from '../../infrastructure/persistence/session.repository';
+import { SessionRepository } from '../ports/session.repository';
 import { Session } from '../../domain/session';
 import { NullableType } from '../../../utils/types/nullable.type';
 
 @Injectable()
-export class FindSessionByIdUseCase {
+export class GetSessionByIdQuery {
   constructor(private readonly sessionRepository: SessionRepository) {}
 
   execute(id: Session['id']): Promise<NullableType<Session>> {

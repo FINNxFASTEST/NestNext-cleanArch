@@ -145,7 +145,9 @@ Generates the full structure under `src/your-resource/`:
 
 ```
 domain/your-resource.ts
-application/use-cases/
+application/ports/your-resource.repository.ts
+application/commands/
+application/queries/
 presentation/your-resource.controller.ts
 presentation/dto/
 infrastructure/persistence/
@@ -158,7 +160,7 @@ After scaffolding:
 2. Add `@Prop()` fields to the schema class
 3. Map fields in `mapper.ts` (`toDomain` / `toPersistence`)
 4. Fill in DTOs (`create-*.dto.ts`, `update-*.dto.ts`)
-5. Implement use-case bodies
+5. Implement command/query bodies
 6. Register `YourResourceModule` in `src/app.module.ts`
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the full walkthrough.
@@ -192,9 +194,19 @@ src/<resource>/
   domain/
     <resource>.ts                           # Pure data class — no NestJS/Mongoose deps
 
+  application/
+    ports/
+      <resource>.repository.ts              # Port: abstract class, method signatures only
+    commands/
+      create-<resource>.command.ts          # One file per write operation
+      update-<resource>.command.ts
+      remove-<resource>.command.ts
+    queries/
+      get-<resource>-by-id.query.ts         # One file per read operation
+      get-<resource>s.query.ts
+
   infrastructure/
     persistence/
-      <resource>.repository.ts              # Port: abstract class, method signatures only
       document/
         entities/
           <resource>.schema.ts              # Mongoose schema class with @Prop() fields
@@ -205,24 +217,17 @@ src/<resource>/
         document-persistence.module.ts      # Wires port → adapter, exports the token
     <resource>s-persistence.module.ts       # Re-exports the document persistence module
 
-  application/
-    use-cases/
-      create-<resource>.use-case.ts         # One file per action — injects the port, not the adapter
-      find-<resource>-by-id.use-case.ts
-      update-<resource>.use-case.ts
-      remove-<resource>.use-case.ts
-
   presentation/
     dto/
       create-<resource>.dto.ts              # Input shape + class-validator decorators
       update-<resource>.dto.ts
       <resource>.dto.ts                     # Response shape + @ApiProperty
-    <resource>s.controller.ts              # Routing only — delegates straight to use-cases
+    <resource>s.controller.ts              # Routing only — delegates to commands/queries
 
-  <resource>s.module.ts                    # Imports persistence module, provides use-cases
+  <resource>s.module.ts                    # Imports persistence module, provides commands/queries
 ```
 
-Data flow: `Controller → UseCase → Repository port → Document adapter → MongoDB`
+Data flow: `Controller → Command/Query → Repository port → Document adapter → MongoDB`
 
 Built-in modules that follow this pattern:
 

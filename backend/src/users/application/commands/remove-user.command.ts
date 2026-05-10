@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../../infrastructure/persistence/user.repository';
+import { UserRepository } from '../ports/user.repository';
 import { User } from '../../domain/user';
 
 @Injectable()
-export class RemoveUserUseCase {
+export class RemoveUserCommand {
   constructor(private readonly usersRepository: UserRepository) {}
 
   execute(id: User['id']): Promise<void> {

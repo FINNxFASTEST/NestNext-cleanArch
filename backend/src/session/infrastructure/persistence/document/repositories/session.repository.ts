@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NullableType } from '../../../../../utils/types/nullable.type';
-import { SessionRepository } from '../../session.repository';
+import { SessionRepository } from '../../../../application/ports/session.repository';
+import { RepositoryOptions } from '../../../../../utils/types/repository-options.type';
 import { Session } from '../../../../domain/session';
 import { SessionSchemaClass } from '../entities/session.schema';
 import { Model } from 'mongoose';
@@ -20,16 +21,17 @@ export class SessionDocumentRepository implements SessionRepository {
     return sessionObject ? SessionMapper.toDomain(sessionObject) : null;
   }
 
-  async create(data: Session): Promise<Session> {
+  async create(data: Session, options?: RepositoryOptions): Promise<Session> {
     const persistenceModel = SessionMapper.toPersistence(data);
     const createdSession = new this.sessionModel(persistenceModel);
-    const sessionObject = await createdSession.save();
+    const sessionObject = await createdSession.save({ session: options?.session });
     return SessionMapper.toDomain(sessionObject);
   }
 
   async update(
     id: Session['id'],
     payload: Partial<Session>,
+    options?: RepositoryOptions,
   ): Promise<Session | null> {
     const clonedPayload = { ...payload };
     delete clonedPayload.id;
@@ -50,7 +52,7 @@ export class SessionDocumentRepository implements SessionRepository {
         ...SessionMapper.toDomain(session),
         ...clonedPayload,
       }),
-      { new: true },
+      { new: true, session: options?.session },
     );
 
     return sessionObject ? SessionMapper.toDomain(sessionObject) : null;
@@ -61,34 +63,44 @@ export class SessionDocumentRepository implements SessionRepository {
     payload: Partial<
       Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>
     >,
+    options?: RepositoryOptions,
   ): Promise<Session | null> {
     const sessionObject = await this.sessionModel.findOneAndUpdate(
       { _id: conditions.id.toString(), hash: conditions.hash },
       { hash: payload.hash },
-      { new: true },
+      { new: true, session: options?.session },
     );
 
     return sessionObject ? SessionMapper.toDomain(sessionObject) : null;
   }
 
-  async deleteById(id: Session['id']): Promise<void> {
-    await this.sessionModel.deleteOne({ _id: id.toString() });
+  async deleteById(id: Session['id'], options?: RepositoryOptions): Promise<void> {
+    await this.sessionModel.deleteOne({ _id: id.toString() }, { session: options?.session });
   }
 
-  async deleteByUserId({ userId }: { userId: User['id'] }): Promise<void> {
-    await this.sessionModel.deleteMany({ user: userId.toString() });
+  async deleteByUserId(
+    { userId }: { userId: User['id'] },
+    options?: RepositoryOptions,
+  ): Promise<void> {
+    await this.sessionModel.deleteMany({ user: userId.toString() }, { session: options?.session });
   }
 
-  async deleteByUserIdWithExclude({
-    userId,
-    excludeSessionId,
-  }: {
-    userId: User['id'];
-    excludeSessionId: Session['id'];
-  }): Promise<void> {
-    await this.sessionModel.deleteMany({
-      user: userId.toString(),
-      _id: { $not: { $eq: excludeSessionId.toString() } },
-    });
+  async deleteByUserIdWithExclude(
+    {
+      userId,
+      excludeSessionId,
+    }: {
+      userId: User['id'];
+      excludeSessionId: Session['id'];
+    },
+    options?: RepositoryOptions,
+  ): Promise<void> {
+    await this.sessionModel.deleteMany(
+      {
+        user: userId.toString(),
+        _id: { $not: { $eq: excludeSessionId.toString() } },
+      },
+      { session: options?.session },
+    );
   }
 }

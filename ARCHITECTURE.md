@@ -1,6 +1,6 @@
 # Clean Architecture Guide
 
-This boilerplate uses **Clean Architecture with explicit use-case classes**.
+This boilerplate uses **Clean Architecture with CQRS-style commands and queries**.
 This document explains why, and gives a step-by-step recipe for adding any new feature.
 
 ---
@@ -29,7 +29,7 @@ All five booking operations also live in one 200-line file — changing "cancel"
 ┌─────────────────────┐
 │    PRESENTATION     │  HTTP — controllers, DTOs, guards
 ├─────────────────────┤
-│    APPLICATION      │  Business logic — one use-case class per operation
+│    APPLICATION      │  Business logic — commands (writes) + queries (reads) + repository ports
 ├─────────────────────┤
 │      DOMAIN         │  Pure data — plain TypeScript classes, no dependencies
 ├─────────────────────┤
@@ -63,11 +63,10 @@ If you swapped MongoDB for Postgres tomorrow, this file would not change.
 
 ### 2. Infrastructure — `infrastructure/persistence/`
 
-Four files per domain:
+Three files per domain:
 
 | File | Role |
 |---|---|
-| `<resource>.repository.ts` | **Port** — abstract class listing what storage must be able to do (no implementation) |
 | `<resource>.schema.ts` | Mongoose schema (`@Prop` decorators, indexes, collection name) |
 | `<resource>.mapper.ts` | Translates schema document ↔ domain class (static methods only) |
 | `<resource>.document-repository.ts` | **Adapter** — implements the port using real Mongoose queries |
@@ -87,13 +86,31 @@ export class PostsPersistenceModule {}
 
 ---
 
-### 3. Application — `application/use-cases/`
+### 3. Application — `application/`
 
-One `@Injectable()` class per operation. Each class has one method: `execute()`.
+Three sub-folders:
+
+#### `application/ports/<resource>.repository.ts` — the repository port
+
+An abstract class listing what storage must provide. Lives in the **application** layer because it is the contract the application defines for storage — infrastructure fulfills it.
+
+```ts
+export abstract class PostRepository {
+  abstract create(data: Omit<Post, 'id' | 'createdAt' | 'updatedAt'>, options?: RepositoryOptions): Promise<Post>;
+  abstract findById(id: string): Promise<Post | null>;
+  abstract remove(id: string, options?: RepositoryOptions): Promise<void>;
+}
+```
+
+`RepositoryOptions` (`utils/types/repository-options.type.ts`) is `{ session?: ClientSession }`. Passing it through enables MongoDB transactions without the application layer depending on Mongoose.
+
+#### `application/commands/*.command.ts` — write operations
+
+One `@Injectable()` class per **mutating** operation (create, update, delete). Each has one method: `execute()`.
 
 ```ts
 @Injectable()
-export class CreatePostUseCase {
+export class CreatePostCommand {
   constructor(private readonly postRepository: PostRepository) {}
 
   async execute(dto: CreatePostDto, authorId: string): Promise<Post> {
@@ -102,8 +119,24 @@ export class CreatePostUseCase {
 }
 ```
 
-- Injects **repository ports** (abstract classes), never another module's use-case or service.
-- If it needs data from another domain (e.g. does this user exist?), it imports *that domain's PersistenceModule* and injects *that domain's repository port* directly.
+#### `application/queries/*.query.ts` — read operations
+
+One `@Injectable()` class per **read** operation (find by id, list, search).
+
+```ts
+@Injectable()
+export class GetPostByIdQuery {
+  constructor(private readonly postRepository: PostRepository) {}
+
+  execute(id: string): Promise<Post | null> {
+    return this.postRepository.findById(id);
+  }
+}
+```
+
+**Rules for both:**
+- Inject **repository ports** (abstract classes), never another module's command/query or service.
+- If it needs data from another domain, inject *that domain's repository port* — never the full feature module.
 - No HTTP knowledge — no `Request`, `Response`, or route decorators.
 
 Why one-file-per-operation? When a bug is in "create post," you open exactly one file.
@@ -122,11 +155,19 @@ Handles HTTP only. Two things:
 ```ts
 @Controller({ path: 'posts', version: '1' })
 export class PostsController {
-  constructor(private readonly createPost: CreatePostUseCase) {}
+  constructor(
+    private readonly createPost: CreatePostCommand,
+    private readonly getPostById: GetPostByIdQuery,
+  ) {}
 
   @Post()
   create(@Body() dto: CreatePostDto, @Req() req) {
     return this.createPost.execute(dto, req.user.id);
+  }
+
+  @Get(':id')
+  findById(@Param('id') id: string) {
+    return this.getPostById.execute(id);
   }
 }
 ```
@@ -139,11 +180,11 @@ export class PostsController {
 @Module({
   imports: [
     PostsPersistenceModule,   // provides PostRepository token
-    UsersPersistenceModule,   // only if a use-case needs UserRepository
+    UsersPersistenceModule,   // only if a command/query needs UserRepository
     // never import UsersModule (the full feature module)
   ],
   controllers: [PostsController],
-  providers: [CreatePostUseCase, FindPostByIdUseCase, RemovePostUseCase],
+  providers: [CreatePostCommand, GetPostByIdQuery, RemovePostCommand],
 })
 export class PostsModule {}
 ```
@@ -155,10 +196,10 @@ A persistence module is just a repository token. No controllers, no business log
 
 ## The golden rule
 
-> **Use-cases inject repository ports. Use-cases never call another module's use-cases or services.**
+> **Commands and queries inject repository ports. They never call another module's commands, queries, or services.**
 
-If `CreatePostUseCase` needs to verify the author exists, it injects `UserRepository` directly.
-It does **not** import `UsersModule` or call `FindUserByIdUseCase`.
+If `CreatePostCommand` needs to verify the author exists, it injects `UserRepository` directly.
+It does **not** import `UsersModule` or call `GetUserByIdQuery`.
 
 This one rule is what makes the architecture work.
 
@@ -171,20 +212,23 @@ src/<resource>/
   domain/
     <resource>.ts                          # Pure data class
 
+  application/
+    ports/
+      <resource>.repository.ts             # Port: abstract class, method signatures only
+    commands/
+      create-<resource>.command.ts         # One file per write operation
+      update-<resource>.command.ts
+      remove-<resource>.command.ts
+    queries/
+      get-<resource>-by-id.query.ts        # One file per read operation
+      get-<resource>s.query.ts
+
   infrastructure/
     persistence/
-      <resource>.repository.ts             # Port: abstract class, method signatures only
       <resource>.schema.ts                 # Mongoose schema
       <resource>.mapper.ts                 # toDomain / toPersistence (static only)
       <resource>.document-repository.ts   # Adapter: implements port with Mongoose
     <resource>s-persistence.module.ts     # Wires port → adapter, exports token
-
-  application/
-    use-cases/
-      create-<resource>.use-case.ts        # One file per action
-      find-<resource>-by-id.use-case.ts
-      remove-<resource>.use-case.ts
-      ...
 
   presentation/
     dto/
@@ -223,16 +267,22 @@ export class Coupon {
 
 #### Step 2 — Repository port
 
-`src/coupons/infrastructure/persistence/coupon.repository.ts`
+`src/coupons/application/ports/coupon.repository.ts`
+
+The port lives in the **application** layer — it is the contract the application defines for storage.
 
 ```ts
+import { RepositoryOptions } from '../../../utils/types/repository-options.type';
+
 export abstract class CouponRepository {
-  abstract create(data: Omit<Coupon, 'id' | 'createdAt' | 'updatedAt'>): Promise<Coupon>;
+  abstract create(data: Omit<Coupon, 'id' | 'createdAt' | 'updatedAt'>, options?: RepositoryOptions): Promise<Coupon>;
   abstract findById(id: string): Promise<Coupon | null>;
   abstract findByCode(code: string): Promise<Coupon | null>;
-  abstract remove(id: string): Promise<void>;
+  abstract remove(id: string, options?: RepositoryOptions): Promise<void>;
 }
 ```
+
+Pass `RepositoryOptions` (`{ session?: ClientSession }`) to every mutating method so callers can wrap multiple operations in a MongoDB transaction using `withTransaction()` from `utils/transaction.helper.ts`.
 
 ---
 
@@ -280,17 +330,34 @@ export class CouponsPersistenceModule {}
 
 ---
 
-#### Step 7 — Use-cases
+#### Step 7 — Commands and queries
 
-One file per action. Inject only repository ports.
+One file per operation. Inject only repository ports.
+
+**Write operations** go in `application/commands/`:
 
 ```ts
+// src/coupons/application/commands/create-coupon.command.ts
 @Injectable()
-export class CreateCouponUseCase {
+export class CreateCouponCommand {
   constructor(private readonly couponRepository: CouponRepository) {}
 
   async execute(dto: CreateCouponDto): Promise<Coupon> {
     return this.couponRepository.create(dto);
+  }
+}
+```
+
+**Read operations** go in `application/queries/`:
+
+```ts
+// src/coupons/application/queries/get-coupon-by-id.query.ts
+@Injectable()
+export class GetCouponByIdQuery {
+  constructor(private readonly couponRepository: CouponRepository) {}
+
+  execute(id: string): Promise<Coupon | null> {
+    return this.couponRepository.findById(id);
   }
 }
 ```
@@ -301,14 +368,14 @@ export class CreateCouponUseCase {
 
 **DTO** (`presentation/dto/create-coupon.dto.ts`) — `class-validator` decorators, all fields `!`.
 
-**Controller** (`presentation/coupons.controller.ts`) — guards and decorators here, one use-case call per route, no logic.
+**Controller** (`presentation/coupons.controller.ts`) — guards and decorators here, one command/query call per route, no logic.
 
 ```ts
 @Controller({ path: 'coupons', version: '1' })
 export class CouponsController {
   constructor(
-    private readonly createCoupon: CreateCouponUseCase,
-    private readonly findCouponById: FindCouponByIdUseCase,
+    private readonly createCoupon: CreateCouponCommand,
+    private readonly getCouponById: GetCouponByIdQuery,
   ) {}
 
   @Post()
@@ -318,7 +385,7 @@ export class CouponsController {
 
   @Get(':id')
   findById(@Param('id') id: string) {
-    return this.findCouponById.execute(id);
+    return this.getCouponById.execute(id);
   }
 }
 ```
@@ -329,7 +396,7 @@ export class CouponsController {
 @Module({
   imports: [CouponsPersistenceModule],
   controllers: [CouponsController],
-  providers: [CreateCouponUseCase, FindCouponByIdUseCase, RemoveCouponUseCase],
+  providers: [CreateCouponCommand, GetCouponByIdQuery, RemoveCouponCommand],
 })
 export class CouponsModule {}
 ```
@@ -340,11 +407,11 @@ export class CouponsModule {}
 
 ### Case B — New route on an existing domain
 
-You already have the domain, schema, repository, and persistence module. Only do steps 7–8.
+You already have the domain, schema, repository port, and persistence module. Only do steps 7–8.
 
-1. If you need a new query, add the method signature to the **repository port** and implement it in the **document repository**.
-2. Create the new **use-case** file.
-3. Add the use-case to **providers** in the module.
+1. If you need a new repository method, add the signature to the **port** (`application/ports/`) and implement it in the **document repository**.
+2. Create the new **command** or **query** file.
+3. Add it to **providers** in the module.
 4. Add the route to the **controller**.
 
 Do not touch the domain class, schema, mapper, or persistence module.
@@ -372,9 +439,10 @@ Need a new API route?
 ## Pre-merge checklist
 
 - [ ] Domain class has zero Mongoose / NestJS imports
-- [ ] Repository port is abstract — no implementation
-- [ ] Use-cases inject only repository ports, not services or other use-cases
-- [ ] Controller has no business logic — one use-case call per route
+- [ ] Repository port is in `application/ports/` and is abstract — no implementation
+- [ ] Mutating port methods accept `options?: RepositoryOptions` for transaction support
+- [ ] Commands and queries inject only repository ports, not services or other commands/queries
+- [ ] Controller has no business logic — one command/query call per route
 - [ ] Module imports only PersistenceModules, not full feature modules
 - [ ] New module is added to `app.module.ts`
 - [ ] `npm run build` passes with zero errors

@@ -5,12 +5,13 @@ import {
   SortUserDto,
 } from '../../presentation/dto/query-user.dto';
 import { User } from '../../domain/user';
-import { UserRepository } from './user.repository';
+import { UserRepository } from '../../application/ports/user.repository';
 import { UserSchemaClass } from './user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { QueryFilter, Model } from 'mongoose';
 import { UserMapper } from './user.mapper';
 import { IPaginationOptions } from '../../../utils/types/pagination-options';
+import { RepositoryOptions } from '../../../utils/types/repository-options.type';
 
 @Injectable()
 export class UsersDocumentRepository implements UserRepository {
@@ -19,10 +20,10 @@ export class UsersDocumentRepository implements UserRepository {
     private readonly usersModel: Model<UserSchemaClass>,
   ) {}
 
-  async create(data: User): Promise<User> {
+  async create(data: User, options?: RepositoryOptions): Promise<User> {
     const persistenceModel = UserMapper.toPersistence(data);
     const createdUser = new this.usersModel(persistenceModel);
-    const userObject = await createdUser.save();
+    const userObject = await createdUser.save({ session: options?.session });
     return UserMapper.toDomain(userObject);
   }
 
@@ -78,7 +79,11 @@ export class UsersDocumentRepository implements UserRepository {
     return userObject ? UserMapper.toDomain(userObject) : null;
   }
 
-  async update(id: User['id'], payload: Partial<User>): Promise<User | null> {
+  async update(
+    id: User['id'],
+    payload: Partial<User>,
+    options?: RepositoryOptions,
+  ): Promise<User | null> {
     const clonedPayload = { ...payload };
     delete clonedPayload.id;
 
@@ -92,13 +97,16 @@ export class UsersDocumentRepository implements UserRepository {
         ...UserMapper.toDomain(user),
         ...clonedPayload,
       }),
-      { new: true },
+      { new: true, session: options?.session },
     );
 
     return userObject ? UserMapper.toDomain(userObject) : null;
   }
 
-  async remove(id: User['id']): Promise<void> {
-    await this.usersModel.deleteOne({ _id: id.toString() });
+  async remove(id: User['id'], options?: RepositoryOptions): Promise<void> {
+    await this.usersModel.deleteOne(
+      { _id: id.toString() },
+      { session: options?.session },
+    );
   }
 }

@@ -7,13 +7,13 @@ import { AnonymousStrategy } from './strategies/anonymous.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { SessionModule } from '../session/session.module';
 import { UsersModule } from '../users/users.module';
-import { LoginUseCase } from './application/use-cases/login.use-case';
-import { RegisterUseCase } from './application/use-cases/register.use-case';
-import { GetMeUseCase } from './application/use-cases/get-me.use-case';
-import { UpdateMeUseCase } from './application/use-cases/update-me.use-case';
-import { RefreshTokenUseCase } from './application/use-cases/refresh-token.use-case';
-import { LogoutUseCase } from './application/use-cases/logout.use-case';
-import { SoftDeleteUserUseCase } from './application/use-cases/soft-delete-user.use-case';
+import { LoginCommand } from './application/commands/login.command';
+import { RegisterCommand } from './application/commands/register.command';
+import { GetMeQuery } from './application/queries/get-me.query';
+import { UpdateMeCommand } from './application/commands/update-me.command';
+import { RefreshTokenCommand } from './application/commands/refresh-token.command';
+import { LogoutCommand } from './application/commands/logout.command';
+import { SoftDeleteUserCommand } from './application/commands/soft-delete-user.command';
 
 @Module({
   imports: [UsersModule, SessionModule, PassportModule, JwtModule.register({})],
@@ -22,13 +22,13 @@ import { SoftDeleteUserUseCase } from './application/use-cases/soft-delete-user.
     JwtStrategy,
     JwtRefreshStrategy,
     AnonymousStrategy,
-    LoginUseCase,
-    RegisterUseCase,
-    GetMeUseCase,
-    UpdateMeUseCase,
-    RefreshTokenUseCase,
-    LogoutUseCase,
-    SoftDeleteUserUseCase,
+    LoginCommand,
+    RegisterCommand,
+    GetMeQuery,
+    UpdateMeCommand,
+    RefreshTokenCommand,
+    LogoutCommand,
+    SoftDeleteUserCommand,
   ],
 })
 export class AuthModule {}

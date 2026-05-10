@@ -33,11 +33,11 @@ import { QueryUserDto } from './dto/query-user.dto';
 import { User } from '../domain/user';
 import { RolesGuard } from '../../roles/roles.guard';
 import { infinityPagination } from '../../utils/infinity-pagination';
-import { CreateUserUseCase } from '../application/use-cases/create-user.use-case';
-import { FindUsersUseCase } from '../application/use-cases/find-users.use-case';
-import { FindUserByIdUseCase } from '../application/use-cases/find-user-by-id.use-case';
-import { UpdateUserUseCase } from '../application/use-cases/update-user.use-case';
-import { RemoveUserUseCase } from '../application/use-cases/remove-user.use-case';
+import { CreateUserCommand } from '../application/commands/create-user.command';
+import { GetUsersQuery } from '../application/queries/get-users.query';
+import { GetUserByIdQuery } from '../application/queries/get-user-by-id.query';
+import { UpdateUserCommand } from '../application/commands/update-user.command';
+import { RemoveUserCommand } from '../application/commands/remove-user.command';
 
 @ApiBearerAuth()
 @Roles(RoleEnum.admin)
@@ -49,11 +49,11 @@ import { RemoveUserUseCase } from '../application/use-cases/remove-user.use-case
 })
 export class UsersController {
   constructor(
-    private readonly createUser: CreateUserUseCase,
-    private readonly findUsers: FindUsersUseCase,
-    private readonly findUserById: FindUserByIdUseCase,
-    private readonly updateUser: UpdateUserUseCase,
-    private readonly removeUser: RemoveUserUseCase,
+    private readonly createUser: CreateUserCommand,
+    private readonly findUsers: GetUsersQuery,
+    private readonly findUserById: GetUserByIdQuery,
+    private readonly updateUser: UpdateUserCommand,
+    private readonly removeUser: RemoveUserCommand,
   ) {}
 
   @ApiCreatedResponse({ type: User })

@@ -157,17 +157,20 @@ Every domain module you add should follow this layout — the generator scaffold
 src/<resource>/
   domain/<resource>.ts                  # Pure TS class — no NestJS/Mongoose deps
   application/
-    use-cases/
-      create-<resource>.use-case.ts     # One @Injectable() class per operation
-      find-<resource>.use-case.ts
-      update-<resource>.use-case.ts
-      delete-<resource>.use-case.ts
+    ports/
+      <resource>.repository.ts          # Abstract port — belongs in application layer
+    commands/
+      create-<resource>.command.ts      # One @Injectable() per write operation
+      update-<resource>.command.ts
+      remove-<resource>.command.ts
+    queries/
+      get-<resource>-by-id.query.ts     # One @Injectable() per read operation
+      get-<resource>s.query.ts
   presentation/
-    <resource>.controller.ts            # Thin — delegates to use-cases
+    <resource>.controller.ts            # Thin — delegates to commands/queries
     dto/                                # Request/response shapes + validators
   infrastructure/
     persistence/
-      <resource>.repository.ts          # Abstract port
       <resource>.mapper.ts              # Static toDomain / toPersistence
       <resource>.schema.ts              # Mongoose schema class
       document/
@@ -178,9 +181,11 @@ src/<resource>/
   <resource>.module.ts
 ```
 
-**Data flow:** `Controller → UseCase → Repository port → Document adapter → MongoDB`
+**Data flow:** `Controller → Command/Query → Repository port → Document adapter → MongoDB`
 
-Use-cases inject the repository port (abstract class), never the document adapter. Controllers never touch the repository.
+Commands and queries inject the repository port (abstract class), never the document adapter. Controllers never touch the repository.
+
+**Transactions:** Repository port methods that mutate data accept `options?: RepositoryOptions` (`{ session?: ClientSession }`). Use `withTransaction()` from `utils/transaction.helper.ts` to run multi-step operations atomically.
 
 ### Coding conventions
 
@@ -243,9 +248,11 @@ Default: `page=1`, `limit=10`, max `limit=50`.
 | `serializer.interceptor.ts` | `ResolvePromisesInterceptor` |
 | `infinity-pagination.ts` | Pagination wrapper |
 | `document-entity-helper.ts` | `EntityDocumentHelper` — `_id → id` transform |
+| `transaction.helper.ts` | `withTransaction(connection, fn)` — wraps fn in a MongoDB `ClientSession` |
 | `types/deep-partial.type.ts` | `DeepPartial<T>` |
 | `types/maybe.type.ts` | `MaybeType<T> = T \| undefined` |
 | `types/nullable.type.ts` | `NullableType<T> = T \| null` |
+| `types/repository-options.type.ts` | `RepositoryOptions = { session?: ClientSession }` |
 | `transformers/lower-case.transformer.ts` | Lowercases + trims strings |
 
 ### Global app setup
@@ -262,9 +269,10 @@ Default: `page=1`, `limit=10`, max `limit=50`.
 cd backend
 npm run generate:resource:document -- --name Foo
 # Then manually:
-#   1. Create application/use-cases/ and split the generated service into use-case classes
-#   2. Create presentation/ with controller + DTOs
-#   3. Register FooModule in app.module.ts
+#   1. Create application/ports/ with the abstract repository class
+#   2. Create application/commands/ (writes) and application/queries/ (reads)
+#   3. Create presentation/ with controller + DTOs
+#   4. Register FooModule in app.module.ts
 ```
 
 ---

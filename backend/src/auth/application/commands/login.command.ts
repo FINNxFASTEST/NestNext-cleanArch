@@ -12,17 +12,17 @@ import { AllConfigType } from '../../../config/config.type';
 import { AuthProvidersEnum } from '../../auth-providers.enum';
 import { AuthEmailLoginDto } from '../../dto/auth-email-login.dto';
 import { LoginResponseDto } from '../../dto/login-response.dto';
-import { FindUserByEmailUseCase } from '../../../users/application/use-cases/find-user-by-email.use-case';
-import { CreateSessionUseCase } from '../../../session/application/use-cases/create-session.use-case';
+import { GetUserByEmailQuery } from '../../../users/application/queries/get-user-by-email.query';
+import { CreateSessionCommand } from '../../../session/application/commands/create-session.command';
 import { generateTokens } from '../helpers/generate-tokens.helper';
 
 @Injectable()
-export class LoginUseCase {
+export class LoginCommand {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService<AllConfigType>,
-    private readonly findUserByEmail: FindUserByEmailUseCase,
-    private readonly createSession: CreateSessionUseCase,
+    private readonly findUserByEmail: GetUserByEmailQuery,
+    private readonly createSession: CreateSessionCommand,
   ) {}
 
   async execute(loginDto: AuthEmailLoginDto): Promise<LoginResponseDto> {

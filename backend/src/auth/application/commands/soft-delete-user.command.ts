@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../../../users/domain/user';
-import { RemoveUserUseCase } from '../../../users/application/use-cases/remove-user.use-case';
+import { RemoveUserCommand } from '../../../users/application/commands/remove-user.command';
 
 @Injectable()
-export class SoftDeleteUserUseCase {
-  constructor(private readonly removeUser: RemoveUserUseCase) {}
+export class SoftDeleteUserCommand {
+  constructor(private readonly removeUser: RemoveUserCommand) {}
 
   execute(user: User): Promise<void> {
     return this.removeUser.execute(user.id);

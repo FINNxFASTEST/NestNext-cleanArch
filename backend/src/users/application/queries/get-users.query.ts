@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../../infrastructure/persistence/user.repository';
+import { UserRepository } from '../ports/user.repository';
 import { User } from '../../domain/user';
 import {
   FilterUserDto,
@@ -8,7 +8,7 @@ import {
 import { IPaginationOptions } from '../../../utils/types/pagination-options';
 
 @Injectable()
-export class FindUsersUseCase {
+export class GetUsersQuery {
   constructor(private readonly usersRepository: UserRepository) {}
 
   execute({

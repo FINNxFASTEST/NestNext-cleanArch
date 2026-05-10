@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { SessionRepository } from '../../infrastructure/persistence/session.repository';
+import { SessionRepository } from '../ports/session.repository';
 import { User } from '../../../users/domain/user';
 
 @Injectable()
-export class DeleteSessionsByUserIdUseCase {
+export class DeleteSessionsByUserIdCommand {
   constructor(private readonly sessionRepository: SessionRepository) {}
 
   execute(conditions: { userId: User['id'] }): Promise<void> {

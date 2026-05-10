@@ -4,22 +4,26 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
 import { NullableType } from '../../../utils/types/nullable.type';
 import { User } from '../../../users/domain/user';
 import { AuthUpdateDto } from '../../dto/auth-update.dto';
 import { JwtPayloadType } from '../../strategies/types/jwt-payload.type';
-import { FindUserByIdUseCase } from '../../../users/application/use-cases/find-user-by-id.use-case';
-import { FindUserByEmailUseCase } from '../../../users/application/use-cases/find-user-by-email.use-case';
-import { UpdateUserUseCase } from '../../../users/application/use-cases/update-user.use-case';
-import { DeleteSessionsByUserIdExcludingUseCase } from '../../../session/application/use-cases/delete-sessions-by-user-id-excluding.use-case';
+import { GetUserByIdQuery } from '../../../users/application/queries/get-user-by-id.query';
+import { GetUserByEmailQuery } from '../../../users/application/queries/get-user-by-email.query';
+import { UpdateUserCommand } from '../../../users/application/commands/update-user.command';
+import { DeleteSessionsByUserIdExcludingCommand } from '../../../session/application/commands/delete-sessions-by-user-id-excluding.command';
+import { withTransaction } from '../../../utils/transaction.helper';
 
 @Injectable()
-export class UpdateMeUseCase {
+export class UpdateMeCommand {
   constructor(
-    private readonly findUserById: FindUserByIdUseCase,
-    private readonly findUserByEmail: FindUserByEmailUseCase,
-    private readonly updateUser: UpdateUserUseCase,
-    private readonly deleteSessionsByUserIdExcluding: DeleteSessionsByUserIdExcludingUseCase,
+    @InjectConnection() private readonly connection: Connection,
+    private readonly findUserById: GetUserByIdQuery,
+    private readonly findUserByEmail: GetUserByEmailQuery,
+    private readonly updateUser: UpdateUserCommand,
+    private readonly deleteSessionsByUserIdExcluding: DeleteSessionsByUserIdExcludingCommand,
   ) {}
 
   async execute(
@@ -60,11 +64,6 @@ export class UpdateMeUseCase {
           status: HttpStatus.UNPROCESSABLE_ENTITY,
           errors: { oldPassword: 'incorrectOldPassword' },
         });
-      } else {
-        await this.deleteSessionsByUserIdExcluding.execute({
-          userId: currentUser.id,
-          excludeSessionId: userJwtPayload.sessionId,
-        });
       }
     }
 
@@ -80,7 +79,25 @@ export class UpdateMeUseCase {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { oldPassword: _removed, ...updatePayload } = userDto;
-    await this.updateUser.execute(userJwtPayload.id, updatePayload);
+
+    if (userDto.password) {
+      await withTransaction(this.connection, async (mongoSession) => {
+        await this.deleteSessionsByUserIdExcluding.execute(
+          {
+            userId: currentUser.id,
+            excludeSessionId: userJwtPayload.sessionId,
+          },
+          { session: mongoSession },
+        );
+        await this.updateUser.execute(
+          userJwtPayload.id,
+          updatePayload,
+          { session: mongoSession },
+        );
+      });
+    } else {
+      await this.updateUser.execute(userJwtPayload.id, updatePayload);
+    }
 
     return this.findUserById.execute(userJwtPayload.id);
   }

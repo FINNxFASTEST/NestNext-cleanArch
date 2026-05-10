@@ -1,32 +1,32 @@
 import { Module } from '@nestjs/common';
 import { SessionPersistenceModule } from './infrastructure/session-persistence.module';
-import { CreateSessionUseCase } from './application/use-cases/create-session.use-case';
-import { FindSessionByIdUseCase } from './application/use-cases/find-session-by-id.use-case';
-import { UpdateSessionUseCase } from './application/use-cases/update-session.use-case';
-import { UpdateSessionByHashUseCase } from './application/use-cases/update-session-by-hash.use-case';
-import { DeleteSessionByIdUseCase } from './application/use-cases/delete-session-by-id.use-case';
-import { DeleteSessionsByUserIdUseCase } from './application/use-cases/delete-sessions-by-user-id.use-case';
-import { DeleteSessionsByUserIdExcludingUseCase } from './application/use-cases/delete-sessions-by-user-id-excluding.use-case';
+import { CreateSessionCommand } from './application/commands/create-session.command';
+import { GetSessionByIdQuery } from './application/queries/get-session-by-id.query';
+import { UpdateSessionCommand } from './application/commands/update-session.command';
+import { UpdateSessionByHashCommand } from './application/commands/update-session-by-hash.command';
+import { DeleteSessionByIdCommand } from './application/commands/delete-session-by-id.command';
+import { DeleteSessionsByUserIdCommand } from './application/commands/delete-sessions-by-user-id.command';
+import { DeleteSessionsByUserIdExcludingCommand } from './application/commands/delete-sessions-by-user-id-excluding.command';
 
 @Module({
   imports: [SessionPersistenceModule],
   providers: [
-    CreateSessionUseCase,
-    FindSessionByIdUseCase,
-    UpdateSessionUseCase,
-    UpdateSessionByHashUseCase,
-    DeleteSessionByIdUseCase,
-    DeleteSessionsByUserIdUseCase,
-    DeleteSessionsByUserIdExcludingUseCase,
+    CreateSessionCommand,
+    GetSessionByIdQuery,
+    UpdateSessionCommand,
+    UpdateSessionByHashCommand,
+    DeleteSessionByIdCommand,
+    DeleteSessionsByUserIdCommand,
+    DeleteSessionsByUserIdExcludingCommand,
   ],
   exports: [
-    CreateSessionUseCase,
-    FindSessionByIdUseCase,
-    UpdateSessionUseCase,
-    UpdateSessionByHashUseCase,
-    DeleteSessionByIdUseCase,
-    DeleteSessionsByUserIdUseCase,
-    DeleteSessionsByUserIdExcludingUseCase,
+    CreateSessionCommand,
+    GetSessionByIdQuery,
+    UpdateSessionCommand,
+    UpdateSessionByHashCommand,
+    DeleteSessionByIdCommand,
+    DeleteSessionsByUserIdCommand,
+    DeleteSessionsByUserIdExcludingCommand,
     SessionPersistenceModule,
   ],
 })
