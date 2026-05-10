@@ -195,10 +195,15 @@ src/<resource>/
   infrastructure/
     persistence/
       <resource>.repository.ts              # Port: abstract class, method signatures only
-      <resource>.schema.ts                  # Mongoose schema class with @Prop() fields
-      <resource>.mapper.ts                  # toDomain / toPersistence (static methods only)
-      <resource>.document-repository.ts     # Adapter: implements the port using Mongoose
-    <resource>s-persistence.module.ts       # Wires port → adapter, exports the token
+      document/
+        entities/
+          <resource>.schema.ts              # Mongoose schema class with @Prop() fields
+        mappers/
+          <resource>.mapper.ts              # toDomain / toPersistence (static methods only)
+        repositories/
+          <resource>.repository.ts          # Adapter: implements the port using Mongoose
+        document-persistence.module.ts      # Wires port → adapter, exports the token
+    <resource>s-persistence.module.ts       # Re-exports the document persistence module
 
   application/
     use-cases/
