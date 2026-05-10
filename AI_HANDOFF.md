@@ -2,12 +2,9 @@
 
 ## Current state (2026-05-10)
 
-The backend architecture was refactored to fix two pain points:
+Architecture refactor complete. Generator updated to match.
 
-1. **Repository ports were in the wrong layer** — they lived under `infrastructure/persistence/` but are actually application-layer contracts. Moved to `application/ports/`.
-2. **No transaction support** — repository methods had no way to receive a `ClientSession`. Fixed by adding `RepositoryOptions = { session?: ClientSession }` as an optional last argument on all mutating methods, plus a `withTransaction()` helper.
-
-### What changed
+### Architecture
 
 | Before | After |
 |---|---|
@@ -18,15 +15,22 @@ The backend architecture was refactored to fix two pain points:
 
 Affected modules: `auth`, `users`, `session`.
 
+### Generator (`npm run generate:resource:document`)
+
+Now scaffolds the correct structure:
+- `application/commands/` — create, update, remove
+- `application/queries/` — get-by-id, get-all
+- `application/ports/<name>.repository.ts` — abstract port
+- `infrastructure/persistence/<name>.document-repository.ts` — Mongoose impl with `RepositoryOptions`
+- `infrastructure/<names>-persistence.module.ts` — provides port, imports from correct layer
+
 ### Pending work
 
-- Generator (`npm run generate:resource:document`) still scaffolds `application/use-cases/` — it should be updated to scaffold `commands/` + `queries/` + `ports/` instead.
-- Docs updated: `ARCHITECTURE.md`, `README.md`, `CLAUDE.md`.
-- Changes are unstaged — commit when ready.
+None. Everything committed and generator updated.
 
 ## How to pick this up
 
 ```bash
-git status   # verify the unstaged changes
+git status
 npm run build  # should compile cleanly
 ```

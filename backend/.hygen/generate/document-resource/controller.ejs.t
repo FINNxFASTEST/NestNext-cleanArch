@@ -31,11 +31,11 @@ import { infinityPagination } from '../../utils/infinity-pagination';
 import { Create<%= name %>Dto } from './dto/create-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.dto';
 import { Update<%= name %>Dto } from './dto/update-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.dto';
 import { FindAll<%= h.inflection.transform(name, ['pluralize']) %>Dto } from './dto/find-all-<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.dto';
-import { Create<%= name %>UseCase } from '../application/use-cases/create-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.use-case';
-import { Find<%= h.inflection.transform(name, ['pluralize']) %>UseCase } from '../application/use-cases/find-<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.use-case';
-import { Find<%= name %>ByIdUseCase } from '../application/use-cases/find-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>-by-id.use-case';
-import { Update<%= name %>UseCase } from '../application/use-cases/update-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.use-case';
-import { Remove<%= name %>UseCase } from '../application/use-cases/remove-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.use-case';
+import { Create<%= name %>Command } from '../application/commands/create-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.command';
+import { Get<%= h.inflection.transform(name, ['pluralize']) %>Query } from '../application/queries/get-<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.query';
+import { Get<%= name %>ByIdQuery } from '../application/queries/get-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>-by-id.query';
+import { Update<%= name %>Command } from '../application/commands/update-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.command';
+import { Remove<%= name %>Command } from '../application/commands/remove-<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.command';
 
 @ApiTags('<%= h.inflection.transform(name, ['pluralize', 'humanize']) %>')
 @ApiBearerAuth()
@@ -46,11 +46,11 @@ import { Remove<%= name %>UseCase } from '../application/use-cases/remove-<%= h.
 })
 export class <%= h.inflection.transform(name, ['pluralize']) %>Controller {
   constructor(
-    private readonly create<%= name %>: Create<%= name %>UseCase,
-    private readonly find<%= h.inflection.transform(name, ['pluralize']) %>: Find<%= h.inflection.transform(name, ['pluralize']) %>UseCase,
-    private readonly find<%= name %>ById: Find<%= name %>ByIdUseCase,
-    private readonly update<%= name %>: Update<%= name %>UseCase,
-    private readonly remove<%= name %>: Remove<%= name %>UseCase,
+    private readonly create<%= name %>: Create<%= name %>Command,
+    private readonly find<%= h.inflection.transform(name, ['pluralize']) %>: Get<%= h.inflection.transform(name, ['pluralize']) %>Query,
+    private readonly find<%= name %>ById: Get<%= name %>ByIdQuery,
+    private readonly update<%= name %>: Update<%= name %>Command,
+    private readonly remove<%= name %>: Remove<%= name %>Command,
   ) {}
 
   @Post()

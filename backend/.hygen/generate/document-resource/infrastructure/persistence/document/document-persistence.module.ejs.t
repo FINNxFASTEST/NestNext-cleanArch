@@ -7,7 +7,7 @@ import {
   <%= name %>Schema,
   <%= name %>SchemaClass,
 } from './persistence/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.schema';
-import { <%= name %>Repository } from './persistence/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.repository';
+import { <%= name %>Repository } from '../application/ports/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.repository';
 import { <%= name %>DocumentRepository } from './persistence/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.document-repository';
 
 @Module({

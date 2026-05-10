@@ -21,4 +21,4 @@ Write-Host "1) Add fields to src/$($Name.ToLower())s/domain/$($Name.ToLower()).t
 Write-Host "2) Add @Prop() to infrastructure/persistence/$($Name.ToLower()).schema.ts"
 Write-Host "3) Map fields in infrastructure/persistence/$($Name.ToLower()).mapper.ts"
 Write-Host "4) Fill DTOs in presentation/dto/"
-Write-Host "5) Implement use-case bodies in application/use-cases/"
+Write-Host "5) Implement command bodies in application/commands/ and query bodies in application/queries/"

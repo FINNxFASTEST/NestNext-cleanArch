@@ -1,13 +1,13 @@
 ---
-to: src/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>/application/use-cases/find-<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.use-case.ts
+to: src/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>/application/queries/get-<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>.query.ts
 ---
 import { Injectable } from '@nestjs/common';
-import { <%= name %>Repository } from '../../infrastructure/persistence/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.repository';
+import { <%= name %>Repository } from '../ports/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.repository';
 import { <%= name %> } from '../../domain/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>';
 import { IPaginationOptions } from '../../../utils/types/pagination-options';
 
 @Injectable()
-export class Find<%= h.inflection.transform(name, ['pluralize']) %>UseCase {
+export class Get<%= h.inflection.transform(name, ['pluralize']) %>Query {
   constructor(private readonly <%= h.inflection.camelize(name, true) %>Repository: <%= name %>Repository) {}
 
   execute(paginationOptions: IPaginationOptions): Promise<<%= name %>[]> {

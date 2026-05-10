@@ -2,14 +2,15 @@
 to: src/<%= h.inflection.transform(name, ['pluralize', 'underscore', 'dasherize']) %>/infrastructure/persistence/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.document-repository.ts
 ---
 import { Injectable } from '@nestjs/common';
-import { NullableType } from '../../../../utils/types/nullable.type';
+import { NullableType } from '../../../utils/types/nullable.type';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { <%= name %>SchemaClass } from './<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.schema';
-import { <%= name %>Repository } from './<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.repository';
+import { <%= name %>Repository } from '../../application/ports/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.repository';
 import { <%= name %> } from '../../domain/<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>';
 import { <%= name %>Mapper } from './<%= h.inflection.transform(name, ['underscore', 'dasherize']) %>.mapper';
-import { IPaginationOptions } from '../../../../utils/types/pagination-options';
+import { IPaginationOptions } from '../../../utils/types/pagination-options';
+import { RepositoryOptions } from '../../../utils/types/repository-options.type';
 
 @Injectable()
 export class <%= name %>DocumentRepository implements <%= name %>Repository {
@@ -18,10 +19,10 @@ export class <%= name %>DocumentRepository implements <%= name %>Repository {
     private readonly <%= h.inflection.camelize(name, true) %>Model: Model<<%= name %>SchemaClass>,
   ) {}
 
-  async create(data: Omit<<%= name %>, 'id' | 'createdAt' | 'updatedAt'>): Promise<<%= name %>> {
+  async create(data: Omit<<%= name %>, 'id' | 'createdAt' | 'updatedAt'>, options?: RepositoryOptions): Promise<<%= name %>> {
     const persistenceModel = <%= name %>Mapper.toPersistence(data as <%= name %>);
     const createdEntity = new this.<%= h.inflection.camelize(name, true) %>Model(persistenceModel);
-    const entityObject = await createdEntity.save();
+    const entityObject = await createdEntity.save({ session: options?.session });
     return <%= name %>Mapper.toDomain(entityObject);
   }
 
@@ -55,6 +56,7 @@ export class <%= name %>DocumentRepository implements <%= name %>Repository {
   async update(
     id: <%= name %>['id'],
     payload: Partial<<%= name %>>,
+    options?: RepositoryOptions,
   ): Promise<NullableType<<%= name %>>> {
     const clonedPayload = { ...payload };
     delete clonedPayload.id;
@@ -72,13 +74,13 @@ export class <%= name %>DocumentRepository implements <%= name %>Repository {
         ...<%= name %>Mapper.toDomain(entity),
         ...clonedPayload,
       }),
-      { new: true },
+      { new: true, session: options?.session },
     );
 
     return entityObject ? <%= name %>Mapper.toDomain(entityObject) : null;
   }
 
-  async remove(id: <%= name %>['id']): Promise<void> {
-    await this.<%= h.inflection.camelize(name, true) %>Model.deleteOne({ _id: id });
+  async remove(id: <%= name %>['id'], options?: RepositoryOptions): Promise<void> {
+    await this.<%= h.inflection.camelize(name, true) %>Model.deleteOne({ _id: id }, { session: options?.session });
   }
 }
