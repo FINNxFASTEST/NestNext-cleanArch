@@ -1,8 +1,4 @@
-import {
-  HttpStatus,
-  Injectable,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { HttpStatus, Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { UserRepository } from '../ports/user.repository';
 import { User } from '../../domain/user';
 import { UpdateUserDto } from '../../presentation/dto/update-user.dto';
@@ -15,78 +11,76 @@ import bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UpdateUserCommand {
-  constructor(private readonly usersRepository: UserRepository) {}
+    constructor(private readonly usersRepository: UserRepository) {}
 
-  async execute(
-    id: User['id'],
-    updateUserDto: UpdateUserDto,
-    options?: RepositoryOptions,
-  ): Promise<User | null> {
-    let password: string | undefined = undefined;
-    if (updateUserDto.password) {
-      const userObject = await this.usersRepository.findById(id);
-      if (userObject && userObject?.password !== updateUserDto.password) {
-        const salt = await bcrypt.genSalt();
-        password = await bcrypt.hash(updateUserDto.password, salt);
-      }
+    async execute(
+        id: User['id'],
+        updateUserDto: UpdateUserDto,
+        options?: RepositoryOptions,
+    ): Promise<User | null> {
+        let password: string | undefined = undefined;
+        if (updateUserDto.password) {
+            const userObject = await this.usersRepository.findById(id);
+            if (userObject && userObject?.password !== updateUserDto.password) {
+                const salt = await bcrypt.genSalt();
+                password = await bcrypt.hash(updateUserDto.password, salt);
+            }
+        }
+
+        let email: string | null | undefined = undefined;
+        if (updateUserDto.email) {
+            const userObject = await this.usersRepository.findByEmail(updateUserDto.email);
+            if (userObject && userObject.id !== id) {
+                throw new UnprocessableEntityException({
+                    status: HttpStatus.UNPROCESSABLE_ENTITY,
+                    errors: { email: 'emailAlreadyExists' },
+                });
+            }
+            email = updateUserDto.email;
+        } else if (updateUserDto.email === null) {
+            email = null;
+        }
+
+        let role: Role | undefined = undefined;
+        if (updateUserDto.role?.id) {
+            const valid = Object.values(RoleEnum)
+                .map(String)
+                .includes(String(updateUserDto.role.id));
+            if (!valid) {
+                throw new UnprocessableEntityException({
+                    status: HttpStatus.UNPROCESSABLE_ENTITY,
+                    errors: { role: 'roleNotExists' },
+                });
+            }
+            role = { id: updateUserDto.role.id };
+        }
+
+        let status: Status | undefined = undefined;
+        if (updateUserDto.status?.id) {
+            const valid = Object.values(StatusEnum)
+                .map(String)
+                .includes(String(updateUserDto.status.id));
+            if (!valid) {
+                throw new UnprocessableEntityException({
+                    status: HttpStatus.UNPROCESSABLE_ENTITY,
+                    errors: { status: 'statusNotExists' },
+                });
+            }
+            status = { id: updateUserDto.status.id };
+        }
+
+        return this.usersRepository.update(
+            id,
+            {
+                firstName: updateUserDto.firstName,
+                lastName: updateUserDto.lastName,
+                email,
+                password,
+                role,
+                status,
+                provider: updateUserDto.provider,
+            },
+            options,
+        );
     }
-
-    let email: string | null | undefined = undefined;
-    if (updateUserDto.email) {
-      const userObject = await this.usersRepository.findByEmail(
-        updateUserDto.email,
-      );
-      if (userObject && userObject.id !== id) {
-        throw new UnprocessableEntityException({
-          status: HttpStatus.UNPROCESSABLE_ENTITY,
-          errors: { email: 'emailAlreadyExists' },
-        });
-      }
-      email = updateUserDto.email;
-    } else if (updateUserDto.email === null) {
-      email = null;
-    }
-
-    let role: Role | undefined = undefined;
-    if (updateUserDto.role?.id) {
-      const valid = Object.values(RoleEnum)
-        .map(String)
-        .includes(String(updateUserDto.role.id));
-      if (!valid) {
-        throw new UnprocessableEntityException({
-          status: HttpStatus.UNPROCESSABLE_ENTITY,
-          errors: { role: 'roleNotExists' },
-        });
-      }
-      role = { id: updateUserDto.role.id };
-    }
-
-    let status: Status | undefined = undefined;
-    if (updateUserDto.status?.id) {
-      const valid = Object.values(StatusEnum)
-        .map(String)
-        .includes(String(updateUserDto.status.id));
-      if (!valid) {
-        throw new UnprocessableEntityException({
-          status: HttpStatus.UNPROCESSABLE_ENTITY,
-          errors: { status: 'statusNotExists' },
-        });
-      }
-      status = { id: updateUserDto.status.id };
-    }
-
-    return this.usersRepository.update(
-      id,
-      {
-        firstName: updateUserDto.firstName,
-        lastName: updateUserDto.lastName,
-        email,
-        password,
-        role,
-        status,
-        provider: updateUserDto.provider,
-      },
-      options,
-    );
-  }
 }

@@ -5,9 +5,9 @@ import { NullableType } from '../../../utils/types/nullable.type';
 
 @Injectable()
 export class GetUserByIdQuery {
-  constructor(private readonly usersRepository: UserRepository) {}
+    constructor(private readonly usersRepository: UserRepository) {}
 
-  execute(id: User['id']): Promise<NullableType<User>> {
-    return this.usersRepository.findById(id);
-  }
+    execute(id: User['id']): Promise<NullableType<User>> {
+        return this.usersRepository.findById(id);
+    }
 }

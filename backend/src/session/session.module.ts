@@ -9,25 +9,25 @@ import { DeleteSessionsByUserIdCommand } from './application/commands/delete-ses
 import { DeleteSessionsByUserIdExcludingCommand } from './application/commands/delete-sessions-by-user-id-excluding.command';
 
 @Module({
-  imports: [SessionPersistenceModule],
-  providers: [
-    CreateSessionCommand,
-    GetSessionByIdQuery,
-    UpdateSessionCommand,
-    UpdateSessionByHashCommand,
-    DeleteSessionByIdCommand,
-    DeleteSessionsByUserIdCommand,
-    DeleteSessionsByUserIdExcludingCommand,
-  ],
-  exports: [
-    CreateSessionCommand,
-    GetSessionByIdQuery,
-    UpdateSessionCommand,
-    UpdateSessionByHashCommand,
-    DeleteSessionByIdCommand,
-    DeleteSessionsByUserIdCommand,
-    DeleteSessionsByUserIdExcludingCommand,
-    SessionPersistenceModule,
-  ],
+    imports: [SessionPersistenceModule],
+    providers: [
+        CreateSessionCommand,
+        GetSessionByIdQuery,
+        UpdateSessionCommand,
+        UpdateSessionByHashCommand,
+        DeleteSessionByIdCommand,
+        DeleteSessionsByUserIdCommand,
+        DeleteSessionsByUserIdExcludingCommand,
+    ],
+    exports: [
+        CreateSessionCommand,
+        GetSessionByIdQuery,
+        UpdateSessionCommand,
+        UpdateSessionByHashCommand,
+        DeleteSessionByIdCommand,
+        DeleteSessionsByUserIdCommand,
+        DeleteSessionsByUserIdExcludingCommand,
+        SessionPersistenceModule,
+    ],
 })
 export class SessionModule {}

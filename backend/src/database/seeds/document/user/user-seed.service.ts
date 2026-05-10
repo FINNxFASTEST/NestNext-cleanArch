@@ -8,66 +8,66 @@ import { UserSchemaClass } from '../../../../users/infrastructure/persistence/do
 
 @Injectable()
 export class UserSeedService {
-  constructor(
-    @InjectModel(UserSchemaClass.name)
-    private readonly model: Model<UserSchemaClass>,
-  ) {}
+    constructor(
+        @InjectModel(UserSchemaClass.name)
+        private readonly model: Model<UserSchemaClass>,
+    ) {}
 
-  async run(): Promise<{
-    admin: UserSchemaClass;
-    host: UserSchemaClass;
-    customer: UserSchemaClass;
-  }> {
-    const admin = await this.upsert({
-      email: 'admin@example.com',
-      firstName: 'Super',
-      lastName: 'Admin',
-      role: RoleEnum.admin,
-    });
+    async run(): Promise<{
+        admin: UserSchemaClass;
+        host: UserSchemaClass;
+        customer: UserSchemaClass;
+    }> {
+        const admin = await this.upsert({
+            email: 'admin@example.com',
+            firstName: 'Super',
+            lastName: 'Admin',
+            role: RoleEnum.admin,
+        });
 
-    const host = await this.upsert({
-      email: 'host@example.com',
-      firstName: 'Helen',
-      lastName: 'Host',
-      role: RoleEnum.host,
-    });
+        const host = await this.upsert({
+            email: 'host@example.com',
+            firstName: 'Helen',
+            lastName: 'Host',
+            role: RoleEnum.host,
+        });
 
-    const customer = await this.upsert({
-      email: 'customer@example.com',
-      firstName: 'Charlie',
-      lastName: 'Customer',
-      role: RoleEnum.customer,
-    });
+        const customer = await this.upsert({
+            email: 'customer@example.com',
+            firstName: 'Charlie',
+            lastName: 'Customer',
+            role: RoleEnum.customer,
+        });
 
-    return { admin, host, customer };
-  }
+        return { admin, host, customer };
+    }
 
-  findByEmail(email: string) {
-    return this.model.findOne({ email });
-  }
+    findByEmail(email: string) {
+        return this.model.findOne({ email });
+    }
 
-  private async upsert(input: {
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: RoleEnum;
-    password?: string;
-  }): Promise<UserSchemaClass> {
-    const existing = await this.model.findOne({ email: input.email });
-    if (existing) return existing;
+    private async upsert(input: {
+        email: string;
+        firstName: string;
+        lastName: string;
+        role: RoleEnum;
+        password?: string;
+    }): Promise<UserSchemaClass> {
+        const existing = await this.model.findOne({ email: input.email });
+        if (existing) return existing;
 
-    const salt = await bcrypt.genSalt();
-    const password = await bcrypt.hash(input.password ?? 'secret', salt);
+        const salt = await bcrypt.genSalt();
+        const password = await bcrypt.hash(input.password ?? 'secret', salt);
 
-    const data = new this.model({
-      email: input.email,
-      password,
-      firstName: input.firstName,
-      lastName: input.lastName,
-      role: { _id: input.role.toString() },
-      status: { _id: StatusEnum.active.toString() },
-    });
+        const data = new this.model({
+            email: input.email,
+            password,
+            firstName: input.firstName,
+            lastName: input.lastName,
+            role: { _id: input.role.toString() },
+            status: { _id: StatusEnum.active.toString() },
+        });
 
-    return data.save();
-  }
+        return data.save();
+    }
 }

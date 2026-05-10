@@ -13,102 +13,99 @@ import { RepositoryOptions } from '../../../../../utils/types/repository-options
 
 @Injectable()
 export class UsersDocumentRepository implements UserRepository {
-  constructor(
-    @InjectModel(UserSchemaClass.name)
-    private readonly usersModel: Model<UserSchemaClass>,
-  ) {}
+    constructor(
+        @InjectModel(UserSchemaClass.name)
+        private readonly usersModel: Model<UserSchemaClass>,
+    ) {}
 
-  async create(data: User, options?: RepositoryOptions): Promise<User> {
-    const persistenceModel = UserMapper.toPersistence(data);
-    const createdUser = new this.usersModel(persistenceModel);
-    const userObject = await createdUser.save({ session: options?.session });
-    return UserMapper.toDomain(userObject);
-  }
-
-  async findManyWithPagination({
-    filterOptions,
-    sortOptions,
-    paginationOptions,
-  }: {
-    filterOptions?: FilterUserDto | null;
-    sortOptions?: SortUserDto[] | null;
-    paginationOptions: IPaginationOptions;
-  }): Promise<User[]> {
-    const where: QueryFilter<UserSchemaClass> = {};
-    if (filterOptions?.roles?.length) {
-      where['role._id'] = {
-        $in: filterOptions.roles.map((role) => role.id.toString()),
-      };
+    async create(data: User, options?: RepositoryOptions): Promise<User> {
+        const persistenceModel = UserMapper.toPersistence(data);
+        const createdUser = new this.usersModel(persistenceModel);
+        const userObject = await createdUser.save({ session: options?.session });
+        return UserMapper.toDomain(userObject);
     }
 
-    const userObjects = await this.usersModel
-      .find(where)
-      .sort(
-        sortOptions?.reduce(
-          (accumulator, sort) => ({
-            ...accumulator,
-            [sort.orderBy === 'id' ? '_id' : sort.orderBy]:
-              sort.order.toUpperCase() === 'ASC' ? 1 : -1,
-          }),
-          {},
-        ),
-      )
-      .skip((paginationOptions.page - 1) * paginationOptions.limit)
-      .limit(paginationOptions.limit);
+    async findManyWithPagination({
+        filterOptions,
+        sortOptions,
+        paginationOptions,
+    }: {
+        filterOptions?: FilterUserDto | null;
+        sortOptions?: SortUserDto[] | null;
+        paginationOptions: IPaginationOptions;
+    }): Promise<User[]> {
+        const where: QueryFilter<UserSchemaClass> = {};
+        if (filterOptions?.roles?.length) {
+            where['role._id'] = {
+                $in: filterOptions.roles.map((role) => role.id.toString()),
+            };
+        }
 
-    return userObjects.map((userObject) => UserMapper.toDomain(userObject));
-  }
+        const userObjects = await this.usersModel
+            .find(where)
+            .sort(
+                sortOptions?.reduce(
+                    (accumulator, sort) => ({
+                        ...accumulator,
+                        [sort.orderBy === 'id' ? '_id' : sort.orderBy]:
+                            sort.order.toUpperCase() === 'ASC' ? 1 : -1,
+                    }),
+                    {},
+                ),
+            )
+            .skip((paginationOptions.page - 1) * paginationOptions.limit)
+            .limit(paginationOptions.limit);
 
-  async findById(id: User['id']): Promise<NullableType<User>> {
-    const userObject = await this.usersModel.findById(id);
-    return userObject ? UserMapper.toDomain(userObject) : null;
-  }
-
-  async findByIds(ids: User['id'][]): Promise<User[]> {
-    const userObjects = await this.usersModel.find({
-      _id: { $in: ids.map((id) => id.toString()) },
-    });
-    return userObjects.map((userObject) => UserMapper.toDomain(userObject));
-  }
-
-  async findByEmail(email: User['email']): Promise<NullableType<User>> {
-    if (!email) return null;
-
-    const userObject = await this.usersModel.findOne({ email });
-    return userObject ? UserMapper.toDomain(userObject) : null;
-  }
-
-  async update(
-    id: User['id'],
-    payload: Partial<User>,
-    options?: RepositoryOptions,
-  ): Promise<User | null> {
-    const clonedPayload = { ...payload };
-    delete clonedPayload.id;
-
-    const filter = { _id: id.toString() };
-    const user = await this.usersModel.findOne(filter);
-
-    if (!user) {
-      return null;
+        return userObjects.map((userObject) => UserMapper.toDomain(userObject));
     }
 
-    const userObject = await this.usersModel.findOneAndUpdate(
-      filter,
-      UserMapper.toPersistence({
-        ...UserMapper.toDomain(user),
-        ...clonedPayload,
-      }),
-      { new: true, session: options?.session },
-    );
+    async findById(id: User['id']): Promise<NullableType<User>> {
+        const userObject = await this.usersModel.findById(id);
+        return userObject ? UserMapper.toDomain(userObject) : null;
+    }
 
-    return userObject ? UserMapper.toDomain(userObject) : null;
-  }
+    async findByIds(ids: User['id'][]): Promise<User[]> {
+        const userObjects = await this.usersModel.find({
+            _id: { $in: ids.map((id) => id.toString()) },
+        });
+        return userObjects.map((userObject) => UserMapper.toDomain(userObject));
+    }
 
-  async remove(id: User['id'], options?: RepositoryOptions): Promise<void> {
-    await this.usersModel.deleteOne(
-      { _id: id.toString() },
-      { session: options?.session },
-    );
-  }
+    async findByEmail(email: User['email']): Promise<NullableType<User>> {
+        if (!email) return null;
+
+        const userObject = await this.usersModel.findOne({ email });
+        return userObject ? UserMapper.toDomain(userObject) : null;
+    }
+
+    async update(
+        id: User['id'],
+        payload: Partial<User>,
+        options?: RepositoryOptions,
+    ): Promise<User | null> {
+        const clonedPayload = { ...payload };
+        delete clonedPayload.id;
+
+        const filter = { _id: id.toString() };
+        const user = await this.usersModel.findOne(filter);
+
+        if (!user) {
+            return null;
+        }
+
+        const userObject = await this.usersModel.findOneAndUpdate(
+            filter,
+            UserMapper.toPersistence({
+                ...UserMapper.toDomain(user),
+                ...clonedPayload,
+            }),
+            { new: true, session: options?.session },
+        );
+
+        return userObject ? UserMapper.toDomain(userObject) : null;
+    }
+
+    async remove(id: User['id'], options?: RepositoryOptions): Promise<void> {
+        await this.usersModel.deleteOne({ _id: id.toString() }, { session: options?.session });
+    }
 }

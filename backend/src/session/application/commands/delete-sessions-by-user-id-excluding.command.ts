@@ -6,15 +6,15 @@ import { Session } from '../../domain/session';
 
 @Injectable()
 export class DeleteSessionsByUserIdExcludingCommand {
-  constructor(private readonly sessionRepository: SessionRepository) {}
+    constructor(private readonly sessionRepository: SessionRepository) {}
 
-  execute(
-    conditions: {
-      userId: User['id'];
-      excludeSessionId: Session['id'];
-    },
-    options?: RepositoryOptions,
-  ): Promise<void> {
-    return this.sessionRepository.deleteByUserIdWithExclude(conditions, options);
-  }
+    execute(
+        conditions: {
+            userId: User['id'];
+            excludeSessionId: Session['id'];
+        },
+        options?: RepositoryOptions,
+    ): Promise<void> {
+        return this.sessionRepository.deleteByUserIdWithExclude(conditions, options);
+    }
 }

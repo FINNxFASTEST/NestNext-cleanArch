@@ -6,9 +6,9 @@ import { GetUserByIdQuery } from '../../../users/application/queries/get-user-by
 
 @Injectable()
 export class GetMeQuery {
-  constructor(private readonly findUserById: GetUserByIdQuery) {}
+    constructor(private readonly findUserById: GetUserByIdQuery) {}
 
-  execute(userJwtPayload: JwtPayloadType): Promise<NullableType<User>> {
-    return this.findUserById.execute(userJwtPayload.id);
-  }
+    execute(userJwtPayload: JwtPayloadType): Promise<NullableType<User>> {
+        return this.findUserById.execute(userJwtPayload.id);
+    }
 }

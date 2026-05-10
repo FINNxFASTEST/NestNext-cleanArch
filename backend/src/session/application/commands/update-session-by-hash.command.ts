@@ -4,14 +4,12 @@ import { Session } from '../../domain/session';
 
 @Injectable()
 export class UpdateSessionByHashCommand {
-  constructor(private readonly sessionRepository: SessionRepository) {}
+    constructor(private readonly sessionRepository: SessionRepository) {}
 
-  execute(
-    conditions: { id: Session['id']; hash: Session['hash'] },
-    payload: Partial<
-      Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>
-    >,
-  ): Promise<Session | null> {
-    return this.sessionRepository.updateByHash(conditions, payload);
-  }
+    execute(
+        conditions: { id: Session['id']; hash: Session['hash'] },
+        payload: Partial<Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>>,
+    ): Promise<Session | null> {
+        return this.sessionRepository.updateByHash(conditions, payload);
+    }
 }

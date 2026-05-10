@@ -5,12 +5,12 @@ import { Session } from '../../domain/session';
 
 @Injectable()
 export class CreateSessionCommand {
-  constructor(private readonly sessionRepository: SessionRepository) {}
+    constructor(private readonly sessionRepository: SessionRepository) {}
 
-  execute(
-    data: Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>,
-    options?: RepositoryOptions,
-  ): Promise<Session> {
-    return this.sessionRepository.create(data, options);
-  }
+    execute(
+        data: Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>,
+        options?: RepositoryOptions,
+    ): Promise<Session> {
+        return this.sessionRepository.create(data, options);
+    }
 }

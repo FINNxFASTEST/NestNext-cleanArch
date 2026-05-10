@@ -8,43 +8,43 @@ import { RoleSchema } from '../../../roles/infrastructure/persistence/role.schem
 export type UserSchemaDocument = HydratedDocument<UserSchemaClass>;
 
 @Schema({
-  collection: 'users',
-  timestamps: true,
-  toJSON: {
-    virtuals: true,
-    getters: true,
-  },
+    collection: 'users',
+    timestamps: true,
+    toJSON: {
+        virtuals: true,
+        getters: true,
+    },
 })
 export class UserSchemaClass extends EntityDocumentHelper {
-  @Prop({ type: String, unique: true })
-  email: string | null;
+    @Prop({ type: String, unique: true })
+    email: string | null;
 
-  @Prop()
-  password?: string;
+    @Prop()
+    password?: string;
 
-  @Prop({ default: AuthProvidersEnum.email })
-  provider: string;
+    @Prop({ default: AuthProvidersEnum.email })
+    provider: string;
 
-  @Prop({ type: String })
-  firstName: string | null;
+    @Prop({ type: String })
+    firstName: string | null;
 
-  @Prop({ type: String })
-  lastName: string | null;
+    @Prop({ type: String })
+    lastName: string | null;
 
-  @Prop({ type: RoleSchema })
-  role?: RoleSchema | null;
+    @Prop({ type: RoleSchema })
+    role?: RoleSchema | null;
 
-  @Prop({ type: StatusSchema })
-  status?: StatusSchema;
+    @Prop({ type: StatusSchema })
+    status?: StatusSchema;
 
-  @Prop({ default: now })
-  createdAt: Date;
+    @Prop({ default: now })
+    createdAt: Date;
 
-  @Prop({ default: now })
-  updatedAt: Date;
+    @Prop({ default: now })
+    updatedAt: Date;
 
-  @Prop()
-  deletedAt: Date;
+    @Prop()
+    deletedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(UserSchemaClass);

@@ -4,9 +4,9 @@ import { User } from '../../domain/user';
 
 @Injectable()
 export class GetUsersByIdsQuery {
-  constructor(private readonly usersRepository: UserRepository) {}
+    constructor(private readonly usersRepository: UserRepository) {}
 
-  execute(ids: User['id'][]): Promise<User[]> {
-    return this.usersRepository.findByIds(ids);
-  }
+    execute(ids: User['id'][]): Promise<User[]> {
+        return this.usersRepository.findByIds(ids);
+    }
 }

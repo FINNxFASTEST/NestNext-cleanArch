@@ -45,7 +45,11 @@ export class SessionDocumentRepository implements SessionRepository {
         return session;
     }
 
-    async update(id: Session['id'], payload: Partial<Session>, options?: RepositoryOptions): Promise<Session | null> {
+    async update(
+        id: Session['id'],
+        payload: Partial<Session>,
+        options?: RepositoryOptions,
+    ): Promise<Session | null> {
         const clonedPayload = { ...payload };
         delete clonedPayload.id;
         delete clonedPayload.createdAt;
@@ -113,7 +117,10 @@ export class SessionDocumentRepository implements SessionRepository {
         { userId }: { userId: User['id'] },
         options?: RepositoryOptions,
     ): Promise<void> {
-        await this.sessionModel.deleteMany({ user: userId.toString() }, { session: options?.session });
+        await this.sessionModel.deleteMany(
+            { user: userId.toString() },
+            { session: options?.session },
+        );
         if (!options?.session) {
             await this.sessionCache.deleteByUserId(userId);
         }

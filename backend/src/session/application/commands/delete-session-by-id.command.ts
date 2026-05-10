@@ -4,9 +4,9 @@ import { Session } from '../../domain/session';
 
 @Injectable()
 export class DeleteSessionByIdCommand {
-  constructor(private readonly sessionRepository: SessionRepository) {}
+    constructor(private readonly sessionRepository: SessionRepository) {}
 
-  execute(id: Session['id']): Promise<void> {
-    return this.sessionRepository.deleteById(id);
-  }
+    execute(id: Session['id']): Promise<void> {
+        return this.sessionRepository.deleteById(id);
+    }
 }

@@ -4,9 +4,9 @@ import { DeleteSessionByIdCommand } from '../../../session/application/commands/
 
 @Injectable()
 export class LogoutCommand {
-  constructor(private readonly deleteSessionById: DeleteSessionByIdCommand) {}
+    constructor(private readonly deleteSessionById: DeleteSessionByIdCommand) {}
 
-  execute(data: Pick<JwtRefreshPayloadType, 'sessionId'>): Promise<void> {
-    return this.deleteSessionById.execute(data.sessionId);
-  }
+    execute(data: Pick<JwtRefreshPayloadType, 'sessionId'>): Promise<void> {
+        return this.deleteSessionById.execute(data.sessionId);
+    }
 }

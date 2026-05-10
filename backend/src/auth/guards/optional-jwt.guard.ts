@@ -8,11 +8,11 @@ import { AuthGuard } from '@nestjs/passport';
  */
 @Injectable()
 export class OptionalJwtGuard extends AuthGuard(['jwt', 'anonymous']) {
-  canActivate(context: ExecutionContext) {
-    return super.canActivate(context);
-  }
+    canActivate(context: ExecutionContext) {
+        return super.canActivate(context);
+    }
 
-  handleRequest<TUser = unknown>(err: unknown, user: TUser) {
-    return user as TUser;
-  }
+    handleRequest<TUser = unknown>(err: unknown, user: TUser) {
+        return user as TUser;
+    }
 }

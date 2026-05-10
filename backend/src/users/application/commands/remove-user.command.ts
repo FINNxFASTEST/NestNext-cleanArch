@@ -4,9 +4,9 @@ import { User } from '../../domain/user';
 
 @Injectable()
 export class RemoveUserCommand {
-  constructor(private readonly usersRepository: UserRepository) {}
+    constructor(private readonly usersRepository: UserRepository) {}
 
-  execute(id: User['id']): Promise<void> {
-    return this.usersRepository.remove(id);
-  }
+    execute(id: User['id']): Promise<void> {
+        return this.usersRepository.remove(id);
+    }
 }

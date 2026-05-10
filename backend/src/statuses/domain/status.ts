@@ -1,9 +1,9 @@
 import { Allow } from 'class-validator';
 
 export class Status {
-  @Allow()
-  id!: number | string;
+    @Allow()
+    id!: number | string;
 
-  @Allow()
-  name?: string;
+    @Allow()
+    name?: string;
 }

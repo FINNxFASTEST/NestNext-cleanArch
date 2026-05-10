@@ -10,26 +10,26 @@ import { UpdateUserCommand } from './application/commands/update-user.command';
 import { RemoveUserCommand } from './application/commands/remove-user.command';
 
 @Module({
-  imports: [UsersPersistenceModule],
-  controllers: [UsersController],
-  providers: [
-    CreateUserCommand,
-    GetUsersQuery,
-    GetUserByIdQuery,
-    GetUsersByIdsQuery,
-    GetUserByEmailQuery,
-    UpdateUserCommand,
-    RemoveUserCommand,
-  ],
-  exports: [
-    CreateUserCommand,
-    GetUsersQuery,
-    GetUserByIdQuery,
-    GetUsersByIdsQuery,
-    GetUserByEmailQuery,
-    UpdateUserCommand,
-    RemoveUserCommand,
-    UsersPersistenceModule,
-  ],
+    imports: [UsersPersistenceModule],
+    controllers: [UsersController],
+    providers: [
+        CreateUserCommand,
+        GetUsersQuery,
+        GetUserByIdQuery,
+        GetUsersByIdsQuery,
+        GetUserByEmailQuery,
+        UpdateUserCommand,
+        RemoveUserCommand,
+    ],
+    exports: [
+        CreateUserCommand,
+        GetUsersQuery,
+        GetUserByIdQuery,
+        GetUsersByIdsQuery,
+        GetUserByEmailQuery,
+        UpdateUserCommand,
+        RemoveUserCommand,
+        UsersPersistenceModule,
+    ],
 })
 export class UsersModule {}

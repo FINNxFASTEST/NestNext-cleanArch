@@ -3,22 +3,22 @@ import { Role } from '../../roles/domain/role';
 import { Status } from '../../statuses/domain/status';
 
 export class User {
-  id!: string;
+    id!: string;
 
-  @Expose({ groups: ['me', 'admin'] })
-  email!: string | null;
+    @Expose({ groups: ['me', 'admin'] })
+    email!: string | null;
 
-  @Exclude({ toPlainOnly: true })
-  password?: string;
+    @Exclude({ toPlainOnly: true })
+    password?: string;
 
-  @Expose({ groups: ['me', 'admin'] })
-  provider!: string;
+    @Expose({ groups: ['me', 'admin'] })
+    provider!: string;
 
-  firstName!: string | null;
-  lastName!: string | null;
-  role?: Role | null;
-  status?: Status;
-  createdAt!: Date;
-  updatedAt!: Date;
-  deletedAt!: Date;
+    firstName!: string | null;
+    lastName!: string | null;
+    role?: Role | null;
+    status?: Status;
+    createdAt!: Date;
+    updatedAt!: Date;
+    deletedAt!: Date;
 }

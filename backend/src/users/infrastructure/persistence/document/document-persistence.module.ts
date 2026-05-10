@@ -5,17 +5,13 @@ import { UserRepository } from '../../../application/ports/user.repository';
 import { UsersDocumentRepository } from './repositories/user.repository';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: UserSchemaClass.name, schema: UserSchema },
-    ]),
-  ],
-  providers: [
-    {
-      provide: UserRepository,
-      useClass: UsersDocumentRepository,
-    },
-  ],
-  exports: [UserRepository],
+    imports: [MongooseModule.forFeature([{ name: UserSchemaClass.name, schema: UserSchema }])],
+    providers: [
+        {
+            provide: UserRepository,
+            useClass: UsersDocumentRepository,
+        },
+    ],
+    exports: [UserRepository],
 })
 export class DocumentUserPersistenceModule {}

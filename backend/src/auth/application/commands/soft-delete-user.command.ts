@@ -4,9 +4,9 @@ import { RemoveUserCommand } from '../../../users/application/commands/remove-us
 
 @Injectable()
 export class SoftDeleteUserCommand {
-  constructor(private readonly removeUser: RemoveUserCommand) {}
+    constructor(private readonly removeUser: RemoveUserCommand) {}
 
-  execute(user: User): Promise<void> {
-    return this.removeUser.execute(user.id);
-  }
+    execute(user: User): Promise<void> {
+        return this.removeUser.execute(user.id);
+    }
 }

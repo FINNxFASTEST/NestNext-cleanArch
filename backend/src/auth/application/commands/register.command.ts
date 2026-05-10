@@ -17,46 +17,40 @@ import { withTransaction } from '../../../utils/transaction.helper';
 
 @Injectable()
 export class RegisterCommand {
-  constructor(
-    @InjectConnection() private readonly connection: Connection,
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService<AllConfigType>,
-    private readonly createUser: CreateUserCommand,
-    private readonly createSession: CreateSessionCommand,
-  ) {}
+    constructor(
+        @InjectConnection() private readonly connection: Connection,
+        private readonly jwtService: JwtService,
+        private readonly configService: ConfigService<AllConfigType>,
+        private readonly createUser: CreateUserCommand,
+        private readonly createSession: CreateSessionCommand,
+    ) {}
 
-  async execute(dto: AuthRegisterLoginDto): Promise<LoginResponseDto> {
-    const hash = crypto
-      .createHash('sha256')
-      .update(randomStringGenerator())
-      .digest('hex');
+    async execute(dto: AuthRegisterLoginDto): Promise<LoginResponseDto> {
+        const hash = crypto.createHash('sha256').update(randomStringGenerator()).digest('hex');
 
-    const { user, session } = await withTransaction(
-      this.connection,
-      async (mongoSession) => {
-        const user = await this.createUser.execute(
-          {
-            ...dto,
-            email: dto.email,
-            role: { id: RoleEnum.customer },
-            status: { id: StatusEnum.active },
-          },
-          { session: mongoSession },
+        const { user, session } = await withTransaction(this.connection, async (mongoSession) => {
+            const user = await this.createUser.execute(
+                {
+                    ...dto,
+                    email: dto.email,
+                    role: { id: RoleEnum.customer },
+                    status: { id: StatusEnum.active },
+                },
+                { session: mongoSession },
+            );
+            const session = await this.createSession.execute(
+                { user, hash },
+                { session: mongoSession },
+            );
+            return { user, session };
+        });
+
+        const { token, refreshToken, tokenExpires } = await generateTokens(
+            this.jwtService,
+            this.configService,
+            { id: user.id, role: user.role, sessionId: session.id, hash },
         );
-        const session = await this.createSession.execute(
-          { user, hash },
-          { session: mongoSession },
-        );
-        return { user, session };
-      },
-    );
 
-    const { token, refreshToken, tokenExpires } = await generateTokens(
-      this.jwtService,
-      this.configService,
-      { id: user.id, role: user.role, sessionId: session.id, hash },
-    );
-
-    return { refreshToken, token, tokenExpires, user };
-  }
+        return { refreshToken, token, tokenExpires, user };
+    }
 }

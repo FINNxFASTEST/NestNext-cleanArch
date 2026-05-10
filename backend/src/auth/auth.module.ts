@@ -16,19 +16,19 @@ import { LogoutCommand } from './application/commands/logout.command';
 import { SoftDeleteUserCommand } from './application/commands/soft-delete-user.command';
 
 @Module({
-  imports: [UsersModule, SessionModule, PassportModule, JwtModule.register({})],
-  controllers: [AuthController],
-  providers: [
-    JwtStrategy,
-    JwtRefreshStrategy,
-    AnonymousStrategy,
-    LoginCommand,
-    RegisterCommand,
-    GetMeQuery,
-    UpdateMeCommand,
-    RefreshTokenCommand,
-    LogoutCommand,
-    SoftDeleteUserCommand,
-  ],
+    imports: [UsersModule, SessionModule, PassportModule, JwtModule.register({})],
+    controllers: [AuthController],
+    providers: [
+        JwtStrategy,
+        JwtRefreshStrategy,
+        AnonymousStrategy,
+        LoginCommand,
+        RegisterCommand,
+        GetMeQuery,
+        UpdateMeCommand,
+        RefreshTokenCommand,
+        LogoutCommand,
+        SoftDeleteUserCommand,
+    ],
 })
 export class AuthModule {}

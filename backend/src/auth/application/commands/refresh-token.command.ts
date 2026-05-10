@@ -12,46 +12,43 @@ import { generateTokens } from '../helpers/generate-tokens.helper';
 
 @Injectable()
 export class RefreshTokenCommand {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService<AllConfigType>,
-    private readonly findUserById: GetUserByIdQuery,
-    private readonly updateSessionByHash: UpdateSessionByHashCommand,
-  ) {}
+    constructor(
+        private readonly jwtService: JwtService,
+        private readonly configService: ConfigService<AllConfigType>,
+        private readonly findUserById: GetUserByIdQuery,
+        private readonly updateSessionByHash: UpdateSessionByHashCommand,
+    ) {}
 
-  async execute(
-    data: Pick<JwtRefreshPayloadType, 'sessionId' | 'hash'>,
-  ): Promise<Omit<RefreshResponseDto, 'user'>> {
-    const hash = crypto
-      .createHash('sha256')
-      .update(randomStringGenerator())
-      .digest('hex');
+    async execute(
+        data: Pick<JwtRefreshPayloadType, 'sessionId' | 'hash'>,
+    ): Promise<Omit<RefreshResponseDto, 'user'>> {
+        const hash = crypto.createHash('sha256').update(randomStringGenerator()).digest('hex');
 
-    const session = await this.updateSessionByHash.execute(
-      { id: data.sessionId, hash: data.hash },
-      { hash },
-    );
+        const session = await this.updateSessionByHash.execute(
+            { id: data.sessionId, hash: data.hash },
+            { hash },
+        );
 
-    if (!session) {
-      throw new UnauthorizedException();
+        if (!session) {
+            throw new UnauthorizedException();
+        }
+
+        const user = await this.findUserById.execute(session.user.id);
+        if (!user?.role) {
+            throw new UnauthorizedException();
+        }
+
+        const { token, refreshToken, tokenExpires } = await generateTokens(
+            this.jwtService,
+            this.configService,
+            {
+                id: session.user.id,
+                role: { id: user.role.id },
+                sessionId: session.id,
+                hash,
+            },
+        );
+
+        return { token, refreshToken, tokenExpires };
     }
-
-    const user = await this.findUserById.execute(session.user.id);
-    if (!user?.role) {
-      throw new UnauthorizedException();
-    }
-
-    const { token, refreshToken, tokenExpires } = await generateTokens(
-      this.jwtService,
-      this.configService,
-      {
-        id: session.user.id,
-        role: { id: user.role.id },
-        sessionId: session.id,
-        hash,
-      },
-    );
-
-    return { token, refreshToken, tokenExpires };
-  }
 }
